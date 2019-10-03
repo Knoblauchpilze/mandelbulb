@@ -1,66 +1,65 @@
 
-# include <iostream>
-# include <SDL2/SDL_ttf.h>
+# include <core_utils/StdLogger.hh>
+# include <core_utils/LoggerLocator.hh>
 
-# include <sdl_core/SdlException.hh>
 # include <sdl_app_core/SdlApplication.hh>
-# include <sdl_core/SdlWidget.hh>
-# include <sdl_graphic/LinearLayout.hh>
-# include <sdl_graphic/LabelWidget.hh>
-# include <sdl_graphic/FontFactory.hh>
+# include <core_utils/CoreException.hh>
+# include "Content.hh"
 
 int main(int argc, char* argv[]) {
-  // Run the application.
-  if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-    std::cerr << "[MAIN] Could not initialize sdl video mode (err: \"" << SDL_GetError() << "\")" << std::endl;
-    return EXIT_FAILURE;
-  }
+  // Create the logger.
+  utils::StdLogger logger;
+  utils::LoggerLocator::provide(&logger);
+
+  const std::string service("mandelbulb");
+  const std::string module("main");
+
+  // Create the application window parameters.
+  const std::string appName = std::string("mandelbulb");
+  const std::string appTitle = std::string("I saw an interior designer running away in fear earlier");
+  const std::string appIcon = std::string("data/img/65px-Stop_hand.BMP");
+  const utils::Sizei size(640, 480);
+
+  sdl::app::SdlApplicationShPtr app = nullptr;
 
   try {
-    sdl::core::BasicSdlWindowShPtr app = std::make_shared<sdl::core::SdlApplication>(
-      std::string("Mandelbulb (Getting close to the real deal)"),
-      std::string("data/img/65px-Stop_hand.BMP"),
-      640.0f,
-      480.0f,
-      60.0f,
-      30.0f
-    );
+    app = std::make_shared<sdl::app::SdlApplication>(appName, appTitle, appIcon, size, true, 50.0f, 60.0f);
 
-    // Root widget
-    sdl::core::SdlWidgetShPtr widget = std::make_shared<sdl::core::SdlWidget>(
-      std::string("root_widget"),
-      sdl::core::Boxf(320.0f, 240.0f, 600.0f, 440.0f),
-      nullptr,
-      false,
-      SDL_Color{255, 0, 0, SDL_ALPHA_OPAQUE}
-    );
-    widget->setLayout(std::make_shared<sdl::graphic::LinearLayout>(
-      sdl::graphic::LinearLayout::Direction::Horizontal,
-      5.0f,
-      10.0f,
-      widget.get()
-    ));
-
-    // Setup application
-    app->addWidget(widget);
+    // `root_widget`
+    mandelbulb::lib::Content* root_widget = new mandelbulb::lib::Content(std::string("root_widget"));
+    app->setCentralWidget(root_widget);
 
     // Run it.
     app->run();
   }
-  catch (const sdl::core::SdlException& e) {
-    std::cerr << "[MAIN] Caught internal exception:" << std::endl << e.what() << std::endl;
+  catch (const utils::CoreException& e) {
+    utils::LoggerLocator::getLogger().logMessage(
+      utils::Level::Critical,
+      std::string("Caught internal exception while setting up application"),
+      module,
+      service,
+      e.what()
+    );
+  }
+  catch (const std::exception& e) {
+    utils::LoggerLocator::getLogger().logMessage(
+      utils::Level::Critical,
+      std::string("Caught exception while setting up application"),
+      module,
+      service,
+      e.what()
+    );
+  }
+  catch (...) {
+    utils::LoggerLocator::getLogger().logMessage(
+      utils::Level::Critical,
+      std::string("Unexpected error while setting up application"),
+      module,
+      service
+    );
   }
 
-  // Unload used fonts.
-  sdl::graphic::FontFactory::getInstance().releaseFonts();
-
-  // Unload the sdl and the ttf libs if needed.
-  if (TTF_WasInit()) {
-    TTF_Quit();
-  }
-  if (SDL_WasInit(0u)) {
-    SDL_Quit();
-  }
+  app.reset();
 
   // All is good.
   return EXIT_SUCCESS;

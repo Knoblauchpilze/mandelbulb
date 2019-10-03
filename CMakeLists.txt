@@ -7,7 +7,7 @@ set (CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set (CMAKE_VERBOSE_MAKEFILE ON)
+#set (CMAKE_VERBOSE_MAKEFILE ON)
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
@@ -15,6 +15,8 @@ project(mandelbulb)
 
 find_package (SDL2 REQUIRED)
 find_package (SDL2_ttf REQUIRED)
+
+add_subdirectory(src)
 
 set (SOURCES
   main.cpp
@@ -28,9 +30,12 @@ target_include_directories (mandelbulb PRIVATE
   )
 
 target_link_libraries(mandelbulb
+  core_utils
+  sdl_engine
   sdl_core
   sdl_graphic
   sdl_app_core
-  ${SDL2_LIBRARY}
+  mandelbulb_lib
+  ${SDL2_LIBRARIES}
   ${SDL2_TTF_LIBRARIES}
   )
