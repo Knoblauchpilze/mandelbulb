@@ -4,7 +4,7 @@
 
 # include <sdl_app_core/SdlApplication.hh>
 # include <core_utils/CoreException.hh>
-# include "Content.hh"
+# include "MandelbulbRenderer.hh"
 
 int main(int /*argc*/, char** /*argv*/) {
   // Create the logger.
@@ -37,9 +37,11 @@ int main(int /*argc*/, char** /*argv*/) {
       eventsFPS
     );
 
-    // `root_widget`
-    mandelbulb::lib::Content* root_widget = new mandelbulb::lib::Content(std::string("root_widget"));
-    app->setCentralWidget(root_widget);
+    // Create the layout of the window: the main tab is a scrollable widget
+    // allowing the display of the mandelbulb. The rigth dock widget allows
+    // to control the computation parameters of this object.
+    mandelbulb::MandelbulbRenderer* renderer = new mandelbulb::MandelbulbRenderer();
+    app->setCentralWidget(renderer);
 
     // Run it.
     app->run();
