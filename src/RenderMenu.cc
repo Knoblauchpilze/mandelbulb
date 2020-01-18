@@ -11,7 +11,7 @@ namespace mandelbulb {
     sdl::core::SdlWidget(std::string("render_menu"),
                          sizeHint,
                          parent,
-                         sdl::core::engine::Color::NamedColor::Purple)
+                         getBackgroundColor())
   {
     build();
   }
