@@ -1,5 +1,7 @@
 
 # include "RenderSettings.hh"
+# include <sstream>
+# include <iomanip>
 # include <sdl_graphic/LinearLayout.hh>
 # include <sdl_graphic/Button.hh>
 # include <core_utils/Conversion.hh>
@@ -59,10 +61,13 @@ namespace mandelbulb {
 
     powerLabel->setMaxSize(szMax);
 
+    std::stringstream ss;
+    ss << std::setprecision(1) << getDefaultPower();
+
     sdl::graphic::TextBox* powerValue = new sdl::graphic::TextBox(
       getPowerTextBoxName(),
       getGeneralTextFont(),
-      std::to_string(getDefaultPower()),
+      ss.str(),
       getGeneralTextSize(),this
     );
     if (powerValue == nullptr) {
