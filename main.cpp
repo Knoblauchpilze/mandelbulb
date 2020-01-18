@@ -79,11 +79,11 @@ int main(int /*argc*/, char** /*argv*/) {
     mandelbulb::MandelbulbRenderer* renderer = new mandelbulb::MandelbulbRenderer();
     app->setCentralWidget(renderer);
 
-    mandelbulb::LightSettings* lights = new mandelbulb::LightSettings();
-    app->addDockWidget(lights, sdl::app::DockWidgetArea::RightArea, "Lights");
-
     mandelbulb::RenderSettings* render = new mandelbulb::RenderSettings();
     app->addDockWidget(render, sdl::app::DockWidgetArea::RightArea, "Render");
+
+    mandelbulb::LightSettings* lights = new mandelbulb::LightSettings();
+    app->addDockWidget(lights, sdl::app::DockWidgetArea::RightArea, "Lights");
 
     mandelbulb::InfoPanel* info = new mandelbulb::InfoPanel();
     app->setStatusBar(info);
