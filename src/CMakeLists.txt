@@ -7,6 +7,13 @@ set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set (SOURCES
   MandelbulbRenderer.cc
+  Camera.cc
+  InfoPanel.cc
+  Light.cc
+  LightSettings.cc
+  RendererScheduler.cc
+  RenderMenu.cc
+  RenderSettings.cc
   )
 
 add_library (mandelbulb_lib SHARED
