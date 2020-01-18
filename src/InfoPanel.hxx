@@ -5,6 +5,9 @@
 
 namespace mandelbulb {
 
+  inline
+  InfoPanel::~InfoPanel() {}
+
 }
 
 #endif    /* INFO_PANEL_HXX */

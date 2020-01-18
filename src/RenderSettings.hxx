@@ -5,6 +5,8 @@
 
 namespace mandelbulb {
 
+  inline
+  RenderSettings::~RenderSettings() {}
 }
 
 #endif    /* RENDER_SETTINGS_HXX */

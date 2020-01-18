@@ -5,6 +5,9 @@
 
 namespace mandelbulb {
 
+  inline
+  RenderMenu::~RenderMenu() {}
+
 }
 
 #endif    /* RENDER_MENU_HXX */
