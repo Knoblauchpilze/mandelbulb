@@ -23,7 +23,7 @@
  *          use of raytracing. The approach followed here will
  *          be raytracing as well, with some sort of a deferred
  *          rendering either on the host or on a GPU device.
- * 
+ *
  *          Implemented from:
  *            - 17/01/2020 - ??/??/2020
  */
