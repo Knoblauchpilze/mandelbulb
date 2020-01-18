@@ -3,6 +3,8 @@
 
 # include <maths_utils/Size.hh>
 # include <sdl_core/SdlWidget.hh>
+# include <sdl_graphic/ProgressBar.hh>
+# include <sdl_graphic/LabelWidget.hh>
 
 namespace mandelbulb {
 
@@ -14,7 +16,48 @@ namespace mandelbulb {
 
       virtual ~RenderMenu();
 
+      void
+      onCompletionChanged(float perc);
+
     private:
+
+      static
+      float
+      getGlobalMargins() noexcept;
+
+      static
+      float
+      getComponentMargins() noexcept;
+
+      static
+      const char*
+      getGeneralTextFont() noexcept;
+
+      static
+      unsigned
+      getGeneralTextSize() noexcept;
+
+      static
+      sdl::core::engine::Color
+      getBackgroundColor() noexcept;
+
+      static
+      float
+      getPercentageTextMaxWidth() noexcept;
+
+      static
+      const char*
+      getProgressBarName() noexcept;
+
+      sdl::graphic::ProgressBar*
+      getProgressBar();
+
+      static
+      const char*
+      getPercentageLabelName() noexcept;
+
+      sdl::graphic::LabelWidget*
+      getPercentageLabel();
 
       void
       build();
