@@ -1,0 +1,213 @@
+#ifndef    FRACTAL_HH
+# define   FRACTAL_HH
+
+# include <mutex>
+# include <vector>
+# include <memory>
+# include <core_utils/CoreObject.hh>
+# include <core_utils/ThreadPool.hh>
+# include <core_utils/Signal.hh>
+# include "Camera.hh"
+# include "RenderProperties.hh"
+# include "RaytracingTile.hh"
+
+namespace mandelbulb {
+
+  class Fractal: utils::CoreObject {
+    public:
+
+      /**
+       * @brief - Create a fractal object with the sepcified viewpoint and render
+       *          settings. Note that no data will be generated until the `start`
+       *          method is called.
+       * @param cam - the viewpoint on the fractal object.
+       * @param props - the rendering properties for this fractal object.
+       */
+      Fractal(CameraShPtr cam,
+              RenderProperties props);
+
+      ~Fractal();
+
+      /**
+       * @brief - Assign new dimensions to the camera used to view this fractal
+       *          object. In case the input size is not valid an error is raised.
+       *          It cancels the current jobs and starts over a new rendering if
+       *          the dimensions have changed compared to the current ones.
+       * @param dims - the new dimensions of the camera.
+       */
+      void
+      setCameraDims(const utils::Sizef& dims);
+
+    private:
+
+      /**
+       * @brief - Provide a suitable number of thread for the underlying thread
+       *          pool allowing to execute the raytracing tiles.
+       * @return - a number of threads to use for the internal thread pool.
+       */
+      static
+      unsigned
+      getWorkerThreadCount() noexcept;
+
+      /**
+       * @brief- Used  to connect the needed signals from the thread pool so
+       *         that we can react to raytracing tiles being computed.
+       */
+      void
+      build();
+
+      /**
+       * @brief - Used to generate the schedule or raytracing tiles to use to
+       *          perform the rendering of the fractal given the internal cam
+       *          and properties.
+       *          Note that as this method is called each time a new iteration
+       *          is created, we need a way to indicate whether we want to
+       *          completely reset the progression (i.e. iterations included
+       *          or only the task progress).
+       *          Note that this method assumes that the internal locker is
+       *          already acquired.
+       * @param reset - `true` if the progression of the iterations should be
+       *                reset (usually because a new rendering should take
+       *                place) and `false` otherwise (meaning that probably
+       *                a new iteration is to be scheduled for the same props).
+       */
+      void
+      scheduleRendering(bool reset);
+
+      /**
+       * @brief - Local slot allowing to handle notifications from the internal
+       *          thread pool whenever some raytracing tiles have finished their
+       *          computations. Will update the internal `m_progress` data and
+       *          trigger the needed signals to notify external listeners.
+       * @param tiles - the tiles that have been computed.
+       */
+      void
+      handleTilesRendered(const std::vector<utils::AsynchronousJobShPtr>& tiles);
+
+      /**
+       * @brief - Used internally when scheudling a rendering task to create all
+       *          the tiles that wil lbe scheduled for computation. The output
+       *          vector allows to covers the whoe camera plane so that a full
+       *          update of the fractal's data is performed.
+       *          The tiles are created with the current versions of the camera
+       *          and rendering props.
+       *          Note that this method assumes that the internal locker has
+       *          already been acquired.
+       * @return - a vector containing the list of tiles to schedule to perform
+       *           the update of the whole camera plane.
+       */
+      std::vector<RaytracingTileShPtr>
+      generateSchedule();
+
+    private:
+
+      /**
+       * @brief - Describe the possible state for the computation. Basically the
+       *          computation of the fractal is an iterative process which uses
+       *          several individual iterations allowing to accumulate data for
+       *          each pixel.
+       *          Whenever the render properties or the viewpoint are changed it
+       *          should trigger a new rendering step.
+       *          On the other hand when the required number of iterations has
+       *          been computed there's no need to continue accumulating results
+       *          and thus we shouldn't continue scheduling jobs.
+       */
+      enum class State {
+        Converged,
+        Accumulating
+      };
+
+      /**
+       * @brief - Convenience structure regrouping the progress of the current
+       *          iteration and the overall progress of the rendering job.
+       */
+      struct RenderingProgress {
+        unsigned taskProgress;       ///< Holds the number of finished tiles for
+                                     ///< the current iteration.
+        unsigned taskTotal;          ///< Holds the number of tiles generated for
+                                     ///< this single iteration.
+
+        unsigned iterationProgress;  ///< Holds the number of completed iterations
+                                     ///< so far.
+        unsigned desiredIterations;  ///< Holds the desired number of iterations.
+      };
+
+      /**
+       * @brief - Protects this object from concurrent accesses. This is
+       *          used to provide some way to guarantee that we're not
+       *          trying to display the content of the fractal while it
+       *          is being updated after a successful raytracing operation.
+       */
+      std::mutex m_propsLocker;
+
+      /**
+       * @brief - The current camera used to look at he fractal. Passed on
+       *          to raytracing tiles so that they know what needs to be
+       *          computed.
+       *          This is updated with the actions of the user through the
+       *          `rotate` and `translate` methods so that we are allowed
+       *          to move around the fractal.
+       */
+      CameraShPtr m_camera;
+
+      /**
+       * @brief - The properties to use when rendering the fractal. This
+       *          is passed on to the raytracing tiles that can be created
+       *          by this object so that the rendering phase knows the
+       *          level of accuracy to apply.
+       */
+      RenderProperties m_props;
+
+      /**
+       * @brief - Describes the current computation state for this fractal.
+       *          It allows to determine what to do when the last tile is
+       *          declared finished: we can either schedule some more tiles
+       *          if the iterations count is not yet sufficient in regard
+       *          of the properties or stop the process.
+       */
+      State m_computationState;
+
+      /**
+       * @brief - The scheduler allowing to launch the jobs needed to update
+       *          all the individual parts of the camera plane using a thread
+       *          pool. It handles the scheduling of individual tiles (which
+       *          are computed and generated by this object) and notify of the
+       *          completion of each one.
+       */
+      utils::ThreadPoolShPtr m_scheduler;
+
+      /**
+       * @brief - Holds the progress of the current rendering process. Note
+       *          that the data of this attribute is irrelevant if the state
+       *          of the computation indicates that the accumulation ended.
+       */
+      RenderingProgress m_progress;
+
+    public:
+
+      /**
+       * @brief - Signal notifying external listeners that the camera providing
+       *          the viewpoint on the fractal object has been changed.
+       */
+      utils::Signal<CameraShPtr> onCameraChanged;
+
+      /**
+       * @brief - Signal notifying external listeners that the rendering of the
+       *          fractal with the current viewpoint and properties has progressed
+       *          to the specified value.
+       */
+      utils::Signal<float> onRenderingCompletionAdvanced;
+
+      /**
+       * @brief - Signal notifying external listeners that some tiles have been
+       *          rendered.
+       */
+      utils::Signal<> onTilesRendered;
+  };
+
+  using FractalShPtr = std::shared_ptr<Fractal>;
+}
+
+# include "Fractal.hxx"
+
+#endif    /* FRACTAL_HH */

@@ -100,8 +100,6 @@ namespace mandelbulb {
     // Build layout.
     layout->addItem(bar);
     layout->addItem(label);
-
-    // TODO: Implementation.
   }
 
 }

@@ -7,6 +7,7 @@
 # include <sdl_graphic/LabelWidget.hh>
 # include <sdl_graphic/TextBox.hh>
 # include <core_utils/Signal.hh>
+# include "RenderProperties.hh"
 
 namespace mandelbulb {
 
@@ -109,7 +110,7 @@ namespace mandelbulb {
 
     public:
 
-      utils::Signal<> onRenderingSettingsChanged;
+      utils::Signal<RenderProperties> onRenderingSettingsChanged;
   };
 
 }

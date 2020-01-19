@@ -5,6 +5,7 @@
 # include <sdl_core/SdlWidget.hh>
 # include <sdl_graphic/LabelWidget.hh>
 # include <sdl_engine/Color.hh>
+# include "Camera.hh"
 
 namespace mandelbulb {
 
@@ -23,7 +24,7 @@ namespace mandelbulb {
       onDepthChanged(float depth);
 
       void
-      onCameraChanged();
+      onCameraChanged(CameraShPtr camera);
 
     private:
 

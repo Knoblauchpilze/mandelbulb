@@ -73,10 +73,22 @@ int main(int /*argc*/, char** /*argv*/) {
     // Create the layout of the window: the main tab is a scrollable widget
     // allowing the display of the mandelbulb. The rigth dock widget allows
     // to control the computation parameters of this object.
+    const float fov = 40.0f;
+    std::vector<float> transform(16u, 0.0f);
+
+    mandelbulb::CameraShPtr cam = std::make_shared<mandelbulb::Camera>(
+      utils::Sizei(512, 256),
+      fov,
+      transform
+    );
+
+    mandelbulb::RenderProperties props{128u, 5u, 8.0f};
+    mandelbulb::FractalShPtr fractal = std::make_shared<mandelbulb::Fractal>(cam, props);
+
     mandelbulb::RenderMenu* menu = new mandelbulb::RenderMenu();
     app->setMenuBar(menu);
 
-    mandelbulb::MandelbulbRenderer* renderer = new mandelbulb::MandelbulbRenderer();
+    mandelbulb::MandelbulbRenderer* renderer = new mandelbulb::MandelbulbRenderer(fractal);
     app->setCentralWidget(renderer);
 
     mandelbulb::RenderSettings* render = new mandelbulb::RenderSettings();
@@ -87,6 +99,25 @@ int main(int /*argc*/, char** /*argv*/) {
 
     mandelbulb::InfoPanel* info = new mandelbulb::InfoPanel();
     app->setStatusBar(info);
+
+    // Connect signals and slots of various components of the `UI`.
+    renderer->onCoordinatesChanged.connect_member<mandelbulb::InfoPanel>(
+      info,
+      &mandelbulb::InfoPanel::onCoordinatesChanged
+    );
+    renderer->onDepthChanged.connect_member<mandelbulb::InfoPanel>(
+      info,
+      &mandelbulb::InfoPanel::onDepthChanged
+    );
+    fractal->onCameraChanged.connect_member<mandelbulb::InfoPanel>(
+      info,
+      &mandelbulb::InfoPanel::onCameraChanged
+    );
+    
+    fractal->onRenderingCompletionAdvanced.connect_member<mandelbulb::RenderMenu>(
+      menu,
+      &mandelbulb::RenderMenu::onCompletionChanged
+    );
 
     // Run it.
     app->run();

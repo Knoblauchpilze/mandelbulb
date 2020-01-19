@@ -11,9 +11,10 @@ set (SOURCES
   InfoPanel.cc
   Light.cc
   LightSettings.cc
-  RendererScheduler.cc
   RenderMenu.cc
   RenderSettings.cc
+  Fractal.cc
+  RaytracingTile.cc
   )
 
 add_library (mandelbulb_lib SHARED

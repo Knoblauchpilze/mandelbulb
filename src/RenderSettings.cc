@@ -243,8 +243,8 @@ namespace mandelbulb {
     // Convert each property.
     bool sP = false, sA = false, sM = false;
     float p = utils::convert(powerStr, getDefaultPower(), sP);
-    float a = utils::convert(accStr, getDefaultAccuracy(), sA);
-    float m = utils::convert(maxIterStr, getDefaultMaxIterations(), sM);
+    unsigned a = utils::convert(accStr, getDefaultAccuracy(), sA);
+    unsigned m = utils::convert(maxIterStr, getDefaultMaxIterations(), sM);
 
     if (!sP) {
       log(
@@ -269,11 +269,12 @@ namespace mandelbulb {
     Guard guard(m_propsLocker);
 
     // Create the rendering properties object.
-    // TODO: Implementation.
+    RenderProperties props = RenderProperties{m, a, p};
 
     // Notify listeners through the signal.
     onRenderingSettingsChanged.safeEmit(
-      std::string("onRenderingSettingsChanged()")
+      std::string("onRenderingSettingsChanged()"),
+      props
     );
   }
 

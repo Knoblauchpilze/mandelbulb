@@ -65,8 +65,41 @@ namespace mandelbulb {
   }
 
   void
-  InfoPanel::onCameraChanged() {
-    // TODO: Implementation.
+  InfoPanel::onCameraChanged(CameraShPtr camera) {
+    // Check whether the input camera is valid.
+    if (camera == nullptr) {
+      log(
+        std::string("Could not update eye's position label from invalid null camera"),
+        utils::Level::Error
+      );
+
+      return;
+    }
+
+    // Retrieve the camera label and update its associated text.
+    sdl::graphic::LabelWidget* cam = getCameraLabel();
+
+    if (cam == nullptr) {
+      log(
+        std::string("Could not update camera eye to ") + camera->getEye().toString() + ", unable to fetch display label",
+        utils::Level::Error
+      );
+
+      return;
+    }
+
+    utils::Vector3f eye = camera->getEye();
+
+    std::stringstream ss;
+    ss << "[x: ";
+    ss << std::setprecision(4) << eye.x();
+    ss << ", y: ";
+    ss << std::setprecision(4) << eye.y();
+    ss << ", z: ";
+    ss << std::setprecision(4) << eye.z();
+    ss << "]";
+
+    cam->setText("Cam: " + ss.str());
   }
 
   void

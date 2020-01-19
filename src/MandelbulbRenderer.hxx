@@ -6,8 +6,25 @@
 namespace mandelbulb {
 
   inline
-  MandelbulbRenderer::~MandelbulbRenderer() {
+  void
+  MandelbulbRenderer::updatePrivate(const utils::Boxf& window) {
+    // Protect from concurrent accesses.
     Guard guard(m_propsLocker);
+
+    // Use the base handler.
+    sdl::core::SdlWidget::updatePrivate(window);
+
+    // Update the rendering options if needed.
+    if (m_fractal != nullptr) {
+      m_fractal->setCameraDims(window.toSize());
+    }
+  }
+
+  inline
+  void
+  MandelbulbRenderer::onTilesRendered() {
+    // TODO: Implementation, use a similar mechanism as for the `ColonyRenderer`
+    // with textures that can be invalidated.
   }
 
 }
