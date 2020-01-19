@@ -38,6 +38,8 @@ namespace mandelbulb {
       getGlobalMargins()
     );
 
+    layout->allowLog(false);
+
     setLayout(layout);
 
     // Create each light panel. A light panel is composed of a toggle
@@ -238,6 +240,18 @@ namespace mandelbulb {
       zLabel->setMaxSize(maxSz);
       powerLabel->setMaxSize(maxSz);
       colorLabel->setMaxSize(maxSz);
+
+      toggle->allowLog(false);
+      xLabel->allowLog(false);
+      xValue->allowLog(false);
+      yLabel->allowLog(false);
+      yValue->allowLog(false);
+      zLabel->allowLog(false);
+      zValue->allowLog(false);
+      powerLabel->allowLog(false);
+      powerValue->allowLog(false);
+      colorLabel->allowLog(false);
+      colorValue->allowLog(false);
 
       // Append each item to the layout.
       layout->addItem(toggle,     0u, id * lightPanelSize + 0u, 2u, 1u);

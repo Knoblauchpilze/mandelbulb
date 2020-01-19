@@ -34,6 +34,8 @@ namespace mandelbulb {
       getComponentMargins()
     );
 
+    layout->allowLog(false);
+
     setLayout(layout);
 
     utils::Sizef szMax(
@@ -168,6 +170,14 @@ namespace mandelbulb {
         std::string("Apply button not created")
       );
     }
+
+    powerLabel->allowLog(false);
+    powerValue->allowLog(false);
+    accuracyLabel->allowLog(false);
+    accuracyValue->allowLog(false);
+    maxIterLabel->allowLog(false);
+    maxIterValue->allowLog(false);
+    apply->allowLog(false);
 
     // Build layout.
     layout->addItem(powerLabel);
