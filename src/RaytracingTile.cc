@@ -3,26 +3,34 @@
 
 namespace mandelbulb {
 
-  RaytracingTile::RaytracingTile(CameraShPtr camera,
+  RaytracingTile::RaytracingTile(const utils::Vector3f& eye,
+                                 const utils::Vector3f& u,
+                                 const utils::Vector3f& v,
+                                 const utils::Vector3f& w,
                                  const utils::Boxi& area):
     utils::AsynchronousJob(std::string("tile_") + area.toString()),
 
-    m_camera(camera),
+    m_eye(eye),
+
+    m_u(u),
+    m_v(v),
+    m_w(w),
+
     m_area(area)
   {
     // Check consistency.
-    if (m_camera == nullptr) {
-      error(
-        std::string("Could not create rendering tile for area ") + m_area.toString(),
-        std::string("Invalid null camera")
-      );
-    }
     if (!m_area.valid()) {
       error(
         std::string("Could not create rendering tile for area ") + m_area.toString(),
         std::string("Invalid area")
       );
     }
+  }
+
+  void
+  RaytracingTile::compute() {
+    // TODO: Implementation.
+    log("Should compute data for area " + m_area.toString(), utils::Level::Warning);
   }
 
 }

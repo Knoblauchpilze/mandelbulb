@@ -75,7 +75,7 @@ namespace mandelbulb {
     );
 
     mul = d * m_dims.h() / (2.0f * m_focal);
-    m_u = utils::Vector3f(
+    m_v = utils::Vector3f(
       mul * m_transform[0u * 4u + 1u],
       mul * m_transform[1u * 4u + 1u],
       mul * m_transform[2u * 4u + 1u]

@@ -32,19 +32,34 @@ namespace mandelbulb {
     // Protect from concurrent accesses.
     Guard guard(m_propsLocker);
 
-    // Update the internal camera.
-    // TODO: Note that we should probably change the constructor of the
-    // `RaytracingTile` so as not to take a pointer otherwise in case we
-    // change the camera when some jobs are running we might use the new
-    // camera (which might be okay but better not risk it).
-    // TODO: We should handle the cast to integer dimensions and reflect
-    // it in the internal data array.
-    bool changed = m_camera->setDims(
-      utils::Sizei(
-        static_cast<int>(std::floor(dims.w())),
-        static_cast<int>(std::floor(dims.h()))
-      )
+    // Update the internal camera: to do so we need to convert the
+    // input area into integer dimensions. In order to be sure to
+    // cover at least the input dimensions we will expand the input
+    // size a bit.
+    utils::Sizei iDims(
+      static_cast<int>(std::ceil(dims.w())),
+      static_cast<int>(std::ceil(dims.h()))
     );
+
+    // Make sure that the dimensions are always even: this will make
+    // things a lot easier when creating the tiles. And anyways we
+    // can still account for this when we are requested the data at
+    // specific coordinates as long as we know what we're representing
+    // internally.
+    iDims.w() += iDims.w() % 2;
+    iDims.h() += iDims.h() % 2;
+
+    bool changed = m_camera->setDims(iDims);
+
+    // In case the dimensions where actually changed we need to update
+    // the internal attributes and schedule a new rendering.
+    if (!changed) {
+      return;
+    }
+
+    m_dims = iDims;
+    m_samples.resize(m_dims.area());
+    std::fill(m_samples.begin(), m_samples.end(), Sample{1u, -1.0f});
 
     // Set the results to be accumulating and schedule a rendering.
     // We want a complete recompute of the iterations so we need to
@@ -63,6 +78,18 @@ namespace mandelbulb {
   unsigned
   Fractal::getWorkerThreadCount() noexcept {
     return 3u;
+  }
+
+  inline
+  constexpr unsigned
+  Fractal::getTileWidth() noexcept {
+    return 150u;
+  }
+
+  inline
+  constexpr unsigned
+  Fractal::getTileHeight() noexcept {
+    return 100;
   }
 
 }

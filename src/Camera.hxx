@@ -39,6 +39,8 @@ namespace mandelbulb {
 
     // Update the internal properties from the new dimensions.
     updateDims(dims);
+
+    return true;
   }
 
   inline

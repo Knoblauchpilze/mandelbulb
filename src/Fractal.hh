@@ -50,6 +50,26 @@ namespace mandelbulb {
       getWorkerThreadCount() noexcept;
 
       /**
+       * @brief - Define a suitable value for the number of pixels covered along
+       *          the `x` axis for a single raytracing tile.
+       * @return - a value representing the number of pixels covered horizontally
+       *           by a single raytracing tile.
+       */
+      static
+      constexpr unsigned
+      getTileWidth() noexcept;
+
+      /**
+       * @brief - Similar to `getTileWidth` but provides a suitable value for the
+       *          number of pixels in height for each raytracing tile.
+       * @return - a value representing the number of pixels covered vertically by
+       *           a single raytracing tile.
+       */
+      static
+      constexpr unsigned
+      getTileHeight() noexcept;
+
+      /**
        * @brief- Used  to connect the needed signals from the thread pool so
        *         that we can react to raytracing tiles being computed.
        */
@@ -133,6 +153,18 @@ namespace mandelbulb {
       };
 
       /**
+       * @brief - Convenience structure representing the result of a pixel of
+       *           the fractal. This contains information about the number of
+       *           iterations accumulated for this sample along with some data
+       *           regarding the depth and normal of the element.
+       */
+      struct Sample {
+        unsigned iter; ///< The number of iterations accumulated for this result.
+        float depth;   ///< The average depth of this pixel (based on the number
+                       ///< iterations accumulated).
+      };
+
+      /**
        * @brief - Protects this object from concurrent accesses. This is
        *          used to provide some way to guarantee that we're not
        *          trying to display the content of the fractal while it
@@ -182,6 +214,24 @@ namespace mandelbulb {
        *          of the computation indicates that the accumulation ended.
        */
       RenderingProgress m_progress;
+
+      /**
+       * @brief - Holds the dimensions of the internal `m_samples` array. This
+       *          should more or less reflect the camera plane used to visualize
+       *          this fractal object and allows to determine how to interpret
+       *          the `m_samples` array.
+       */
+      utils::Sizei m_dims;
+
+      /**
+       * @brief - The actual data computed for this fractal. In order to perform
+       *          the raytracing we cast some rays along the camera plane and
+       *          accumulate the depth at which the fractal was encountered (if
+       *          it hits the fractal) along with some other information. We can
+       *          then query this array to build a visual representation of the
+       *          fractal through the `getPixels` method.
+       */
+      std::vector<Sample> m_samples;
 
     public:
 

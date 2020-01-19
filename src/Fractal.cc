@@ -28,6 +28,9 @@ namespace mandelbulb {
       1u
     }),
 
+    m_dims(),
+    m_samples(),
+
     onCameraChanged(),
     onRenderingCompletionAdvanced(),
     onTilesRendered()
@@ -123,11 +126,14 @@ namespace mandelbulb {
       }
     }
 
-    // Compute the global progression.
-    float perc = 1.0f *
+    // Compute the global progression: we need to clamp to `100%` in case we
+    // reach the last iteration and all the tasks related to it have completed
+    // as in this case we didn't schedule a rendering and thus the progress is
+    // still such that `m_progress.taskProgress = m_progress.taskTotal`.
+    float perc = std::min(1.0f, 1.0f *
       (m_progress.iterationProgress * m_progress.taskTotal + m_progress.taskProgress) /
       (m_progress.desiredIterations * m_progress.taskTotal)
-    ;
+    );
 
     // Notify external listeners.
     onRenderingCompletionAdvanced.safeEmit(
@@ -143,8 +149,44 @@ namespace mandelbulb {
 
   std::vector<RaytracingTileShPtr>
   Fractal::generateSchedule() {
-    // TODO: Implementation.
-    return std::vector<RaytracingTileShPtr>();
+    // Generate each tile given the internal camera and the number of tiles
+    // to generate along each axis. We assume that the dimensions of the
+    // camera are also represented by the internal `m_dims` array.
+    std::vector<RaytracingTileShPtr> tiles;
+
+    unsigned w = (m_dims.w() + getTileWidth() - 1u) / getTileWidth();
+    unsigned h = (m_dims.h() + getTileHeight() - 1u) / getTileHeight();
+
+    for (unsigned y = 0u ; y < h ; ++y) {
+      for (unsigned x = 0u ; x < w ; ++x) {
+        // The area covered by this tile can be computed from its index
+        // and the dimensions of the camera plane.
+        utils::Boxi area(
+          -m_dims.w() / 2 + getTileWidth() / 2 + x * getTileWidth(),
+          -m_dims.h() / 2 + getTileHeight() / 2 + x * getTileHeight(),
+          getTileWidth(),
+          getTileHeight()
+        );
+
+        log(std::string("Generating tile ") + std::to_string(x) + "x" + std::to_string(y) + " with area " + area.toString());
+
+        // Create the tile and register it in the schedule.
+        // TODO: Check for cases where we get tiles spanning areas not included
+        // in the internal `m_samples`.
+        tiles.push_back(
+          std::make_shared<RaytracingTile>(
+            m_camera->getEye(),
+            m_camera->getU(),
+            m_camera->getV(),
+            m_camera->getW(),
+            area
+          )
+        );
+      }
+    }
+
+    // Return the generated schedule.
+    return tiles;
   }
 
 }
