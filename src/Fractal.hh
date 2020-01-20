@@ -38,6 +38,67 @@ namespace mandelbulb {
       void
       setCameraDims(const utils::Sizef& dims);
 
+      /**
+       * @brief - Used to rotate the camera associated to this fractal from the
+       *          specified axis with a given angle. This will perform the needed
+       *          update in the internal camera and then request a rendering if
+       *          needed.
+       *          Note that in case the axis is not valid nothing will happen.
+       * @param axis - the rotation axis.
+       * @param angle - the angle of rotation. Expressed in radians.
+       */
+      void
+      rotateCamera(const utils::Vector3f& axis,
+                   float angle);
+
+      /**
+       * @brief - Used to change the distance of the camera to its source by the
+       *          specified factor. The value will be multiplied by the current
+       *          value of the distance so using a value larger than `1` will
+       *          actually make the camera be farther away than it was.
+       * @param factor - a muliplication factor for the current distance of the
+       *                 camera to its center.
+       */
+      void
+      updateDistance(float factor);
+
+      /**
+       * @brief - Used to retrieve the data representing the current view of the
+       *          camera plane. This is used by external elements wanting to get
+       *          a peek at the view of the fractal given the camera settings.
+       *          This method returns the internal data as a copy and return the
+       *          actual dimensions of the provided vector.
+       * @param depths - the list of depths for each pixel of the camera plane.
+       *                 Note that the input vector is resized if needed.
+       * @return - a size indicating the actual dimensions covered by the camera
+       *           plane's data returned in `depths`. Allows to know how to use
+       *           the data.
+       */
+      utils::Sizei
+      getData(std::vector<float>& depths);
+
+      /**
+       * @brief - Used to retrieve information about the point located at the
+       *          screen coordinates defined in input. In case the point does
+       *          not belong to the fractal (or no information is available on
+       *          it yet) the `hit` value is set to `false` and the return and
+       *          `worldCoord` values should be ignored.
+       * @param screenCoord - the screen coordinates for which data should be
+       *                      retrieved.
+       * @param worldCoord - the real world coordinate of the intersection vec
+       *                     with the input coordinates.
+       * @param hit - `true` if the pointed at coordinate belongs to the fractal
+       *              (and thus both `worldCoord` and the return value are okay
+       *              to be used) and `false` otherwise.
+       * @return - the depth of the point at the specified coordinate or `-1`
+       *           if the point does not belong to the fractal (so `hit` is set
+       *           to `false`).
+       */
+      float
+      getPoint(const utils::Vector2i& screenCoord,
+               utils::Vector3f& worldCoord,
+               bool& hit);
+
     private:
 
       /**

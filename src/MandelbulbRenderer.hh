@@ -23,7 +23,7 @@ namespace mandelbulb {
                          const utils::Sizef& sizeHint = utils::Sizef(),
                          sdl::core::SdlWidget* parent = nullptr);
 
-      ~MandelbulbRenderer() = default;
+      ~MandelbulbRenderer();
 
     protected:
 
@@ -36,7 +36,96 @@ namespace mandelbulb {
       void
       updatePrivate(const utils::Boxf& window) override;
 
+      /**
+       * @brief - Reimplementation of the base class method to handle the repaint of
+       *          the texture representing the fractal and its display.
+       */
+      void
+      drawContentPrivate(const utils::Uuid& uuid,
+                         const utils::Boxf& area) override;
+
+      /**
+       * @brief - Specialziation of the parent method in order to perform the
+       *          scrolling on this object. It actually accounts for rotating
+       *          the camera to change the viewpoint on the fractal object.
+       *          How the camera is actually rotated is not specified at this
+       *          level.
+       *          The interface is similar to what is expected by the parent
+       *          class (see `ScrollableWidget` for more details).
+       * @param posToFix - the position in local coordinate frame corresponding
+       *                   to the position that should be fixed during the
+       *                   scroll operation.
+       * @param whereTo - the new position of the `posToFix`. Corresponds to
+       *                  the `posToFix` where the `motion` has been applied.
+       * @param motion - the motion to apply.
+       * @param notify - indication as to this method should emit some signals
+       *                 like `onHorizontalAxisChanged`.
+       * @return - `true` if the actual rendering area has been changed, and
+       *           `false` otherwise.
+       */
+      bool
+      handleContentScrolling(const utils::Vector2f& posToFix,
+                             const utils::Vector2f& whereTo,
+                             const utils::Vector2f& motion,
+                             bool notify = true) override;
+
+      /**
+       * @brief - Reimplementation of the base class method to detect whenever the
+       *          arrow keys are pressed in order to rotate/change the camera.
+       * @param e - the event to be interpreted.
+       * @return - `true` if the event was recognized and `false` otherwise.
+       */
+      bool
+      keyPressEvent(const sdl::core::engine::KeyEvent& e) override;
+
+      /**
+       * @brief - Reimplementation of the base class method to detect whenever the
+       *          mouse moves inside the widget. This allows to provide notification
+       *          to external listeners by converting the position into a real world
+       *          coordinates.
+       * @param e - the event to be interpreted.
+       * @return - `true` if the event was recognized and `false` otherwise.
+       */
+      bool
+      mouseMoveEvent(const sdl::core::engine::MouseEvent& e) override;
+
+      /**
+       * @brief - Reimplementation of the base class method to detect when the wheel
+       *          is used: this should trigger a motion of the camera along the view
+       *          vector to get closer/farther from the fractal object.
+       * @param e - the event to be interpreted.
+       * @return - `true` if the event was recognized and `false` otherwise.
+       */
+      bool
+      mouseWheelEvent(const sdl::core::engine::MouseEvent& e) override;
+
     private:
+
+      /**
+       * @brief - Used to retrieve the default factor to use when zooming in.
+       * @return - a factor suitable for zooming in operations.
+       */
+      static
+      constexpr float
+      getDefaultZoomInFactor() noexcept;
+
+      /**
+       * @brief - Used to retrieve the default factor to use when zooming out.
+       * @return - a factor suitable for zooming out operations.
+       */
+      static
+      constexpr float
+      getDefaultZoomOutFactor() noexcept;
+
+      /**
+       *  @brief - Default value that can be used to rotate the camera about an
+       *           axis.
+       * @return - an angle in radians that is suited for small step rotations
+       *           about an axis.
+       */
+      static
+      constexpr float
+      getArrowKeyRotationAngle() noexcept;
 
       /**
        * @brief - Used to build the layout for this component. It is also used
@@ -54,6 +143,36 @@ namespace mandelbulb {
       void
       onTilesRendered();
 
+      /**
+       * @brief - Used to clear the texture associated to this fractal.
+       */
+      void
+      clearTiles();
+
+      /**
+       * @brief - Used to determine whether the tiles have changed since the creation
+       *          of the texture representing them. If this is the case it means that
+       *          the `m_tex` should be recreated.
+       *          Assumes that the locker is already acquired.
+       */
+      bool
+      tilesChanged() const noexcept;
+
+      /**
+       * @brief - Used to specify that the tiles have changed and thus that the `m_tex`
+       *          texture should be recreated on the next call to `drawContentPrivate`.
+       *          Assumes that the locker is already acquired.
+       */
+      void
+      setTilesChanged() noexcept;
+
+      /**
+       * @brief - Performs the creation of the texture representing this fractal from
+       *          the data associated to it. Assumes that the locker is already acquired.
+       */
+      void
+      loadTiles();
+
     private:
 
       /**
@@ -68,13 +187,32 @@ namespace mandelbulb {
        */
       FractalShPtr m_fractal;
 
+      /**
+       * @brief - The index returned by the engine for the texture representing the
+       *          fractal on screen. Its size is consistent with the size of the cam
+       *          defined by the `m_fractal` object and is updated whenever some tiles
+       *          are received and marked ready for display.
+       *          The texture is used as long as possible that is until recomputing
+       *          parts of it make it invalid. As long as the `m_tilesRendered` area
+       *          is `false` the texture can be used as is.
+       */
+      utils::Uuid m_tex;
+
+      /**
+       * @brief - This value indicates whether the `m_tex` identifier is still valid
+       *          or not. Each time a tile is rendered this value is set to `true` to
+       *          indicate that the texture representing the fractal needs to be
+       *          updated.
+       */
+      bool m_tilesRendered;
+
     public:
 
       /**
-       * @brief - Signal notifying external listeners that the cooridnates of the
+       * @brief - Signal notifying external listeners that the coordinates of the
        *          mouse in real world's coordinate frame have changed.
        */
-      utils::Signal<const utils::Vector2f&> onCoordinatesChanged;
+      utils::Signal<const utils::Vector3f&> onCoordinatesChanged;
 
       /**
        * @brief - Signal notifying external listeners that the depth of the point

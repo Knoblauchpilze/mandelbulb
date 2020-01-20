@@ -17,7 +17,7 @@ namespace mandelbulb {
   }
 
   void
-  InfoPanel::onCoordinatesChanged(const utils::Vector2f& coords) {
+  InfoPanel::onCoordinatesChanged(const utils::Vector3f& coords) {
     // Retrieve the coordinate label and update its associated text.
     sdl::graphic::LabelWidget* label = getCoordLabel();
 
@@ -31,17 +31,31 @@ namespace mandelbulb {
     }
 
     std::stringstream ss;
+    std::string xStr("-"), yStr("-"), zStr("-");
 
-    ss << std::setprecision(4) << coords.x();
-    std::string xStr = ss.str();
+    // Consider that minimum value is an invalid one.
+    if (coords.x() != std::numeric_limits<float>::lowest()) {
+      ss << std::setprecision(4) << coords.x();
+      xStr = ss.str();
 
-    ss.clear();
-    ss.str("");
+      ss.clear();
+      ss.str("");
+    }
 
-    ss << std::setprecision(4) << coords.y();
-    std::string yStr = ss.str();
+    if (coords.y() != std::numeric_limits<float>::lowest()) {
+      ss << std::setprecision(4) << coords.y();
+      yStr = ss.str();
 
-    label->setText("x: " + xStr + ", y: " + yStr);
+      ss.clear();
+      ss.str("");
+    }
+
+    if (coords.z() != std::numeric_limits<float>::lowest()) {
+      ss << std::setprecision(4) << coords.z();
+      zStr = ss.str();
+    }
+
+    label->setText("x: " + xStr + ", y: " + yStr + ", z: " + zStr);
   }
 
   void
@@ -58,10 +72,16 @@ namespace mandelbulb {
       return;
     }
 
-    std::stringstream ss;
-    ss << std::setprecision(4) << depth;
+    std::string d("-");
+    
+    if (depth >= 0.0f) {
+      std::stringstream ss;
+      ss << std::setprecision(4) << depth;
 
-    label->setText("Depth: " + ss.str());
+      d = ss.str();
+    }
+
+    label->setText("Depth: " + d);
   }
 
   void
@@ -119,7 +139,7 @@ namespace mandelbulb {
     // Create coordinates label.
     sdl::graphic::LabelWidget* coords = new sdl::graphic::LabelWidget(
       getCoordLabelName(),
-      std::string("x: -, y: -"),
+      std::string("x: -, y: -, z: -"),
       getGeneralTextFont(),
       getGeneralTextSize(),
       sdl::graphic::LabelWidget::HorizontalAlignment::Left,

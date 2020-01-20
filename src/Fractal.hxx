@@ -75,6 +75,61 @@ namespace mandelbulb {
   }
 
   inline
+  void
+  Fractal::rotateCamera(const utils::Vector3f& axis,
+                        float angle)
+  {
+    // TODO: Implementation.
+    log("Should rotate camera about " + axis.toString() + ", angle: " + std::to_string(angle), utils::Level::Warning);
+  }
+
+  inline
+  void
+  Fractal::updateDistance(float factor) {
+    // TODO: Implementation.
+    log("Should update distance with factor " + std::to_string(factor), utils::Level::Warning);
+  }
+
+  inline
+  float
+  Fractal::getPoint(const utils::Vector2i& screenCoord,
+                    utils::Vector3f& worldCoord,
+                    bool& hit)
+  {
+    // TODO: Implementation.
+    log("Should get point under " + screenCoord.toString());
+
+    hit = false;
+
+    worldCoord.x() = std::numeric_limits<float>::lowest();
+    worldCoord.y() = std::numeric_limits<float>::lowest();
+    worldCoord.z() = std::numeric_limits<float>::lowest();
+
+    return -1.0f;
+  }
+
+  inline
+  utils::Sizei
+  Fractal::getData(std::vector<float>& depths) {
+    // Protect from concurrent accesses.
+    Guard guard(m_propsLocker);
+
+    // Copy the internal data to the output vector after resizing it
+    // if needed.
+    if (depths.size() != m_samples.size()) {
+      depths.resize(m_samples.size());
+    }
+
+    // Fill the depths values.
+    for (unsigned id = 0u ; id < m_samples.size() ; ++id) {
+      depths[id] = m_samples[id].depth;
+    }
+
+    // Return the dimensions of the fractal.
+    return m_dims;
+  }
+
+  inline
   unsigned
   Fractal::getWorkerThreadCount() noexcept {
     return 3u;

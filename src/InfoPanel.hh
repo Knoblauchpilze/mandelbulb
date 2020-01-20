@@ -5,6 +5,7 @@
 # include <sdl_core/SdlWidget.hh>
 # include <sdl_graphic/LabelWidget.hh>
 # include <sdl_engine/Color.hh>
+# include <maths_utils/Vector3.hh>
 # include "Camera.hh"
 
 namespace mandelbulb {
@@ -18,7 +19,7 @@ namespace mandelbulb {
       virtual ~InfoPanel();
 
       void
-      onCoordinatesChanged(const utils::Vector2f& coords);
+      onCoordinatesChanged(const utils::Vector3f& coords);
 
       void
       onDepthChanged(float depth);
