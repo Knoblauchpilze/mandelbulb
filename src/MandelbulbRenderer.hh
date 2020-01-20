@@ -128,6 +128,20 @@ namespace mandelbulb {
       getArrowKeyRotationAngle() noexcept;
 
       /**
+       * @brief - Provide a default value for the number of radians represented
+       *          by a single pixel. This is used in case of scrolling where we
+       *          want to transform a motion of the mouse in terms of real world
+       *          coordinates.
+       *          Larger values will make the scrolling quicker but also somewhat
+       *          less accurate.
+       * @return - a ratio indicating how many radians are represented by a single
+       *           pixel of the screen.
+       */
+      static
+      constexpr float
+      getPixelToRadiansRatio() noexcept;
+
+      /**
        * @brief - Used to build the layout for this component. It is also used
        *          to connect the needed signals from the thread pool so that we
        *          can react to raytracing tiles being computed.

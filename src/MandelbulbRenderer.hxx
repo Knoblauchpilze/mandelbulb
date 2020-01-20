@@ -30,6 +30,27 @@ namespace mandelbulb {
 
   inline
   bool
+  MandelbulbRenderer::handleContentScrolling(const utils::Vector2f& /*posToFix*/,
+                                             const utils::Vector2f& /*whereTo*/,
+                                             const utils::Vector2f& motion,
+                                             bool /*notify*/)
+  {
+    // Protect from concurrent accesses.
+    Guard guard(m_propsLocker);
+
+    // Rotate about the `z` axis of an angle corresponding to the conversion
+    // between the input motion and real world radians.
+    m_fractal->rotateCamera(
+      utils::Vector3f(0.0f, 0.0f, 1.0f),
+      motion.x() * getPixelToRadiansRatio()
+    );
+
+    // Notify the caller that we changed the area.
+    return true;
+  }
+
+  inline
+  bool
   MandelbulbRenderer::mouseMoveEvent(const sdl::core::engine::MouseEvent& e) {
     // Protect from concurrent accesses.
     Guard guard(m_propsLocker);
@@ -108,6 +129,13 @@ namespace mandelbulb {
   constexpr float
   MandelbulbRenderer::getArrowKeyRotationAngle() noexcept {
     return 0.314159f;
+  }
+
+  inline
+  constexpr float
+  MandelbulbRenderer::getPixelToRadiansRatio() noexcept {
+    // Assume that we need 200 pixels to make a half-turn.
+    return 3.1415926535f / 200.0f;
   }
 
   inline

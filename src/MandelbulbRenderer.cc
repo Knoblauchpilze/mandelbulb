@@ -69,16 +69,6 @@ namespace mandelbulb {
   }
 
   bool
-  MandelbulbRenderer::handleContentScrolling(const utils::Vector2f& posToFix,
-                                             const utils::Vector2f& whereTo,
-                                             const utils::Vector2f& motion,
-                                             bool notify)
-  {
-    // TODO: Implementation.
-    return sdl::graphic::ScrollableWidget::handleContentScrolling(posToFix, whereTo, motion, notify);
-  }
-
-  bool
   MandelbulbRenderer::keyPressEvent(const sdl::core::engine::KeyEvent& e) {
     // Check for arrow keys.
     bool move = false;
