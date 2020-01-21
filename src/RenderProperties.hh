@@ -1,6 +1,7 @@
 #ifndef    RENDER_PROPERTIES_HH
 # define   RENDER_PROPERTIES_HH
 
+# include <sdl_engine/Gradient.hh>
 namespace mandelbulb {
 
   struct RenderProperties {
@@ -21,6 +22,14 @@ namespace mandelbulb {
                          ///< degree of the exponentation to apply. The larger
                          ///< this value the more `bulbs` will be present in the
                          ///< final fractal object.
+  };
+
+  struct RenderPalette {
+    sdl::core::engine::GradientShPtr palette; ///< This gradient is used to produce
+                                              ///< a colored blending of the fractal
+                                              ///< data to make it appear less flat.
+    float range;         ///< The range onto which the gradient should be applied.
+                         ///< It measures the degree of repetition of the gradient.
   };
 
 }

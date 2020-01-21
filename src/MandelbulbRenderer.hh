@@ -142,6 +142,34 @@ namespace mandelbulb {
       getPixelToRadiansRatio() noexcept;
 
       /**
+       * @brief - The palette to use to render the fractal's data. Provide a nice
+       *          set of colors to use to color points based on their distance.
+       * @return - a valid gradient to use to represent the fractal's data.
+       */
+      static
+      sdl::core::engine::GradientShPtr
+      generateDefaultPalette() noexcept;
+
+      /**
+       * @brief - The default range to apply to the palette's gradient. Defines
+       *          how often the colors will be repeated and over which distance.
+       * @return - a suitable distance to wrap colors.
+       */
+      static
+      float
+      getDefaultPaletteRange() noexcept;
+
+      /**
+       * @brief - Used to provide a default color to use for pixels where no fractal
+       *          data is to be found. This will represent the background color used
+       *          to render the fractal.
+       * @return - a color suited to display the fractal.
+       */
+      static
+      sdl::core::engine::Color
+      getNoDataColor() noexcept;
+
+      /**
        * @brief - Used to build the layout for this component. It is also used
        *          to connect the needed signals from the thread pool so that we
        *          can react to raytracing tiles being computed.
@@ -219,6 +247,12 @@ namespace mandelbulb {
        *          updated.
        */
       bool m_tilesRendered;
+
+      /**
+       * @brief - The rendering palette of the fractal. This is used when the fractal's
+       *          data is interpreted to render it with some nice colors.
+       */
+      RenderPalette m_palette;
 
     public:
 

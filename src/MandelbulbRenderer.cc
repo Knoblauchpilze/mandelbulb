@@ -16,6 +16,11 @@ namespace mandelbulb {
     m_tex(),
     m_tilesRendered(false),
 
+    m_palette(RenderPalette{
+      generateDefaultPalette(),
+      getDefaultPaletteRange()
+    }),
+
     onCoordinatesChanged(),
     onDepthChanged()
   {
@@ -113,7 +118,53 @@ namespace mandelbulb {
 
   void
   MandelbulbRenderer::loadTiles() {
-    // TODO: Implementation.
+    // Clear any existing texture representing the tiles.
+    clearTiles();
+
+    // Consistency check.
+    if (m_fractal == nullptr) {
+      return;
+    }
+
+    // Retrieve the data from the fractal object.
+    std::vector<float> depths;
+    utils::Sizei s = m_fractal->getData(depths);
+
+    // Convert it into colors.
+    std::vector<sdl::core::engine::Color> colors(s.area(), getNoDataColor());
+
+    for (int y = 0 ; y < s.h() ; ++y) {
+      int off = y * s.w();
+
+      for (int x = 0 ; x < s.w() ; ++x) {
+        // Retrieve a color if this pixel contains data.
+        if (depths[off + x] >= 0.0f) {
+          // Convert the depth in the range.
+          float depth = std::fmod(depths[off + x], m_palette.range) / m_palette.range;
+
+          // Assign the color using the palette.
+          colors[off + x] = m_palette.palette->getColorAt(depth);
+        }
+      }
+    }
+
+    // Create the engine from this data.
+    sdl::core::engine::BrushShPtr brush = std::make_shared<sdl::core::engine::Brush>(
+      std::string("fractal_brush"),
+      false
+    );
+
+    brush->createFromRaw(s, colors);
+
+    // Use the brush to create a texture.
+    m_tex = getEngine().createTextureFromBrush(brush);
+
+    if (!m_tex.valid()) {
+      error(
+        std::string("Could not create texture to represent fractal"),
+        std::string("Failed to transform brush into texture")
+      );
+    }
   }
 
 }

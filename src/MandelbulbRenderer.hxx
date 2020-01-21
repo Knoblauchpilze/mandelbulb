@@ -138,6 +138,30 @@ namespace mandelbulb {
     return 3.1415926535f / 200.0f;
   }
 
+  sdl::core::engine::GradientShPtr
+  MandelbulbRenderer::generateDefaultPalette() noexcept {
+    sdl::core::engine::GradientShPtr gr = std::make_shared<sdl::core::engine::Gradient>(
+      std::string("fractal_palette"),
+      sdl::core::engine::gradient::Mode::Linear
+    );
+
+    gr->setColorAt(0.0f, sdl::core::engine::Color::NamedColor::Red);
+    gr->setColorAt(1.0f, sdl::core::engine::Color::NamedColor::Blue);
+
+    return gr;
+  }
+
+  float
+  MandelbulbRenderer::getDefaultPaletteRange() noexcept {
+    return 10.0f;
+  }
+
+  inline
+  sdl::core::engine::Color
+  MandelbulbRenderer::getNoDataColor() noexcept {
+    return sdl::core::engine::Color::NamedColor::Cyan;
+  }
+
   inline
   void
   MandelbulbRenderer::onTilesRendered() {
