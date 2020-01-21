@@ -163,16 +163,48 @@ namespace mandelbulb {
         // and the dimensions of the camera plane.
         utils::Boxi area(
           -m_dims.w() / 2 + getTileWidth() / 2 + x * getTileWidth(),
-          -m_dims.h() / 2 + getTileHeight() / 2 + x * getTileHeight(),
+          -m_dims.h() / 2 + getTileHeight() / 2 + y * getTileHeight(),
           getTileWidth(),
           getTileHeight()
         );
 
-        log(std::string("Generating tile ") + std::to_string(x) + "x" + std::to_string(y) + " with area " + area.toString());
+        // Clamp the area so that it does not exceed the available dimensions
+        // as defined in the `m_dims` attribute.
+        int excessW = std::max(0, area.getRightBound() - m_dims.w() / 2);
+        int excessH = std::max(0, area.getTopBound() - m_dims.h() / 2);
+
+        if (excessW > 0) {
+          if (excessW % 2 != 0) {
+            log(
+              std::string("Area ") + area.toString() + " will not correctly be cropped to match " +
+              m_dims.toString(),
+              utils::Level::Error
+            );
+          }
+
+          area.x() -= excessW / 2;
+          area.w() -= excessW;
+        }
+        if (excessH > 0) {
+          if (excessH % 2 != 0) {
+            log(
+              std::string("Area ") + area.toString() + " will not correctly be cropped to match " +
+              m_dims.toString(),
+              utils::Level::Error
+            );
+          }
+
+          area.y() -= excessH / 2;
+          area.h() -= excessH;
+        }
+
+        log(
+          std::string("Generating tile ") + std::to_string(x) + "x" + std::to_string(y) +
+          " with area " + area.toString(),
+          utils::Level::Debug
+        );
 
         // Create the tile and register it in the schedule.
-        // TODO: Check for cases where we get tiles spanning areas not included
-        // in the internal `m_samples`.
         tiles.push_back(
           std::make_shared<RaytracingTile>(
             m_camera->getEye(),

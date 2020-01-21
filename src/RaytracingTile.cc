@@ -29,7 +29,8 @@ namespace mandelbulb {
 
   void
   RaytracingTile::compute() {
-    // TODO: Implementation.
+    // TODO: Implementation. Note that the internal area should not include the
+    // right and top bounds ?
     log("Should compute data for area " + m_area.toString(), utils::Level::Warning);
   }
 

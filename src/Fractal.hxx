@@ -13,7 +13,6 @@ namespace mandelbulb {
     // Stop the scheduler so that we don't continue processing
     // tiles while it's obviously not needed anymore.
     if (m_scheduler != nullptr) {
-      // TODO: Potential deadlock ?
       m_scheduler.reset();
     }
   }
