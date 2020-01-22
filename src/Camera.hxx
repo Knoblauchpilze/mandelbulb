@@ -30,6 +30,20 @@ namespace mandelbulb {
   }
 
   inline
+  utils::Vector3f
+  Camera::getDirection(const utils::Vector2f& perc) {
+    // Use the internal `u/v/w` vectors and normalize the
+    // result.
+    utils::Vector3f rawDir =
+      perc.x() * m_u +
+      perc.y() * m_v +
+      m_w
+    ;
+
+    return rawDir.normalized();
+  }
+
+  inline
   bool
   Camera::setDims(const utils::Sizei& dims) {
     // Check whether the dimensions are actually different.

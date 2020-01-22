@@ -49,6 +49,20 @@ namespace mandelbulb {
       utils::Vector3f
       getW() const noexcept;
 
+      /**
+       * @brief - Used to retrieve the real world direction of a ray starting
+       *          at the specified percentage of the camera plane. Each axis
+       *          of the `perc` value should range in `[-0.5; 0.5]` but it is
+       *          not checked (and the formula stays valid with values outside
+       *          of this range).
+       * @param perc - a vector representing the position of the ray of the
+       *               camera plane for this the real world direction is to be
+       *               computed.
+       * @return - a direction representing this ray in real world coordinate.
+       */
+      utils::Vector3f
+      getDirection(const utils::Vector2f& perc);
+
       bool
       setDims(const utils::Sizei& dims);
 

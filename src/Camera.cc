@@ -54,13 +54,31 @@ namespace mandelbulb {
 
     float d = m_eye.length();
 
-    utils::Vector3f forward(-std::sin(theta), -std::cos(theta), 0.0f);
-    utils::Vector3f lateral(-std::cos(theta), std::sin(theta), 0.0f);
-    utils::Vector3f up(
-      std::sin(theta) * std::cos(phi),
-      std::cos(theta) * std::cos(phi),
-      std::sin(phi)
-    );
+    utils::Vector3f forward = -m_eye;
+    forward.normalize();
+
+    // The `lateral` vec can be approximated as the cross product between
+    // the `forward` vector and the canonical `z` up vector. We will derive
+    // the real `up` vector from it and then orthogonalize the base using
+    // Gram-Schmidt.
+    utils::Vector3f lateral(forward.y(), -forward.x(), 0.0f);
+    lateral.normalize();
+
+    // We can now compute the real up vector from the lateral (which should
+    // be correct) and the forward vector.
+    utils::Vector3f up = lateral ^ forward;
+
+    // Correct the `lateral` with the real up.
+    lateral = forward ^ up;
+
+    // Correct the base with Gram-Schmidt assuming the `forward` vector is
+    // the only certain vector.
+    lateral -= (forward * lateral) * forward;
+    lateral.normalize();
+
+    up -= (forward * up) * forward;
+    up -= (lateral * up) * lateral;
+    up.normalize();
 
     // Compute UVW vectors for camera setup. In order to do that we
     // need to compute the transformation of the base coordinate
