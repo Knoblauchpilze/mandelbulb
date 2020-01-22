@@ -58,7 +58,6 @@ namespace mandelbulb {
 
     m_dims = iDims;
     m_samples.resize(m_dims.area());
-    std::fill(m_samples.begin(), m_samples.end(), Sample{1u, -1.0f});
 
     updateFromCamera();
   }
@@ -161,7 +160,7 @@ namespace mandelbulb {
     utils::Vector3f dir = m_camera->getDirection(perc);
     worldCoord = m_camera->getEye() + depth * dir;
 
-    log("Screen: " + screenCoord.toString() + " dir: " + dir.toString(), utils::Level::Verbose);
+    log("Screen: " + screenCoord.toString() + " dir: " + dir.toString() + ", depth: " + std::to_string(depth), utils::Level::Verbose);
 
     return depth;
   }
@@ -208,6 +207,9 @@ namespace mandelbulb {
   inline
   void
   Fractal::updateFromCamera() {
+    // Reset existing results.
+    std::fill(m_samples.begin(), m_samples.end(), Sample{0u, -1.0f});
+
     // Set the results to be accumulating and schedule a rendering.
     // We want a complete recompute of the iterations so we need to
     // reset everything regarding the progression.

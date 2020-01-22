@@ -152,7 +152,12 @@ namespace mandelbulb {
 
             float depth = map[sOff + x];
             if (depth >= 0.0f) {
-              m_samples[dOff + dX].depth += depth;
+              if (m_samples[dOff + dX].iter == 0u) {
+                m_samples[dOff + dX].depth = depth;
+              }
+              else {
+                m_samples[dOff + dX].depth += depth;
+              }
             }
 
             ++m_samples[dOff + dX].iter;
@@ -274,6 +279,7 @@ namespace mandelbulb {
             m_camera->getU(),
             m_camera->getV(),
             m_camera->getW(),
+            m_dims,
             area
           )
         );
