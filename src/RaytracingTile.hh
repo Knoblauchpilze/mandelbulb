@@ -7,6 +7,7 @@
 # include <core_utils/AsynchronousJob.hh>
 # include <maths_utils/Box.hh>
 # include <maths_utils/Vector3.hh>
+# include "RenderProperties.hh"
 
 namespace mandelbulb {
 
@@ -26,13 +27,16 @@ namespace mandelbulb {
        * @param total - the total area into which this tile is inscribed.
        * @param area - the area of the camera plane which should be
        *               processed by this tile.
+       * @param props - the rendering properties to use to perform the
+       *                computations (i.e. description of the fractal).
        */
       RaytracingTile(const utils::Vector3f& eye,
                      const utils::Vector3f& u,
                      const utils::Vector3f& v,
                      const utils::Vector3f& w,
                      const utils::Sizei& total,
-                     const utils::Boxi& area);
+                     const utils::Boxi& area,
+                     const RenderProperties& props);
 
       ~RaytracingTile() = default;
 
@@ -72,8 +76,39 @@ namespace mandelbulb {
        * @return - a suited value for subpixel jittering.
        */
       static
-      float
+      constexpr float
       getJitteringRadius() noexcept;
+
+      /**
+       * @brief - Used as a parameter to detect escaping point. Allows to speed up
+       *          quite a bit the computations by aborting early some diverging vecs.
+       * @return - a threshold above which a series is considered divergent.
+       */
+      static
+      constexpr float
+      getBailoutDistance() noexcept;
+
+      /**
+       * @brief - Provide a threshold to declare a point belonging to the fractal. This
+       *          allows to also prune some series when we get `close enough` of the
+       *          fractal.
+       * @return - a threshold that is considered sufficient to declare that a point is
+       *           part of the fractal object.
+       */
+      static
+      constexpr float
+      getSurfaceHitThreshold() noexcept;
+
+      /**
+       * @brief - Used to provide a maximum count for the number of steps a ray can do
+       *          before reaching the fractal. If the ray still didn't hit the fractal
+       *          after that many steps we consider that it won't reach it.
+       * @return - a value corresponding to the maximum number of steps a ray can do
+       *           before being declared as not hitting the fractal object.
+       */
+      static
+      constexpr unsigned
+      getMaxRaySteps() noexcept;
 
       /**
        * @brief - Used to generate a ray direction from the pixel at coordinates
@@ -88,6 +123,17 @@ namespace mandelbulb {
       utils::Vector3f
       generateRayDir(int x,
                      int y) const;
+
+      /**
+       * @brief - Returns a distance estimator of the fractal object from the point
+       *          `p` in input using the internal properties for determining when
+       *          to stop the computation.
+       * @param p - the point for which the distance estimator should be computed.
+       * @return - a floating point value estimating the distance from the point to
+       *           the fractal.
+       */
+      float
+      getDistanceEstimator(const utils::Vector3f& p) const noexcept;
 
     private:
 
@@ -131,6 +177,11 @@ namespace mandelbulb {
        *          update its own representation afterwards.
        */
       utils::Boxi m_area;
+
+      /**
+       * @brief - A general description of the fractal object to compute.
+       */
+      RenderProperties m_props;
 
       /**
        * @brief - The depth map accumulated by the process of computing this

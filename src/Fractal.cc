@@ -280,7 +280,8 @@ namespace mandelbulb {
             m_camera->getV(),
             m_camera->getW(),
             m_dims,
-            area
+            area,
+            m_props
           )
         );
       }

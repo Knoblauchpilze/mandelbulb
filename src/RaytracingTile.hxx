@@ -18,9 +18,27 @@ namespace mandelbulb {
   }
 
   inline
-  float
+  constexpr float
   RaytracingTile::getJitteringRadius() noexcept {
     return 0.1f;
+  }
+
+  inline
+  constexpr float
+  RaytracingTile::getBailoutDistance() noexcept {
+    return 4.0f;
+  }
+
+  inline
+  constexpr float
+  RaytracingTile::getSurfaceHitThreshold() noexcept {
+    return 0.01f;
+  }
+
+  inline
+  constexpr unsigned
+  RaytracingTile::getMaxRaySteps() noexcept {
+    return 10u;
   }
 
 }
