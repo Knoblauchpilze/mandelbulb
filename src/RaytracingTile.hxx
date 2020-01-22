@@ -17,6 +17,12 @@ namespace mandelbulb {
     return m_depthMap;
   }
 
+  inline
+  float
+  RaytracingTile::getJitteringRadius() noexcept {
+    return 0.1f;
+  }
+
 }
 
 #endif    /* RAYTRACING_TILE_HXX */

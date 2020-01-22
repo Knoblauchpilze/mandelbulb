@@ -23,6 +23,7 @@ namespace mandelbulb {
        * @param u - the local `x` axis in the camera plane.
        * @param v - the local `y` axis in the camera plane.
        * @param w - a vector perpendicular to the camera plane.
+       * @param total - the total area into which this tile is inscribed.
        * @param area - the area of the camera plane which should be
        *               processed by this tile.
        */
@@ -30,6 +31,7 @@ namespace mandelbulb {
                      const utils::Vector3f& u,
                      const utils::Vector3f& v,
                      const utils::Vector3f& w,
+                     const utils::Sizei& total,
                      const utils::Boxi& area);
 
       ~RaytracingTile() = default;
@@ -63,6 +65,33 @@ namespace mandelbulb {
     private:
 
       /**
+       * @brief - Define a suitable default value for subpixel jittering. This will
+       *          be applied to offset slightly the ray direction when generating it
+       *          so that we get different rays for each pixel and thus obtain some
+       *          sort of built-in antialiasing.
+       * @return - a suited value for subpixel jittering.
+       */
+      static
+      float
+      getJitteringRadius() noexcept;
+
+      /**
+       * @brief - Used to generate a ray direction from the pixel at coordinates
+       *          `(x, y)`. This will use the internal vectors `m_u/v/w` and some
+       *          jittering information so that we get some built-in antialiasing.
+       * @param x - the `x` coordinate of the pixel for which the ray direction is
+       *            to be generated.
+       * @param y - the `y` coordinate of the pixel for which the ray direction is
+       *            to be generated.
+       * @return - the direction for the corresponding pixel.
+       */
+      utils::Vector3f
+      generateRayDir(int x,
+                     int y) const;
+
+    private:
+
+      /**
        * @brief - The viewpoint of the camera plane. All rays should start
        *          from this point.
        */
@@ -87,6 +116,13 @@ namespace mandelbulb {
        *          thus get the ray started.
        */
       utils::Vector3f m_w;
+
+      /**
+       * @brief - The total area into which this tile is encompassed. Used to
+       *          get an idea of the location of the tile in the general cam
+       *          plane and be able to correctly generate the rays direction.
+       */
+      utils::Sizei m_total;
 
       /**
        * @brief - The part of the camera plane associated to this tile. The
