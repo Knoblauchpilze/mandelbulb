@@ -40,16 +40,15 @@ namespace mandelbulb {
 
       /**
        * @brief - Used to rotate the camera associated to this fractal from the
-       *          specified axis with a given angle. This will perform the needed
-       *          update in the internal camera and then request a rendering if
-       *          needed.
+       *          longitudinal and latitudinal delta given as input. This will
+       *          perform the needed updates in the internal camera and then
+       *          request a rendering if needed.
        *          Note that in case the axis is not valid nothing will happen.
-       * @param axis - the rotation axis.
-       * @param angle - the angle of rotation. Expressed in radians.
+       * @param rotations - the longitudinal and latitudinal angles to apply to
+       *                    the current position of the camera.
        */
       void
-      rotateCamera(const utils::Vector3f& axis,
-                   float angle);
+      rotateCamera(const utils::Vector2f& rotations);
 
       /**
        * @brief - Used to change the distance of the camera to its source by the
@@ -136,6 +135,14 @@ namespace mandelbulb {
        */
       void
       build();
+
+      /**
+       * @brief - Used to update the internal properties and schedule a rendering
+       *          by considering that the camera has changed. We will also notify
+       *          listeners of the new camera.
+       */
+      void
+      updateFromCamera();
 
       /**
        * @brief - Used to generate the schedule or raytracing tiles to use to

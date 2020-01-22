@@ -60,33 +60,45 @@ namespace mandelbulb {
     m_samples.resize(m_dims.area());
     std::fill(m_samples.begin(), m_samples.end(), Sample{1u, -1.0f});
 
-    // Set the results to be accumulating and schedule a rendering.
-    // We want a complete recompute of the iterations so we need to
-    // reset everything regarding the progression.
-    m_computationState = State::Accumulating;
-    scheduleRendering(true);
-
-    // Notify listeners that a new camera exists.
-    onCameraChanged.safeEmit(
-      std::string("onCameraChanged(") + m_camera->getEye().toString() + ")",
-      m_camera
-    );
+    updateFromCamera();
   }
 
   inline
   void
-  Fractal::rotateCamera(const utils::Vector3f& axis,
-                        float angle)
-  {
-    // TODO: Implementation.
-    log("Should rotate camera about " + axis.toString() + ", angle: " + std::to_string(angle), utils::Level::Warning);
+  Fractal::rotateCamera(const utils::Vector2f& rotations) {
+    // Protect from concurrent accesses.
+    Guard guard(m_propsLocker);
+
+    // Update the camera.
+    bool changed = m_camera->rotate(rotations);
+
+    // In case the rotations did not modify the current state of the
+    // camera we don't need to do anything more. Otherwise we should
+    // schedule a repaint and notify external listeners.
+    if (!changed) {
+      return;
+    }
+
+    updateFromCamera();
   }
 
   inline
   void
   Fractal::updateDistance(float factor) {
-    // TODO: Implementation.
-    log("Should update distance with factor " + std::to_string(factor), utils::Level::Warning);
+    // Protect from concurrent accesses.
+    Guard guard(m_propsLocker);
+
+    // Update the camera.
+    bool changed = m_camera->setDistance(factor);
+
+    // In case the rotations did not modify the current state of the
+    // camera we don't need to do anything more. Otherwise we should
+    // schedule a repaint and notify external listeners.
+    if (!changed) {
+      return;
+    }
+
+    updateFromCamera();
   }
 
   inline
@@ -144,6 +156,22 @@ namespace mandelbulb {
   constexpr unsigned
   Fractal::getTileHeight() noexcept {
     return 100;
+  }
+
+  inline
+  void
+  Fractal::updateFromCamera() {
+    // Set the results to be accumulating and schedule a rendering.
+    // We want a complete recompute of the iterations so we need to
+    // reset everything regarding the progression.
+    m_computationState = State::Accumulating;
+    scheduleRendering(true);
+
+    // Notify listeners that a new camera exists.
+    onCameraChanged.safeEmit(
+      std::string("onCameraChanged(") + m_camera->getEye().toString() + ")",
+      m_camera
+    );
   }
 
 }

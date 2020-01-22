@@ -75,22 +75,13 @@ int main(int /*argc*/, char** /*argv*/) {
     // to control the computation parameters of this object.
     const float fov = 40.0f;
     std::vector<float> transform(16u, 0.0f);
-
-    // Transform with no rotation and a viewpoint at `(0, -1, 0)`.
-    transform[ 0] = 1.0f;
-    transform[ 5] = 1.0f;
-    transform[10] = 1.0f;
-
-    transform[ 3] =  0.0f;
-    transform[ 7] = -1.0f;
-    transform[11] =  0.0f;
-
-    transform[15] = 1.0f;
+    const float distance = 5.0f;
 
     mandelbulb::CameraShPtr cam = std::make_shared<mandelbulb::Camera>(
       utils::Sizei(512, 256),
       fov,
-      transform
+      distance,
+      utils::Vector2f()
     );
 
     mandelbulb::RenderProperties props{5u, 128u, 8.0f};

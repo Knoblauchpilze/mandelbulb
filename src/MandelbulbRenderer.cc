@@ -93,11 +93,9 @@ namespace mandelbulb {
 
     // Schedule a scrolling if some motion has been detected.
     if (move) {
-      utils::Vector2f center, newCenter;
-
       Guard guard(m_propsLocker);
 
-      m_fractal->rotateCamera(axis, angle);
+      m_fractal->rotateCamera(utils::Vector2f(angle, 0.0f));
 
       requestRepaint();
     }

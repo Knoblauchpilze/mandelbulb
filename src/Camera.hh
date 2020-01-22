@@ -12,9 +12,28 @@ namespace mandelbulb {
   class Camera: public utils::CoreObject {
     public:
 
+      /**
+       * @brief - Create a camera with the specified dimensions, fov, distance
+       *          and rotations.
+       *          The default camera is aligned with the canonical coordinate
+       *          frame (meaning that the `forward` vector is `y`, the lateral
+       *          vector is `x` and the up vector is `z`). The rotations are
+       *          applied using the Euler convention `zxz`.
+       * @param dims - the dimensions of the camera plane.
+       * @param fov - the field of view to use: larger values will lead to some
+       *              sort of fisheye effect while smaller value will give a
+       *              zoom effect.
+       * @param distance - the distance from the origin. The rotations apply
+       *                   first and then the distance is counted negatively
+       *                   along the forward vector.
+       * @param rotations - the initial rotations to apply to the camera. Note
+       *                    that two values are used, one representing the
+       *                    longitudinal rotation and the latitudinal rotation.
+       */
       Camera(const utils::Sizei& dims,
              float fov,
-             const std::vector<float>& transform);
+             float distance,
+             const utils::Vector2f& rotations);
 
       ~Camera() = default;
 
@@ -33,26 +52,51 @@ namespace mandelbulb {
       bool
       setDims(const utils::Sizei& dims);
 
+      /**
+       * @brief - Assign a new distance from the origin to the camera. The rest
+       *          of the properties are assumed to stay the same (including the
+       *          rotations). The new vector describing the camera need to be
+       *          fetched through the `getU/V/W` interface after calling this
+       *          method.
+       * @param distance - the new distance to the camera.
+       * @return - `true` if the distance has been updated.
+       */
+      bool
+      setDistance(float distance);
+
+      /**
+       * @brief - Apply the rotation angle as an addition to the internal rotation
+       *          along the specified angle. Just like the `setDistance` method all
+       *          other properties defining the camera are assumed to stay the same.
+       * @param angle - a delta that should be added to the existing angle along 
+       *                the rotation axis. Two values are provided for each of the
+       *                possible rotation axes: either `z` or `x`.
+       * @return - `true` if at least one of the internal rotation has been updated.
+       */
+      bool
+      rotate(const utils::Vector2f& angle);
+
     private:
 
       /**
-       * @brief - Used to copy the transform to the local data by stripping
-       *          the unneeded values.
-       * @param transform - the data to copy.
+       * @brief - Used as a threshold below which vertical motions are disabled to
+       *          avoid the flip over of the camera. Typically when the rotation
+       *          angle about the `x` axis reaches `pi/2 - threshold` any further
+       *          rotation will be disabled.
+       * @return - a threshold preventing camera flip over.
        */
-      void
-      copyTransform(const std::vector<float>& rawTransform);
+      static
+      float
+      getVerticalThreshold() noexcept;
 
       /**
-       * @brief - Used to update the internal properties assuming that the dimensions
-       *          should be set to the specified value. We consider that the rest of
-       *          the `base` properties should stay the same.
-       *          Note that we don't perform any check on the input dimensions to see
-       *          whether they are valid. If this is not the case UB may arise.
-       * @param dims - the new dimensions of the camera.
+       * @brief - Used to update the value of the eye position and the `m_u/v/w`
+       *          vectors according to the latest values of the fov, dimensions
+       *          and distance/rotation.
+       *          No check is performed to verify whether it is actually needed.
        */
       void
-      updateDims(const utils::Sizei& dims);
+      updateEUVW();
 
     private:
 
@@ -68,21 +112,23 @@ namespace mandelbulb {
       utils::Sizei m_dims;
 
       /**
-       * @brief - The transformation applied to the camera. Stored as
-       *          a row major `4x3` matrix where the layout is described
-       *          below:
-       *
-       *          | r00 r10 r20 t0 |
-       *          | r01 r11 r21 t1 |
-       *          | r02 r12 r22 t2 |
-       */
-      std::vector<float> m_transform;
-
-      /**
        * @brief - Derived properties computed from the dimensions of
        *          the focal plane and the field of view.
        */
       float m_focal;
+
+      /**
+       * @brief - The distance from the eye of the camera and the origin.
+       *          Should never be negative.
+       */
+      float m_distance;
+
+      /**
+       * @brief - The rotations currently applied to the initial orientation
+       *          of the camera facing the `y` axis and with the `x` axis as
+       *          lateral vector.
+       */
+      utils::Vector2f m_rotations;
 
       /**
        * @brief- Derived values allowing to ease the process of deriving
