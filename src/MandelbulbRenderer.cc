@@ -16,6 +16,7 @@ namespace mandelbulb {
     m_tex(),
     m_tilesRendered(false),
 
+    // TODO: Provide customization of palette.
     m_palette(RenderPalette{
       generateDefaultPalette(),
       getDefaultPaletteRange()
