@@ -93,7 +93,8 @@ namespace mandelbulb {
 
     log(
       std::string("Created camera with eye: ") + m_eye.toString() + ", u: " + m_u.toString() +
-      ", v: " + m_v.toString() + ", w: " + m_w.toString()
+      ", v: " + m_v.toString() + ", w: " + m_w.toString(),
+      utils::Level::Verbose
     );
   }
 

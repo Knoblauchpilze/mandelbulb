@@ -102,27 +102,90 @@ namespace mandelbulb {
 
   void
   Fractal::handleTilesRendered(const std::vector<utils::AsynchronousJobShPtr>& tiles) {
-    // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    {
+      // Protect from concurrent accesses.
+      Guard guard(m_propsLocker);
 
-    // Add the rendered tiles to the internal progress.
-    m_progress.taskProgress += tiles.size();
+      // We need to copy the tiles data to the internal array. This will
+      // allow to keep track of the content computed for the fractal and
+      // allow the renderer to actually display it.
+      for (unsigned id = 0u ; id < tiles.size() ; ++id) {
+        // Convert to usable data.
+        RaytracingTileShPtr tile = std::dynamic_pointer_cast<RaytracingTile>(tiles[id]);
+        if (tile == nullptr) {
+          log(
+            std::string("Could not convert task to raytracing tile, skipping it"),
+            utils::Level::Error
+          );
 
-    // In case an iteration has been finished, schedule the next one (or stop
-    // the process if we already accumulated enough iterations).
-    if (m_progress.taskProgress == m_progress.taskTotal) {
-      ++m_progress.iterationProgress;
+          continue;
+        }
 
-      // Check whether we should start a new iteration.
-      if (m_progress.iterationProgress == m_progress.desiredIterations) {
-        // No need to start a new iteration, we already accumulate enough. We
-        // need to reset the local state.
-        m_computationState = State::Converged;
+        // Retrieve the depth map associated to the current tile and copy it to
+        // the internal array. This includes copying the depth and adjusting the
+        // iterations count.
+        utils::Boxi area = tile->getArea();
+        const std::vector<float>& map = tile->getDepthMap();
+
+        for (int y = 0 ; y < area.h() ; ++y) {
+          // Compute the equivalent of the `y` coordinate both in local tile's
+          // coordinate frame and in general fractal coordinate frame.
+          int sOff = y * area.w();
+          int lY = (y + area.getBottomBound() + m_dims.h() / 2);
+          int dOff = lY * m_dims.w();
+
+          for (int x = 0 ; x < area.w() ; ++x) {
+            // Do the same for `x` coordinate.
+            int dX = (x + area.getLeftBound() + m_dims.w() / 2);
+
+            if (dX < 0 || dX >= m_dims.w() ||
+                lY < 0 || lY >= m_dims.h())
+            {
+              log(
+                std::string("Could not copy data at ") + std::to_string(x) + "x" + std::to_string(y) + " from " +
+                area.toString() + ", local is " + std::to_string(dX) + "x" + std::to_string(lY),
+                utils::Level::Error
+              );
+
+              continue;
+            }
+
+            float depth = map[sOff + x];
+            if (depth >= 0.0f) {
+              m_samples[dOff + dX].depth += depth;
+            }
+
+            ++m_samples[dOff + dX].iter;
+          }
+        }
       }
-      else {
-        // Schedule a new iteration: we don't want to erase the complete
-        // progression as it's still the same rendering.
-        scheduleRendering(false);
+
+      // Add the rendered tiles to the internal progress.
+      m_progress.taskProgress += tiles.size();
+
+      log(
+        "Handled " + std::to_string(tiles.size()) + " tile(s), task: " +
+        std::to_string(m_progress.taskProgress) + "/" + std::to_string(m_progress.taskTotal) + ", " +
+        " iteration: " + std::to_string(m_progress.iterationProgress) + "/" + std::to_string(m_progress.desiredIterations),
+        utils::Level::Verbose
+      );
+
+      // In case an iteration has been finished, schedule the next one (or stop
+      // the process if we already accumulated enough iterations).
+      if (m_progress.taskProgress == m_progress.taskTotal) {
+        ++m_progress.iterationProgress;
+
+        // Check whether we should start a new iteration.
+        if (m_progress.iterationProgress == m_progress.desiredIterations) {
+          // No need to start a new iteration, we already accumulate enough. We
+          // need to reset the local state.
+          m_computationState = State::Converged;
+        }
+        else {
+          // Schedule a new iteration: we don't want to erase the complete
+          // progression as it's still the same rendering.
+          scheduleRendering(false);
+        }
       }
     }
 
@@ -201,7 +264,7 @@ namespace mandelbulb {
         log(
           std::string("Generating tile ") + std::to_string(x) + "x" + std::to_string(y) +
           " with area " + area.toString(),
-          utils::Level::Debug
+          utils::Level::Verbose
         );
 
         // Create the tile and register it in the schedule.

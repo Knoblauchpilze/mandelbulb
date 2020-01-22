@@ -168,7 +168,7 @@ namespace mandelbulb {
     // Create and post a repaint event.
     postEvent(
       std::make_shared<sdl::core::engine::PaintEvent>(
-        mapToGlobal(getRenderingArea(), false)
+        mapToGlobal(LayoutItem::getRenderingArea(), false)
       )
     );
 

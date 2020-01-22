@@ -2,6 +2,7 @@
 # define   RAYTRACING_TILE_HH
 
 # include <mutex>
+# include <vector>
 # include <memory>
 # include <core_utils/AsynchronousJob.hh>
 # include <maths_utils/Box.hh>
@@ -41,6 +42,24 @@ namespace mandelbulb {
       void
       compute() override;
 
+      /**
+       * @brief - Retrieves the area associated to this tile. Note that this value
+       *          is the same as the one provided when building the object and is
+       *          not relevant by itself: the element that created it in the first
+       *          place knows how to use it.
+       * @return - the area associated to this tile.
+       */
+      utils::Boxi
+      getArea() const noexcept;
+
+      /**
+       * @brief - Retrieve the internal data computed by this tile using a depth
+       *          map formalism.
+       * @return - the depth map computed by this tile.
+       */
+      const std::vector<float>&
+      getDepthMap() const noexcept;
+
     private:
 
       /**
@@ -76,6 +95,13 @@ namespace mandelbulb {
        *          update its own representation afterwards.
        */
       utils::Boxi m_area;
+
+      /**
+       * @brief - The depth map accumulated by the process of computing this
+       *          tile. The size of this array is determined by the area that
+       *          is associated to this tile.
+       */
+      std::vector<float> m_depthMap;
   };
 
   using RaytracingTileShPtr = std::shared_ptr<RaytracingTile>;

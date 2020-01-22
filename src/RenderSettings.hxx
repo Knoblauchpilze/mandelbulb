@@ -89,7 +89,7 @@ namespace mandelbulb {
   inline
   unsigned
   RenderSettings::getDefaultMaxIterations() noexcept {
-    return 5u;
+    return 1u;
   }
 
   sdl::graphic::TextBox*
