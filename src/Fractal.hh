@@ -98,6 +98,14 @@ namespace mandelbulb {
                utils::Vector3f& worldCoord,
                bool& hit);
 
+      /**
+       * @brief - Local slot to handle a new version of the rendering properties
+       *          to use. This will trigger a new rendering if needed.
+       * @param props - the new set of properties to use when computing the fractal.
+       */
+      void
+      onRenderingPropsChanged(RenderProperties props);
+
     private:
 
       /**

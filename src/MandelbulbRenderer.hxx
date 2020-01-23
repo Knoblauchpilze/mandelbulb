@@ -102,7 +102,7 @@ namespace mandelbulb {
 
       // Perform the zoom in/out operation.
       float factor = motion.y() > 0 ? getDefaultZoomInFactor() : getDefaultZoomOutFactor();
-      
+
       m_fractal->updateDistance(factor);
     }
 
@@ -142,8 +142,9 @@ namespace mandelbulb {
       sdl::core::engine::gradient::Mode::Linear
     );
 
-    gr->setColorAt(0.0f, sdl::core::engine::Color::NamedColor::Red);
-    gr->setColorAt(1.0f, sdl::core::engine::Color::NamedColor::Blue);
+    gr->setColorAt(0.0f, sdl::core::engine::Color::fromRGB(0.0f, 0.5f, 0.0f));
+    gr->setColorAt(0.5f, sdl::core::engine::Color::fromRGB(0.0f, 1.0f, 0.0f));
+    gr->makeWrap();
 
     return gr;
   }
@@ -156,7 +157,7 @@ namespace mandelbulb {
   inline
   sdl::core::engine::Color
   MandelbulbRenderer::getNoDataColor() noexcept {
-    return sdl::core::engine::Color::NamedColor::Cyan;
+    return sdl::core::engine::Color::NamedColor::Black;
   }
 
   inline

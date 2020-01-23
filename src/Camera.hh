@@ -82,7 +82,7 @@ namespace mandelbulb {
        * @brief - Apply the rotation angle as an addition to the internal rotation
        *          along the specified angle. Just like the `setDistance` method all
        *          other properties defining the camera are assumed to stay the same.
-       * @param angle - a delta that should be added to the existing angle along 
+       * @param angle - a delta that should be added to the existing angle along
        *                the rotation axis. Two values are provided for each of the
        *                possible rotation axes: either `z` or `x`.
        * @return - `true` if at least one of the internal rotation has been updated.

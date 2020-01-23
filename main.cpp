@@ -39,6 +39,10 @@
 # include "RenderMenu.hh"
 # include "RenderSettings.hh"
 
+// TODO: Check zoom in and out with mouse wheel.
+// TODO: Fix issue with palette (maybe not needed if we refine the
+// notion of normal).
+
 int main(int /*argc*/, char** /*argv*/) {
   // Create the logger.
   utils::StdLogger logger;
@@ -84,7 +88,7 @@ int main(int /*argc*/, char** /*argv*/) {
       utils::Vector2f()
     );
 
-    mandelbulb::RenderProperties props{5u, 128u, 8.0f};
+    mandelbulb::RenderProperties props{10u, 128u, 8.0f, 0.01f, 20u, 4.0f};
     mandelbulb::FractalShPtr fractal = std::make_shared<mandelbulb::Fractal>(cam, props);
 
     mandelbulb::RenderMenu* menu = new mandelbulb::RenderMenu();
@@ -115,10 +119,15 @@ int main(int /*argc*/, char** /*argv*/) {
       info,
       &mandelbulb::InfoPanel::onCameraChanged
     );
-    
+
     fractal->onRenderingCompletionAdvanced.connect_member<mandelbulb::RenderMenu>(
       menu,
       &mandelbulb::RenderMenu::onCompletionChanged
+    );
+
+    render->onRenderingSettingsChanged.connect_member<mandelbulb::Fractal>(
+      fractal.get(),
+      &mandelbulb::Fractal::onRenderingPropsChanged
     );
 
     // Run it.

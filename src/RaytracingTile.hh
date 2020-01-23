@@ -80,37 +80,6 @@ namespace mandelbulb {
       getJitteringRadius() noexcept;
 
       /**
-       * @brief - Used as a parameter to detect escaping point. Allows to speed up
-       *          quite a bit the computations by aborting early some diverging vecs.
-       * @return - a threshold above which a series is considered divergent.
-       */
-      static
-      constexpr float
-      getBailoutDistance() noexcept;
-
-      /**
-       * @brief - Provide a threshold to declare a point belonging to the fractal. This
-       *          allows to also prune some series when we get `close enough` of the
-       *          fractal.
-       * @return - a threshold that is considered sufficient to declare that a point is
-       *           part of the fractal object.
-       */
-      static
-      constexpr float
-      getSurfaceHitThreshold() noexcept;
-
-      /**
-       * @brief - Used to provide a maximum count for the number of steps a ray can do
-       *          before reaching the fractal. If the ray still didn't hit the fractal
-       *          after that many steps we consider that it won't reach it.
-       * @return - a value corresponding to the maximum number of steps a ray can do
-       *           before being declared as not hitting the fractal object.
-       */
-      static
-      constexpr unsigned
-      getMaxRaySteps() noexcept;
-
-      /**
        * @brief - Used to generate a ray direction from the pixel at coordinates
        *          `(x, y)`. This will use the internal vectors `m_u/v/w` and some
        *          jittering information so that we get some built-in antialiasing.

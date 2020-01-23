@@ -96,6 +96,7 @@ namespace mandelbulb {
         std::numeric_limits<float>::max()
       )
     );
+    bar->allowLog(false);
 
     // Build layout.
     layout->addItem(bar);

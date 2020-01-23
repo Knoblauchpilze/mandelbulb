@@ -73,7 +73,7 @@ namespace mandelbulb {
     }
 
     std::string d("-");
-    
+
     if (depth >= 0.0f) {
       std::stringstream ss;
       ss << std::setprecision(4) << depth;

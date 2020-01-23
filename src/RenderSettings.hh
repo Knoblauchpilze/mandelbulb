@@ -45,6 +45,7 @@ namespace mandelbulb {
       float
       getDisplayElementMaxHeight() noexcept;
 
+      // Power.
       static
       const char*
       getPowerLabelName() noexcept;
@@ -54,12 +55,13 @@ namespace mandelbulb {
       getPowerTextBoxName() noexcept;
 
       static
-      float
+      constexpr float
       getDefaultPower() noexcept;
 
       sdl::graphic::TextBox*
       getPowerValueTextBox();
 
+      // Accuracy.
       static
       const char*
       getAccuracyLabelName() noexcept;
@@ -69,12 +71,45 @@ namespace mandelbulb {
       getAccuracyTextBoxName() noexcept;
 
       static
-      unsigned
+      constexpr unsigned
       getDefaultAccuracy() noexcept;
 
       sdl::graphic::TextBox*
       getAccuracyTextBox();
 
+      // Hit threshold.
+      static
+      const char*
+      getHitThresholdLabelName() noexcept;
+
+      static
+      const char*
+      getHitThresholdTextBoxName() noexcept;
+
+      static
+      constexpr float
+      getDefaultHitThreshold() noexcept;
+
+      sdl::graphic::TextBox*
+      getHitThresholdTextBox();
+
+      // Ray steps.
+      static
+      const char*
+      getRayStepsLabelName() noexcept;
+
+      static
+      const char*
+      getRayStepsTextBoxName() noexcept;
+
+      static
+      constexpr unsigned
+      getDefaultRaySteps() noexcept;
+
+      sdl::graphic::TextBox*
+      getRayStepsTextBox();
+
+      // Max iterations.
       static
       const char*
       getMaxIterationsLabelName() noexcept;
@@ -84,11 +119,27 @@ namespace mandelbulb {
       getMaxIterationsTextBoxName() noexcept;
 
       static
-      unsigned
+      constexpr unsigned
       getDefaultMaxIterations() noexcept;
 
       sdl::graphic::TextBox*
       getMaxIterationsTextBox();
+
+      // Bailout.
+      static
+      const char*
+      getBailoutLabelName() noexcept;
+
+      static
+      const char*
+      getBailoutTextBoxName() noexcept;
+
+      static
+      float
+      getDefaultBailout() noexcept;
+
+      sdl::graphic::TextBox*
+      getBailoutTextBox();
 
       static
       const char*

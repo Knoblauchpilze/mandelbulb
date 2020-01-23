@@ -22,6 +22,20 @@ namespace mandelbulb {
                          ///< degree of the exponentation to apply. The larger
                          ///< this value the more `bulbs` will be present in the
                          ///< final fractal object.
+
+    float hitThreshold;  ///< The distance under which a hit is considered on the
+                         ///< surface of the fractal. The smaller this value the
+                         ///< more accurate the intersections will be but the more
+                         ///< time it will take to reach the fractal.
+
+    unsigned raySteps;   ///< The maximum number of steps to perform for a single
+                         ///< ray before considering that it has either diverged
+                         ///< or converged.
+
+    float bailout;       ///< The bailout distance above which the ray is said to
+                         ///< diverge when computing the series for the fractal.
+                         ///< The more accurate this value the quicker we can get
+                         ///< out of computing terms which are not converging.
   };
 
   struct RenderPalette {

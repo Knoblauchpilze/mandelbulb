@@ -101,6 +101,27 @@ namespace mandelbulb {
   }
 
   inline
+  utils::Sizei
+  Fractal::getData(std::vector<float>& depths) {
+    // Protect from concurrent accesses.
+    Guard guard(m_propsLocker);
+
+    // Copy the internal data to the output vector after resizing it
+    // if needed.
+    if (depths.size() != m_samples.size()) {
+      depths.resize(m_samples.size());
+    }
+
+    // Fill the depths values.
+    for (unsigned id = 0u ; id < m_samples.size() ; ++id) {
+      depths[id] = m_samples[id].depth;
+    }
+
+    // Return the dimensions of the fractal.
+    return m_dims;
+  }
+
+  inline
   float
   Fractal::getPoint(const utils::Vector2i& screenCoord,
                     utils::Vector3f& worldCoord,
@@ -166,24 +187,19 @@ namespace mandelbulb {
   }
 
   inline
-  utils::Sizei
-  Fractal::getData(std::vector<float>& depths) {
+  void
+  Fractal::onRenderingPropsChanged(RenderProperties props) {
     // Protect from concurrent accesses.
     Guard guard(m_propsLocker);
 
-    // Copy the internal data to the output vector after resizing it
-    // if needed.
-    if (depths.size() != m_samples.size()) {
-      depths.resize(m_samples.size());
-    }
+    // Update the internal properties.
+    m_props = props;
 
-    // Fill the depths values.
-    for (unsigned id = 0u ; id < m_samples.size() ; ++id) {
-      depths[id] = m_samples[id].depth;
-    }
+    // Reset existing results.
+    std::fill(m_samples.begin(), m_samples.end(), Sample{0u, -1.0f});
 
-    // Return the dimensions of the fractal.
-    return m_dims;
+    // Perform a new rendering.
+    scheduleRendering(true);
   }
 
   inline

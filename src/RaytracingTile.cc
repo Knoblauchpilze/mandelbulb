@@ -54,30 +54,31 @@ namespace mandelbulb {
         // enough from the fractal.
         float tDist = 0.0f;
         unsigned steps = 0u;
-        float dist = getSurfaceHitThreshold() + 1.0f;
+        float dist = m_props.hitThreshold + 1.0f;
+        bool escaped = false;
 
         utils::Vector3f p = m_eye + tDist * dir;
 
-        while (steps < getMaxRaySteps() && dist > getSurfaceHitThreshold()) {
-          // March on the ray.
-          p = m_eye + tDist * dir;
-
+        while (steps < m_props.raySteps && !escaped && dist > m_props.hitThreshold) {
           // Get an estimation of the distance.
           dist = getDistanceEstimator(p);
 
           // Add this and move on to the next step.
           tDist += dist;
           ++steps;
+
+          // March on the ray.
+          p = m_eye + tDist * dir;
+
+          // Update escape status.
+          escaped = (p.length() >= m_props.bailout);
         }
 
-        if (dist <= getSurfaceHitThreshold()) {
+        if (!escaped) {
           m_depthMap[y * m_area.w() + x] = tDist;
         }
       }
     }
-
-    // TODO: Implementation. Note that the internal area should not include the
-    // right and top bounds ?
   }
 
   utils::Vector3f
@@ -115,11 +116,11 @@ namespace mandelbulb {
     float theta, phi;
     float dr = 1.0f;
 
-    while (iter < m_props.iterations && r < getBailoutDistance()) {
+    while (iter < m_props.accuracy && r < m_props.bailout) {
       // Detect escaping series.
       r = z.length();
 
-      if (r < getBailoutDistance()) {
+      if (r < m_props.bailout) {
         // Convert to polar coordinates.
         theta = std::acos(z.z() / r);
         phi = std::atan2(z.y(), z.x());

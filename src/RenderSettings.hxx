@@ -57,7 +57,7 @@ namespace mandelbulb {
   }
 
   inline
-  float
+  constexpr float
   RenderSettings::getDefaultPower() noexcept {
     return 8.0f;
   }
@@ -81,20 +81,62 @@ namespace mandelbulb {
   }
 
   inline
-  unsigned
+  constexpr unsigned
   RenderSettings::getDefaultAccuracy() noexcept {
     return 128u;
-  }
-
-  inline
-  unsigned
-  RenderSettings::getDefaultMaxIterations() noexcept {
-    return 1u;
   }
 
   sdl::graphic::TextBox*
   RenderSettings::getAccuracyTextBox() {
     return getChildAs<sdl::graphic::TextBox>(getAccuracyTextBoxName());
+  }
+
+  inline
+  const char*
+  RenderSettings::getHitThresholdLabelName() noexcept {
+    return "hit_thresh_label";
+  }
+
+  inline
+  const char*
+  RenderSettings::getHitThresholdTextBoxName() noexcept {
+    return "hit_thresh_value";
+  }
+
+  inline
+  constexpr float
+  RenderSettings::getDefaultHitThreshold() noexcept {
+    return 0.01f;
+  }
+
+  inline
+  sdl::graphic::TextBox*
+  RenderSettings::getHitThresholdTextBox() {
+    return getChildAs<sdl::graphic::TextBox>(getHitThresholdTextBoxName());
+  }
+
+  inline
+  const char*
+  RenderSettings::getRayStepsLabelName() noexcept {
+    return "ray_steps_label";
+  }
+
+  inline
+  const char*
+  RenderSettings::getRayStepsTextBoxName() noexcept {
+    return "ray_steps_value";
+  }
+
+  inline
+  constexpr unsigned
+  RenderSettings::getDefaultRaySteps() noexcept {
+    return 20u;
+  }
+
+  inline
+  sdl::graphic::TextBox*
+  RenderSettings::getRayStepsTextBox() {
+    return getChildAs<sdl::graphic::TextBox>(getRayStepsTextBoxName());
   }
 
   inline
@@ -113,6 +155,36 @@ namespace mandelbulb {
   sdl::graphic::TextBox*
   RenderSettings::getMaxIterationsTextBox() {
     return getChildAs<sdl::graphic::TextBox>(getMaxIterationsTextBoxName());
+  }
+
+  inline
+  constexpr unsigned
+  RenderSettings::getDefaultMaxIterations() noexcept {
+    return 10u;
+  }
+
+  inline
+  const char*
+  RenderSettings::getBailoutLabelName() noexcept {
+    return "bailout_label";
+  }
+
+  inline
+  const char*
+  RenderSettings::getBailoutTextBoxName() noexcept {
+    return "bailout_value";
+  }
+
+  inline
+  float
+  RenderSettings::getDefaultBailout() noexcept {
+    return 4.0f;
+  }
+
+  inline
+  sdl::graphic::TextBox*
+  RenderSettings::getBailoutTextBox() {
+    return getChildAs<sdl::graphic::TextBox>(getBailoutTextBoxName());
   }
 
   inline
