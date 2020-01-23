@@ -142,14 +142,6 @@ namespace mandelbulb {
 
       ++iter;
     }
-    // TODO: Right now the computation stalls directly at the starting point of the
-    // ray because we're at `(0,-5,0)` so it is greater than the bailout distance
-    // so we end up with a distance estimator of `0.5*ln(5)*5/1 ~ 4` we match of `4`
-    // on the ray and end up almost in the fractal (I guess) so every point lies in
-    // it.
-    // Maybe we should check that the direction are actually correct because it is
-    // really strange that seeing the fractal from `5` units away we still end up
-    // with it occupying all the screen.
 
     // Return the distance estimator.
     return 0.5f * std::log(r) * r / dr;

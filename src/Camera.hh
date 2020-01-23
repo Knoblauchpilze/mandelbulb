@@ -126,12 +126,6 @@ namespace mandelbulb {
       utils::Sizei m_dims;
 
       /**
-       * @brief - Derived properties computed from the dimensions of
-       *          the focal plane and the field of view.
-       */
-      float m_focal;
-
-      /**
        * @brief - The distance from the eye of the camera and the origin.
        *          Should never be negative.
        */

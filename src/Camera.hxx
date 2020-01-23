@@ -54,15 +54,6 @@ namespace mandelbulb {
     // Update the internal properties from the new dimensions.
     m_dims = dims;
 
-    // Determine the focal from the fov.
-    m_focal = (m_dims.w() / 2.0f) / std::tan(0.5f * m_fov * 3.1415926535f / 180.0f);
-    if (m_focal <= 0.0f) {
-      error(
-        std::string("Could not create camera with dimensions ") + m_dims.toString() + " and fov " + std::to_string(m_fov),
-        std::string("Invalid focal ") + std::to_string(m_focal)
-      );
-    }
-
     // Recompute the internal vectors.
     updateEUVW();
 

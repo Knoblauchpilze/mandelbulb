@@ -11,7 +11,6 @@ namespace mandelbulb {
 
     m_fov(fov),
     m_dims(),
-    m_focal(0.0f),
     m_distance(),
     m_rotations(),
 
@@ -52,8 +51,6 @@ namespace mandelbulb {
     m_eye.y() = -m_distance * std::cos(theta) * std::cos(phi);
     m_eye.z() = m_distance * std::sin(phi);
 
-    float d = m_eye.length();
-
     utils::Vector3f forward = -m_eye;
     forward.normalize();
 
@@ -83,17 +80,50 @@ namespace mandelbulb {
     // Compute UVW vectors for camera setup. In order to do that we
     // need to compute the transformation of the base coordinate
     // frame of the camera.
-    float mul = d * m_dims.w() / (2.0f * m_focal);
-    m_u = mul * lateral;
+    // We know that we want the `m_w` vector to be the normalized
+    // version of the `forward` vector. That leaves with computing
+    // the `m_u` and `m_v`. We know that the aspect ratio of the
+    // image should be preserved and that the field of view should
+    // also be applied.
+    // For the `m_u` vector, the situation looks like below:
+    //
+    //         eye
+    //   u <----+
+    //         /|\                avoid multi line comment
+    //    fov /_|_\               avoid multi line comment
+    //       /  |  \              avoid multi line comment
+    //      /   |<--\--- 1
+    //     /____|____\            avoid multi line comment
+    //        aspect
+    //
+    // We can easily compute the that `u = tan(fov/2) * aspect/2`
+    // and in this case we define a fov of `1`. To accomodate for
+    // other values we will scale the `u` vector by the tangent
+    // as defined.
+    //
+    // For the `v` vector we have the following situation:
+    //
+    //         eye
+    //   v <----+
+    //         /|\                avoid multi line comment
+    //  alpha /_|_\               Actually this should be rotated by
+    //       /  |  \              pi/2 radians.
+    //      /   |<--\--- 1
+    //     /____|____\            avoid multi line comment
+    //          1
+    //
+    // Similarly ideally we have `v = tan(alpha/2) * 1`. We will
+    // accomodate for the field of view in the same way than for
+    // the `u` vector.
+    float aspect = 1.0f * m_dims.w() / m_dims.h();
 
-    mul = d * m_dims.h() / (2.0f * m_focal);
-    m_v = mul * up;
-
-    m_w = d * forward;
+    m_u = (aspect * std::tan(m_fov / 2.0f)) * lateral;
+    m_v = std::tan(m_fov / 2.0f) * up;
+    m_w = forward;
 
     log(
       std::string("Created camera with eye: ") + m_eye.toString() + ", u: " + m_u.toString() +
-      ", v: " + m_v.toString() + ", w: " + m_w.toString(),
+      ", v: " + m_v.toString() + ", w: " + m_w.toString() + " (aspect: " + std::to_string(aspect) + ")",
       utils::Level::Verbose
     );
   }
