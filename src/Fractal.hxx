@@ -7,14 +7,12 @@ namespace mandelbulb {
 
   inline
   Fractal::~Fractal() {
-    // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
-
     // Stop the scheduler so that we don't continue processing
     // tiles while it's obviously not needed anymore.
-    if (m_scheduler != nullptr) {
-      m_scheduler.reset();
-    }
+    Guard guard(m_propsLocker);
+
+    m_scheduler->onJobsCompleted.disconnect(m_tilesRenderedSignalID);
+    m_scheduler.reset();
   }
 
   inline

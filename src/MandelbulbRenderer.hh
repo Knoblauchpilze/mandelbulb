@@ -23,7 +23,7 @@ namespace mandelbulb {
                          const utils::Sizef& sizeHint = utils::Sizef(),
                          sdl::core::SdlWidget* parent = nullptr);
 
-      ~MandelbulbRenderer();
+      virtual ~MandelbulbRenderer();
 
     protected:
 
@@ -258,6 +258,14 @@ namespace mandelbulb {
        *          update the relevant parts of the display.
        */
       FractalShPtr m_fractal;
+
+      /**
+       * @brief - Index of the signal provided when registering for notifications
+       *          of tiles rendered in the fractal. USed to be disconnected upon
+       *          deleting the fractal so that we don't wait to receive something
+       *          while we're deleting it.
+       */
+      int m_tilesRenderedSignalID;
 
       /**
        * @brief - The index returned by the engine for the texture representing the

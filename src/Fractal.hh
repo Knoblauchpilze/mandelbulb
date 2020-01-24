@@ -26,7 +26,7 @@ namespace mandelbulb {
       Fractal(CameraShPtr cam,
               RenderProperties props);
 
-      ~Fractal();
+      virtual ~Fractal();
 
       /**
        * @brief - Assign new dimensions to the camera used to view this fractal
@@ -300,6 +300,13 @@ namespace mandelbulb {
        *          completion of each one.
        */
       utils::ThreadPoolShPtr m_scheduler;
+
+      /**
+       * @brief - Index of the signal provided by the scheduler to notify of
+       *          rendered tiles. Will be disconnected before destroying the
+       *          object.
+       */
+      int m_tilesRenderedSignalID;
 
       /**
        * @brief - Holds the progress of the current rendering process. Note

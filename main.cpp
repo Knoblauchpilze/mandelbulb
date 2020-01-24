@@ -41,7 +41,6 @@
 
 // TODO: Fix issue with palette (maybe not needed if we refine the
 // notion of normal).
-// TODO: Investigate deadlock on exiting.
 
 int main(int /*argc*/, char** /*argv*/) {
   // Create the logger.
@@ -107,27 +106,34 @@ int main(int /*argc*/, char** /*argv*/) {
     app->setStatusBar(info);
 
     // Connect signals and slots of various components of the `UI`.
-    renderer->onCoordinatesChanged.connect_member<mandelbulb::InfoPanel>(
+    int slot1 = renderer->onCoordinatesChanged.connect_member<mandelbulb::InfoPanel>(
       info,
       &mandelbulb::InfoPanel::onCoordinatesChanged
     );
-    renderer->onDepthChanged.connect_member<mandelbulb::InfoPanel>(
+    int slot2 = renderer->onDepthChanged.connect_member<mandelbulb::InfoPanel>(
       info,
       &mandelbulb::InfoPanel::onDepthChanged
     );
 
-    fractal->onRenderingCompletionAdvanced.connect_member<mandelbulb::RenderMenu>(
+    int slot3 = fractal->onRenderingCompletionAdvanced.connect_member<mandelbulb::RenderMenu>(
       menu,
       &mandelbulb::RenderMenu::onCompletionChanged
     );
 
-    render->onRenderingSettingsChanged.connect_member<mandelbulb::Fractal>(
+    int slot4 = render->onRenderingSettingsChanged.connect_member<mandelbulb::Fractal>(
       fractal.get(),
       &mandelbulb::Fractal::onRenderingPropsChanged
     );
 
     // Run it.
     app->run();
+
+    // Disconnect signals.
+    renderer->onCoordinatesChanged.disconnect(slot1);
+    renderer->onDepthChanged.disconnect(slot2);
+
+    fractal->onRenderingCompletionAdvanced.disconnect(slot3);
+    render->onRenderingSettingsChanged.disconnect(slot4);
   }
   catch (const utils::CoreException& e) {
     utils::LoggerLocator::getLogger().logMessage(

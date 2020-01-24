@@ -10,6 +10,11 @@ namespace mandelbulb {
     // Protect from concurrent accesses
     Guard guard(m_propsLocker);
 
+    // Destroy the internal fractal.
+    m_fractal->onTilesRendered.disconnect(m_tilesRenderedSignalID);
+    m_fractal.reset();
+
+    // Clear the tiles.
     clearTiles();
   }
 

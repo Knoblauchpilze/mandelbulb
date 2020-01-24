@@ -38,7 +38,7 @@ namespace mandelbulb {
                      const utils::Boxi& area,
                      const RenderProperties& props);
 
-      ~RaytracingTile() = default;
+      virtual ~RaytracingTile() = default;
 
       /**
        * @brief - Reimplementation of the interface method allowing to perform

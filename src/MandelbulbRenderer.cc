@@ -12,6 +12,7 @@ namespace mandelbulb {
 
     m_propsLocker(),
     m_fractal(fractal),
+    m_tilesRenderedSignalID(utils::Signal<>::NoID),
 
     m_tex(),
     m_tilesRendered(false),
@@ -109,7 +110,7 @@ namespace mandelbulb {
   MandelbulbRenderer::build() {
     // Connect the fractal signal indicating that some tiles have been rendered to the
     // local slot allowing to schedule a repaint.
-    m_fractal->onTilesRendered.connect_member<MandelbulbRenderer>(
+    m_tilesRenderedSignalID = m_fractal->onTilesRendered.connect_member<MandelbulbRenderer>(
       this,
       &MandelbulbRenderer::onTilesRendered
     );

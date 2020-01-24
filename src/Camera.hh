@@ -35,7 +35,7 @@ namespace mandelbulb {
              float distance,
              const utils::Vector2f& rotations);
 
-      ~Camera() = default;
+      virtual ~Camera() = default;
 
       utils::Vector3f
       getEye() const noexcept;

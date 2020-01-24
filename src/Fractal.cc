@@ -18,6 +18,7 @@ namespace mandelbulb {
         getWorkerThreadCount()
       )
     ),
+    m_tilesRenderedSignalID(utils::Signal<>::NoID),
     m_progress(RenderingProgress{
       // Current iteration
       0u,
@@ -50,7 +51,7 @@ namespace mandelbulb {
   void
   Fractal::build() {
     // Connect the thread pool `work finished` signal to the local handler.
-    m_scheduler->onJobsCompleted.connect_member<Fractal>(
+    m_tilesRenderedSignalID = m_scheduler->onJobsCompleted.connect_member<Fractal>(
       this,
       &Fractal::handleTilesRendered
     );
