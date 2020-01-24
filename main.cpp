@@ -39,7 +39,6 @@
 # include "RenderMenu.hh"
 # include "RenderSettings.hh"
 
-// TODO: Check zoom in and out with mouse wheel.
 // TODO: Fix issue with palette (maybe not needed if we refine the
 // notion of normal).
 

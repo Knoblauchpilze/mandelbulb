@@ -61,7 +61,7 @@ namespace mandelbulb {
 
         while (steps < m_props.raySteps && !escaped && dist > m_props.hitThreshold) {
           // Get an estimation of the distance.
-          dist = getDistanceEstimator(p);
+          dist = getDistanceEstimator(p, m_props);
 
           // Add this and move on to the next step.
           tDist += dist;
@@ -79,6 +79,49 @@ namespace mandelbulb {
         }
       }
     }
+  }
+
+  float
+  RaytracingTile::getDistanceEstimator(const utils::Vector3f& p,
+                                       const RenderProperties& props) noexcept {
+    // Compute as many iterations as needed.
+    unsigned iter = 0u;
+    utils::Vector3f z = p;
+    float r = z.length();
+
+    float theta, phi;
+    float dr = 1.0f;
+
+    while (iter < props.accuracy && r < props.bailout) {
+      // Detect escaping series.
+      r = z.length();
+
+      if (r < props.bailout) {
+        // Convert to polar coordinates.
+        theta = std::acos(z.z() / r);
+        phi = std::atan2(z.y(), z.x());
+
+        // Update distance estimator.
+        dr = std::pow(r, props.exponent - 1.0f) * props.exponent * dr + 1.0f;
+
+        // Scale and rotate the point.
+        float zr = std::pow(r, props.exponent);
+        theta *= props.exponent;
+        phi *= props.exponent;
+
+        // Convert back to cartesian coordinates.
+        z.x() = zr * std::cos(phi) * std::sin(theta);
+        z.y() = zr * std::sin(phi) * std::sin(theta);
+        z.z() = zr * std::cos(theta);
+
+        z += p;
+      }
+
+      ++iter;
+    }
+
+    // Return the distance estimator.
+    return 0.5f * std::log(r) * r / dr;
   }
 
   utils::Vector3f
@@ -104,48 +147,6 @@ namespace mandelbulb {
     utils::Vector3f rawDir = percX * m_u + percY * m_v + m_w;
 
     return rawDir.normalized();
-  }
-
-  float
-  RaytracingTile::getDistanceEstimator(const utils::Vector3f& p) const noexcept {
-    // Compute as many iterations as needed.
-    unsigned iter = 0u;
-    utils::Vector3f z = p;
-    float r = z.length();
-
-    float theta, phi;
-    float dr = 1.0f;
-
-    while (iter < m_props.accuracy && r < m_props.bailout) {
-      // Detect escaping series.
-      r = z.length();
-
-      if (r < m_props.bailout) {
-        // Convert to polar coordinates.
-        theta = std::acos(z.z() / r);
-        phi = std::atan2(z.y(), z.x());
-
-        // Update distance estimator.
-        dr = std::pow(r, m_props.exponent - 1.0f) * m_props.exponent * dr + 1.0f;
-
-        // Scale and rotate the point.
-        float zr = std::pow(r, m_props.exponent);
-        theta *= m_props.exponent;
-        phi *= m_props.exponent;
-
-        // Convert back to cartesian coordinates.
-        z.x() = zr * std::cos(phi) * std::sin(theta);
-        z.y() = zr * std::sin(phi) * std::sin(theta);
-        z.z() = zr * std::cos(theta);
-
-        z += p;
-      }
-
-      ++iter;
-    }
-
-    // Return the distance estimator.
-    return 0.5f * std::log(r) * r / dr;
   }
 
 }

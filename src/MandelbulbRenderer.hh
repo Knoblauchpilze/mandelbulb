@@ -128,6 +128,27 @@ namespace mandelbulb {
       getArrowKeyRotationAngle() noexcept;
 
       /**
+       * @brief - Return a minimum viewing distance. When using the mouse wheel
+       *          the zooming in behavior nothing will happen if the viewing
+       *          distance is already smaller than this value. This avoid getting
+       *          too close of the fractal.
+       * @return - the minimum viewing distance.
+       */
+      static
+      constexpr float
+      getMinimumViewingDistance() noexcept;
+
+      /**
+       * @brief - Similar to `getMinimumViewingDistance` but provide a maximum
+       *          viewing distance above which the fractal does not show any
+       *          interesting details.
+       * @return - the maximum viewing distance.
+       */
+      static
+      constexpr float
+      getMaximumViewingDistance() noexcept;
+
+      /**
        * @brief - Provide a default value for the number of radians represented
        *          by a single pixel. This is used in case of scrolling where we
        *          want to transform a motion of the mouse in terms of real world

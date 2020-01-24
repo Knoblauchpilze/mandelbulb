@@ -66,6 +66,9 @@ namespace mandelbulb {
       bool
       setDims(const utils::Sizei& dims);
 
+      float
+      getDistance() const noexcept;
+
       /**
        * @brief - Assign a new distance from the origin to the camera. The rest
        *          of the properties are assumed to stay the same (including the

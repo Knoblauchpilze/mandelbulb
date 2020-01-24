@@ -61,6 +61,12 @@ namespace mandelbulb {
   }
 
   inline
+  float
+  Camera::getDistance() const noexcept {
+    return m_distance;
+  }
+
+  inline
   bool
   Camera::setDistance(float distance) {
     // Consistency check.

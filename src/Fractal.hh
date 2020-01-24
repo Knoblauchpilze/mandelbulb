@@ -51,15 +51,32 @@ namespace mandelbulb {
       rotateCamera(const utils::Vector2f& rotations);
 
       /**
+       * @brief - Get the current distance to the origin point of the orbit camera
+       *          used to visualize the fractal.
+       * @return - a value representing the distance to the center of the orbit of
+       *           the camera associated to this object.
+       */
+      float
+      getDistance() noexcept;
+
+      /**
+       * @brief - Returns the current distance estimation to the surface of the
+       *          fractal.
+       * @return - an estimation of the distance to the fractal given the current
+       *           forward vector of the camera linked to this fractal.
+       */
+      float
+      getDistanceEstimation() noexcept;
+
+      /**
        * @brief - Used to change the distance of the camera to its source by the
        *          specified factor. The value will be multiplied by the current
        *          value of the distance so using a value larger than `1` will
        *          actually make the camera be farther away than it was.
-       * @param factor - a muliplication factor for the current distance of the
-       *                 camera to its center.
+       * @param dist - the new distance to assign to the viewpoint on this fractal.
        */
       void
-      updateDistance(float factor);
+      updateDistance(float dist);
 
       /**
        * @brief - Used to retrieve the data representing the current view of the

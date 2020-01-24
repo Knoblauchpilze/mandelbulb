@@ -82,13 +82,34 @@ namespace mandelbulb {
   }
 
   inline
+  float
+  Fractal::getDistance() noexcept {
+    // Protect from concurrent accesses.
+    Guard guard(m_propsLocker);
+
+    return m_camera->getDistance();
+  }
+
+  inline
+  float
+  Fractal::getDistanceEstimation() noexcept {
+    // Protect from concurrent accesses.
+    Guard guard(m_propsLocker);
+
+    // Retrieve the current eye's position and compute
+    // an estimation of the distance to the fractal for
+    // this position.
+    return RaytracingTile::getDistanceEstimator(m_camera->getEye(), m_props);
+  }
+
+  inline
   void
-  Fractal::updateDistance(float factor) {
+  Fractal::updateDistance(float dist) {
     // Protect from concurrent accesses.
     Guard guard(m_propsLocker);
 
     // Update the camera.
-    bool changed = m_camera->setDistance(factor);
+    bool changed = m_camera->setDistance(dist);
 
     // In case the rotations did not modify the current state of the
     // camera we don't need to do anything more. Otherwise we should

@@ -102,6 +102,8 @@ namespace mandelbulb {
 
   void
   Fractal::handleTilesRendered(const std::vector<utils::AsynchronousJobShPtr>& tiles) {
+    float perc = 0.0f;
+
     {
       // Protect from concurrent accesses.
       Guard guard(m_propsLocker);
@@ -192,16 +194,16 @@ namespace mandelbulb {
           scheduleRendering(false);
         }
       }
-    }
 
-    // Compute the global progression: we need to clamp to `100%` in case we
-    // reach the last iteration and all the tasks related to it have completed
-    // as in this case we didn't schedule a rendering and thus the progress is
-    // still such that `m_progress.taskProgress = m_progress.taskTotal`.
-    float perc = std::min(1.0f, 1.0f *
-      (m_progress.iterationProgress * m_progress.taskTotal + m_progress.taskProgress) /
-      (m_progress.desiredIterations * m_progress.taskTotal)
-    );
+      // Compute the global progression: we need to clamp to `100%` in case we
+      // reach the last iteration and all the tasks related to it have completed
+      // as in this case we didn't schedule a rendering and thus the progress is
+      // still such that `m_progress.taskProgress = m_progress.taskTotal`.
+      perc = std::min(1.0f, 1.0f *
+        (m_progress.iterationProgress * m_progress.taskTotal + m_progress.taskProgress) /
+        (m_progress.desiredIterations * m_progress.taskTotal)
+      );
+    }
 
     // Notify external listeners.
     onRenderingCompletionAdvanced.safeEmit(

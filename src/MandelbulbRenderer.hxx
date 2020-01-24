@@ -100,10 +100,27 @@ namespace mandelbulb {
       // Protect from concurrent accesses.
       Guard guard(m_propsLocker);
 
-      // Perform the zoom in/out operation.
-      float factor = motion.y() > 0 ? getDefaultZoomInFactor() : getDefaultZoomOutFactor();
+      // Retrieve an estimation of the distance of the camera to the fractal.oat w =z
+      float z = m_fractal->getDistance();
+      float d = m_fractal->getDistanceEstimation();
 
-      m_fractal->updateDistance(factor);
+      bool zoomIn = motion.y() > 0;
+
+      // Avoid zooming in if wwe're already really close from the fractal and zoom out
+      // if we're already too far.
+      if ((zoomIn && d > getMinimumViewingDistance()) ||
+          (!zoomIn && d < getMaximumViewingDistance()))
+      {
+        // Perform the zoom in/out operation: we will zoom in half the distance
+        // to the fractal and zoom out by doubling the current distance.
+        // So for example if we're currently at `z` and the distance to reach the
+        // the fractal is `d` then we will move to `z - d + d / zoomIn` which set
+        // a distance to `zoomIn` closer to the fractal.
+        float factor = motion.y() > 0 ? getDefaultZoomInFactor() : getDefaultZoomOutFactor();
+        float newD = (z - d) + d / factor;
+
+        m_fractal->updateDistance(newD);
+      }
     }
 
     return sdl::graphic::ScrollableWidget::mouseWheelEvent(e);;
@@ -126,6 +143,18 @@ namespace mandelbulb {
   constexpr float
   MandelbulbRenderer::getArrowKeyRotationAngle() noexcept {
     return 0.314159f;
+  }
+
+  inline
+  constexpr float
+  MandelbulbRenderer::getMinimumViewingDistance() noexcept {
+    return 1.0f;
+  }
+
+  inline
+  constexpr float
+  MandelbulbRenderer::getMaximumViewingDistance() noexcept {
+    return 8.0f;
   }
 
   inline

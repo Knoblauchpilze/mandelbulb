@@ -66,6 +66,20 @@ namespace mandelbulb {
       const std::vector<float>&
       getDepthMap() const noexcept;
 
+      /**
+       * @brief - Returns a distance estimator of the fractal object from the point
+       *          `p` in input using the internal properties for determining when
+       *          to stop the computation.
+       * @param p - the point for which the distance estimator should be computed.
+       * @param props - the properties to use to compute the fractal.
+       * @return - a floating point value estimating the distance from the point to
+       *           the fractal.
+       */
+      static
+      float
+      getDistanceEstimator(const utils::Vector3f& p,
+                           const RenderProperties& props) noexcept;
+
     private:
 
       /**
@@ -92,17 +106,6 @@ namespace mandelbulb {
       utils::Vector3f
       generateRayDir(int x,
                      int y) const;
-
-      /**
-       * @brief - Returns a distance estimator of the fractal object from the point
-       *          `p` in input using the internal properties for determining when
-       *          to stop the computation.
-       * @param p - the point for which the distance estimator should be computed.
-       * @return - a floating point value estimating the distance from the point to
-       *           the fractal.
-       */
-      float
-      getDistanceEstimator(const utils::Vector3f& p) const noexcept;
 
     private:
 
