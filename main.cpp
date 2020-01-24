@@ -41,6 +41,8 @@
 
 // TODO: Fix issue with palette (maybe not needed if we refine the
 // notion of normal).
+// TODO: Check position and depth of displayed information.
+// TODO: Investigate deadlock on exiting.
 
 int main(int /*argc*/, char** /*argv*/) {
   // Create the logger.
@@ -113,10 +115,6 @@ int main(int /*argc*/, char** /*argv*/) {
     renderer->onDepthChanged.connect_member<mandelbulb::InfoPanel>(
       info,
       &mandelbulb::InfoPanel::onDepthChanged
-    );
-    fractal->onCameraChanged.connect_member<mandelbulb::InfoPanel>(
-      info,
-      &mandelbulb::InfoPanel::onCameraChanged
     );
 
     fractal->onRenderingCompletionAdvanced.connect_member<mandelbulb::RenderMenu>(

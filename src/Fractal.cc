@@ -31,7 +31,6 @@ namespace mandelbulb {
     m_dims(),
     m_samples(),
 
-    onCameraChanged(),
     onRenderingCompletionAdvanced(),
     onTilesRendered()
   {

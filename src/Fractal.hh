@@ -329,12 +329,6 @@ namespace mandelbulb {
     public:
 
       /**
-       * @brief - Signal notifying external listeners that the camera providing
-       *          the viewpoint on the fractal object has been changed.
-       */
-      utils::Signal<CameraShPtr> onCameraChanged;
-
-      /**
        * @brief - Signal notifying external listeners that the rendering of the
        *          fractal with the current viewpoint and properties has progressed
        *          to the specified value.

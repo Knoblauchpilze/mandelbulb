@@ -69,18 +69,6 @@ namespace mandelbulb {
     return getChildAs<sdl::graphic::LabelWidget>(getDepthLabelName());
   }
 
-  inline
-  const char*
-  InfoPanel::getCameraLabelName() {
-    return "camera_label";
-  }
-
-  inline
-  sdl::graphic::LabelWidget*
-  InfoPanel::getCameraLabel() {
-    return getChildAs<sdl::graphic::LabelWidget>(getCameraLabelName());
-  }
-
 }
 
 #endif    /* INFO_PANEL_HXX */

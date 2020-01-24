@@ -24,9 +24,6 @@ namespace mandelbulb {
       void
       onDepthChanged(float depth);
 
-      void
-      onCameraChanged(CameraShPtr camera);
-
     private:
 
       static
@@ -66,13 +63,6 @@ namespace mandelbulb {
 
       sdl::graphic::LabelWidget*
       getDepthLabel();
-
-      static
-      const char*
-      getCameraLabelName();
-
-      sdl::graphic::LabelWidget*
-      getCameraLabel();
 
       void
       build();

@@ -252,12 +252,6 @@ namespace mandelbulb {
     // reset everything regarding the progression.
     m_computationState = State::Accumulating;
     scheduleRendering(true);
-
-    // Notify listeners that a new camera exists.
-    onCameraChanged.safeEmit(
-      std::string("onCameraChanged(") + m_camera->getEye().toString() + ")",
-      m_camera
-    );
   }
 
 }

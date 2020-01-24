@@ -85,44 +85,6 @@ namespace mandelbulb {
   }
 
   void
-  InfoPanel::onCameraChanged(CameraShPtr camera) {
-    // Check whether the input camera is valid.
-    if (camera == nullptr) {
-      log(
-        std::string("Could not update eye's position label from invalid null camera"),
-        utils::Level::Error
-      );
-
-      return;
-    }
-
-    // Retrieve the camera label and update its associated text.
-    sdl::graphic::LabelWidget* cam = getCameraLabel();
-
-    if (cam == nullptr) {
-      log(
-        std::string("Could not update camera eye to ") + camera->getEye().toString() + ", unable to fetch display label",
-        utils::Level::Error
-      );
-
-      return;
-    }
-
-    utils::Vector3f eye = camera->getEye();
-
-    std::stringstream ss;
-    ss << "[x: ";
-    ss << std::setprecision(4) << eye.x();
-    ss << ", y: ";
-    ss << std::setprecision(4) << eye.y();
-    ss << ", z: ";
-    ss << std::setprecision(4) << eye.z();
-    ss << "]";
-
-    cam->setText("Cam: " + ss.str());
-  }
-
-  void
   InfoPanel::build() {
     // This component uses a horizontal linear layout to position the
     // internal components.
@@ -179,28 +141,9 @@ namespace mandelbulb {
       )
     );
 
-    // Create camera position label.
-    sdl::graphic::LabelWidget* cam = new sdl::graphic::LabelWidget(
-      getCameraLabelName(),
-      std::string("Cam: [x: -, y: -, z: -]"),
-      getGeneralTextFont(),
-      getGeneralTextSize(),
-      sdl::graphic::LabelWidget::HorizontalAlignment::Left,
-      sdl::graphic::LabelWidget::VerticalAlignment::Center,
-      this,
-      getBackgroundColor()
-    );
-    if (cam == nullptr) {
-      error(
-        std::string("Could not create info panel"),
-        std::string("Camera label not created")
-      );
-    }
-
     // Build layout.
     layout->addItem(coords);
     layout->addItem(depth);
-    layout->addItem(cam);
   }
 
 }
