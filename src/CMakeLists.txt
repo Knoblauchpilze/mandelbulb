@@ -1,9 +1,11 @@
-project (mandelbulb_lib)
+project (mandelbulb_lib LANGUAGES CXX CUDA)
 
 set (CMAKE_CXX_STANDARD 14)
 
 #set (CMAKE_VERBOSE_MAKEFILE ON)
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-gencode=arch=compute_50,code=sm_50")
 
 set (SOURCES
   MandelbulbRenderer.cc
@@ -15,6 +17,7 @@ set (SOURCES
   RenderSettings.cc
   Fractal.cc
   RaytracingTile.cc
+  Test.cu
   )
 
 add_library (mandelbulb_lib SHARED
