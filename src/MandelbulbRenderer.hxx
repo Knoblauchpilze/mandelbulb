@@ -22,10 +22,8 @@ namespace mandelbulb {
     // Use the base handler.
     sdl::core::SdlWidget::updatePrivate(window);
 
-    // Update the rendering options if needed.
-    if (m_fractal != nullptr) {
-      m_fractal->setCameraDims(window.toSize());
-    }
+    // Update the camera dimensions.
+    m_fractal->setCameraDims(window.toSize());
   }
 
   inline
@@ -52,36 +50,7 @@ namespace mandelbulb {
     // Protect from concurrent accesses.
     Guard guard(m_propsLocker);
 
-    // We need to both retrieve the depth at the position of the mouse and
-    // the real world coordinate of the point. Note that in order to send
-    // the info that the coordinates are invalid we will use the minimum
-    // value of a `float`.
-    bool hit = false;
-    utils::Vector3f wCoords(
-      std::numeric_limits<float>::lowest(),
-      std::numeric_limits<float>::lowest(),
-      std::numeric_limits<float>::lowest()
-    );
-
-    // Convert the position to internal coordinates.
-    utils::Vector2f fConv = mapFromGlobal(e.getMousePosition());
-    utils::Vector2i conv(
-      static_cast<int>(std::round(fConv.x())),
-      static_cast<int>(std::round(fConv.y()))
-    );
-
-    float depth = m_fractal->getPoint(conv, wCoords, hit);
-
-    // Notify external listeners.
-    onCoordinatesChanged.safeEmit(
-      std::string("onCoordinatesChanged(") + wCoords.toString() + ")",
-      wCoords
-    );
-
-    onDepthChanged.safeEmit(
-      std::string("onDepthChanged(") + std::to_string(depth) + ")",
-      depth
-    );
+    notifyCoordinatesChanged(e.getMousePosition());
 
     // Use the base handler to provide a return value.
     return sdl::graphic::ScrollableWidget::mouseMoveEvent(e);
@@ -96,30 +65,35 @@ namespace mandelbulb {
       // Protect from concurrent accesses to perform the zoom operation and
       // also schedule the rendering.
       utils::Vector2i motion = e.getScroll();
+      bool zoomIn = motion.y() > 0;
 
       // Protect from concurrent accesses.
       Guard guard(m_propsLocker);
 
-      // Retrieve an estimation of the distance of the camera to the fractal.oat w =z
+      // Retrieve an estimation of the distance of the camera to the fractal.
       float z = m_fractal->getDistance();
       float d = m_fractal->getDistanceEstimation();
 
-      bool zoomIn = motion.y() > 0;
+      // Compute the new distance after the zooming in/out operation.
+      float factor = zoomIn > 0 ? getDefaultZoomInFactor() : getDefaultZoomOutFactor();
+      float newZ = (z - d) + d / factor;
 
-      // Avoid zooming in if wwe're already really close from the fractal and zoom out
+      // Compute the new distance to the fractal.
+      float newD = d - (z - newZ);
+
+      log("DE: " + std::to_string(d) + ", d: " + std::to_string(z) + ", new: " + std::to_string(newZ) + ", newDE: " + std::to_string(newD) + ", min: " + std::to_string(getMinimumViewingDistance()));
+
+      // Avoid zooming in if we're already really close from the fractal and zoom out
       // if we're already too far.
-      if ((zoomIn && d > getMinimumViewingDistance()) ||
-          (!zoomIn && d < getMaximumViewingDistance()))
+      if ((zoomIn && newD > getMinimumViewingDistance()) ||
+          (!zoomIn && newD < getMaximumViewingDistance()))
       {
         // Perform the zoom in/out operation: we will zoom in half the distance
         // to the fractal and zoom out by doubling the current distance.
         // So for example if we're currently at `z` and the distance to reach the
         // the fractal is `d` then we will move to `z - d + d / zoomIn` which set
         // a distance to `zoomIn` closer to the fractal.
-        float factor = motion.y() > 0 ? getDefaultZoomInFactor() : getDefaultZoomOutFactor();
-        float newD = (z - d) + d / factor;
-
-        m_fractal->updateDistance(newD);
+        m_fractal->updateDistance(newZ);
       }
     }
 
@@ -148,7 +122,7 @@ namespace mandelbulb {
   inline
   constexpr float
   MandelbulbRenderer::getMinimumViewingDistance() noexcept {
-    return 1.0f;
+    return 0.01f;
   }
 
   inline
@@ -226,6 +200,42 @@ namespace mandelbulb {
   void
   MandelbulbRenderer::setTilesChanged() noexcept {
     m_tilesRendered = true;
+  }
+
+  inline
+  void
+  MandelbulbRenderer::notifyCoordinatesChanged(const utils::Vector2f& coord) noexcept {
+    // Note that we only want to notify coordinates in case the mouse is inside the
+    // widget otherwise it makes no sense.
+    if (!isMouseInside()) {
+      return;
+    }
+
+    // Convert the coordinates to local coordinate frame.
+    utils::Vector2f fConv = mapFromGlobal(coord);
+
+    // Convert to integer camera plane coordinates.
+    utils::Vector2i conv(
+      static_cast<int>(std::round(fConv.x())),
+      static_cast<int>(std::round(fConv.y()))
+    );
+
+    // Query the fractal object to get the point at these coordinates.
+    bool hit = false;
+    utils::Vector3f wCoords;
+
+    float depth = m_fractal->getPoint(conv, wCoords, hit);
+
+    // Notify external listeners.
+    onCoordinatesChanged.safeEmit(
+      std::string("onCoordinatesChanged(") + wCoords.toString() + ")",
+      wCoords
+    );
+
+    onDepthChanged.safeEmit(
+      std::string("onDepthChanged(") + std::to_string(depth) + ")",
+      depth
+    );
   }
 
 }

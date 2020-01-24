@@ -142,7 +142,10 @@ namespace mandelbulb {
           float depth = std::fmod(depths[off + x], m_palette.range) / m_palette.range;
 
           // Assign the color using the palette.
-          colors[off + x] = m_palette.palette->getColorAt(depth);
+          // Perform an inversion of the `y` axis so that the generated
+          // image is not upside down.
+          int rOff = (s.h() - 1 - y) * s.w();
+          colors[rOff + x] = m_palette.palette->getColorAt(depth);
         }
       }
     }

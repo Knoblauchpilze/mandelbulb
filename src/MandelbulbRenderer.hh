@@ -236,6 +236,15 @@ namespace mandelbulb {
       void
       loadTiles();
 
+      /**
+       * @brief - Used to notify external listeners about a change in the pointed coords
+       *          by the mouse. This can eithe result in a motion of the mouse or a move
+       *          in the position/rotation of the camera.
+       * @param coord - the mouse coordinates in global coordinate frame.
+       */
+      void
+      notifyCoordinatesChanged(const utils::Vector2f& coord) noexcept;
+
     private:
 
       /**

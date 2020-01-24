@@ -41,7 +41,6 @@
 
 // TODO: Fix issue with palette (maybe not needed if we refine the
 // notion of normal).
-// TODO: Check position and depth of displayed information.
 // TODO: Investigate deadlock on exiting.
 
 int main(int /*argc*/, char** /*argv*/) {
@@ -80,7 +79,7 @@ int main(int /*argc*/, char** /*argv*/) {
     // to control the computation parameters of this object.
     const float fov = 40.0f;
     std::vector<float> transform(16u, 0.0f);
-    const float distance = 5.0f;
+    const float distance = 2.0f;
 
     mandelbulb::CameraShPtr cam = std::make_shared<mandelbulb::Camera>(
       utils::Sizei(512, 256),
