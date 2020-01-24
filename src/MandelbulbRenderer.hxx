@@ -81,8 +81,6 @@ namespace mandelbulb {
       // Compute the new distance to the fractal.
       float newD = d - (z - newZ);
 
-      log("DE: " + std::to_string(d) + ", d: " + std::to_string(z) + ", new: " + std::to_string(newZ) + ", newDE: " + std::to_string(newD) + ", min: " + std::to_string(getMinimumViewingDistance()));
-
       // Avoid zooming in if we're already really close from the fractal and zoom out
       // if we're already too far.
       if ((zoomIn && newD > getMinimumViewingDistance()) ||
