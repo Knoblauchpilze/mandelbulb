@@ -213,7 +213,8 @@ namespace utils {
       m_threads[id] = std::thread(
         &CudaExecutor::jobFetchingLoop,
         this,
-        id
+        id,
+        m_schedulingData[id]
       );
     }
   }
@@ -359,7 +360,9 @@ namespace utils {
   }
 
   void
-  CudaExecutor::jobFetchingLoop(unsigned threadID) {
+  CudaExecutor::jobFetchingLoop(unsigned threadID,
+                                CudaSchedulingData gpuData)
+  {
     log("Creating thread " + std::to_string(threadID) + " for thread pool", Level::Verbose);
 
     // Create the locker to use to wait for job to do.

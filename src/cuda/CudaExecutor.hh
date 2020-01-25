@@ -85,6 +85,29 @@ namespace utils {
   private:
 
     /**
+     * @brief - This structure is used to handle the creation of the needed resources
+     *          to compute the jobs. This include the input data and the output buffer
+     *          which will be persisted between cuda launches.
+     *          Such a structrue is passed on to each created thread which will then
+     *          use it to schedule the jobs that are fed to it.
+     *          The creation and deletion of these resoruces is handled by the executor
+     *          iteself and not the threads.
+     */
+    struct CudaSchedulingData {
+      cuda::stream_t stream; ///< The stream to use to perform the gpu operations. This
+                             ///< will be used to wait upon and to ensure some level of
+                             ///< concurrency within the cuda kernels.
+      void* resBuffer;       ///< A device memory pointer holding the results computed
+                             ///< by each job. This segment of memory is then copied to
+                             ///< host memory and to the job that started the process.
+      void* paramsBuffer;    ///< A memory pointer allowing to pass on parameters to
+                             ///< the cuda kernel.
+      unsigned step;         ///< The lenght in bytes of a single line of data of the
+                             ///< `resBuffer`. Basically represents the advance of a
+                             ///< single unit for the `y` coordinate.
+    };
+
+    /**
      * @brief - Used to create the thread pool used by this scheduler to perform the
      *          user's computations.
      *          The goal of this method is to create right away the cuda memory areas
@@ -139,12 +162,18 @@ namespace utils {
      *          when needed.
      *          This method takes an identifier that is used to identify the jobs that
      *          are processed by the thread (and the cuda stream).
+     *          It also takes a parmeter representing the gpu resources to use when
+     *          scheduling the jobs on the gpu. This describes both the stream to use
+     *          to queue the jobs and the memory locations allowing to both pass args
+     *          to the jobs and retrieve the results back.
      * @param threadID - a provided counter identifying this thread. Nothing fancy but
      *                   it allows to easily determine from which thread the completed
      *                   jobs come from.
+     * @param gpuData - a description of the gpu data to use to schedule operations.
      */
     void
-    jobFetchingLoop(unsigned threadID);
+    jobFetchingLoop(unsigned threadID,
+                    CudaSchedulingData gpuData);
 
     /**
      * @brief - Used as the main loop method when creating the threads to handle the
@@ -188,29 +217,6 @@ namespace utils {
     struct Job {
       CudaJobShPtr task;
       unsigned batch;
-    };
-
-    /**
-     * @brief - This structure is used to handle the creation of the needed resources
-     *          to compute the jobs. This include the input data and the output buffer
-     *          which will be persisted between cuda launches.
-     *          Such a structrue is passed on to each created thread which will then
-     *          use it to schedule the jobs that are fed to it.
-     *          The creation and deletion of these resoruces is handled by the executor
-     *          iteself and not the threads.
-     */
-    struct CudaSchedulingData {
-      cuda::stream_t stream; ///< The stream to use to perform the gpu operations. This
-                             ///< will be used to wait upon and to ensure some level of
-                             ///< concurrency within the cuda kernels.
-      void* resBuffer;       ///< A device memory pointer holding the results computed
-                             ///< by each job. This segment of memory is then copied to
-                             ///< host memory and to the job that started the process.
-      void* paramsBuffer;    ///< A memory pointer allowing to pass on parameters to
-                             ///< the cuda kernel.
-      unsigned step;         ///< The lenght in bytes of a single line of data of the
-                             ///< `resBuffer`. Basically represents the advance of a
-                             ///< single unit for the `y` coordinate.
     };
 
     /**
