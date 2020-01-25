@@ -18,6 +18,7 @@ set (SOURCES
   Fractal.cc
   RaytracingTile.cc
   Test.cu
+  CudaExecutor.cc
   )
 
 add_library (mandelbulb_lib SHARED
