@@ -4,8 +4,9 @@
 namespace utils {
 
   CudaExecutor::CudaExecutor(unsigned size,
+                             unsigned inElementSize,
                              const utils::Sizei& bufferSize,
-                             unsigned elementSize):
+                             unsigned outElementSize):
     CoreObject("executor"),
 
     m_poolLocker(),
@@ -32,6 +33,9 @@ namespace utils {
     m_resultsThreadLocker(),
     m_resultsHandlingThread(),
 
+    m_paramSize(),
+    m_outElemSize(),
+
     onJobsCompleted()
   {
     setService("cuda");
@@ -43,21 +47,9 @@ namespace utils {
         std::string("Invalid thread pool size of ") + std::to_string(size)
       );
     }
-    if (bufferSize.w() <= 0 || bufferSize.h() <= 0) {
-      error(
-        std::string("Could not create cuda executor service"),
-        std::string("Invalid thread pool size of ") + bufferSize.toString()
-      );
-    }
-    if (elementSize == 0u) {
-      error(
-        std::string("Could not create cuda executor service"),
-        std::string("Invalid element size of ") + std::to_string(elementSize)
-      );
-    }
 
     // Create the scheduling data.
-    createCudaSchedulingData(size, bufferSize, elementSize);
+    createCudaSchedulingData(size, inElementSize, bufferSize, outElementSize);
 
     // Create the threads associated to this object.
     createThreadPool(size);
@@ -139,6 +131,30 @@ namespace utils {
           std::string("Could not find adequate queue for job \"") + jobs[id]->getName() + "\" with priority " +
           std::to_string(static_cast<int>(jobs[id]->getPriority())),
           Level::Error
+        );
+
+        continue;
+      }
+
+      // Check whether the job matches the internal size both for
+      // parameter and output result. If this is not the case we
+      // won't be able to schedule it correctly.
+      if (jobs[id]->getInputDataSize() != m_paramSize) {
+        log(
+          std::string("Trying to submit job \"") + jobs[id]->getName() + "\" with a parameter size of " +
+          std::to_string(jobs[id]->getInputDataSize()) + " while expected value is " + std::to_string(m_paramSize) +
+          ", discarding it",
+          utils::Level::Error
+        );
+
+        continue;
+      }
+      if (jobs[id]->getOutputDataSize() != m_outElemSize) {
+        log(
+          std::string("Trying to submit job \"") + jobs[id]->getName() + "\" with a result size of " +
+          std::to_string(jobs[id]->getOutputDataSize()) + " while expected value is " + std::to_string(m_outElemSize) +
+          ", discarding it",
+          utils::Level::Error
         );
 
         continue;
@@ -265,6 +281,7 @@ namespace utils {
 
   void
   CudaExecutor::createCudaSchedulingData(unsigned count,
+                                         unsigned paramSize,
                                          const utils::Sizei& bufferSize,
                                          unsigned elementSize)
   {
@@ -274,10 +291,43 @@ namespace utils {
     // Create resources for each needed thread.
     bool success = false;
 
+    // Check consistency.
+    if (paramSize == 0u) {
+      error(
+        std::string("Could not create cuda executor service"),
+        std::string("Invalid parameter size of ") + std::to_string(paramSize)
+      );
+    }
+    if (bufferSize.w() <= 0 || bufferSize.h() <= 0) {
+      error(
+        std::string("Could not create cuda executor service"),
+        std::string("Invalid thread pool size of ") + bufferSize.toString()
+      );
+    }
+    if (elementSize == 0u) {
+      error(
+        std::string("Could not create cuda executor service"),
+        std::string("Invalid element size of ") + std::to_string(elementSize)
+      );
+    }
+
+    // Register elements size.
+    m_paramSize = paramSize;
+    m_outElemSize = elementSize;
+
     unsigned id = 0u;
     while (id < count) {
       // Create the stream to use to schedule operations.
       cuda::stream_t stream = m_cudaAPI.create(&success);
+      if (!success) {
+        error(
+          std::string("Could not create cuda executor service"),
+          m_cudaAPI.getLastError()
+        );
+      }
+
+      // Allocate the input parameters memory.
+      void* paramMem = m_cudaAPI.allocate(m_paramSize, &success);
       if (!success) {
         error(
           std::string("Could not create cuda executor service"),
@@ -295,21 +345,13 @@ namespace utils {
         );
       }
 
-      // Allocate the input parameters memory.
-      void* paramsBuffer = m_cudaAPI.allocate(elementSize, &success);
-      if (!success) {
-        error(
-          std::string("Could not create cuda executor service"),
-          m_cudaAPI.getLastError()
-        );
-      }
-
       // Create the scheduling data and register it in the internal array.
       m_schedulingData.push_back(
         CudaSchedulingData{
           stream,
+          paramMem,
+          m_paramSize,
           resBuffer,
-          paramsBuffer,
           step
         }
       );
@@ -348,7 +390,7 @@ namespace utils {
       }
 
       // Free the input parameters memory.
-      success = m_cudaAPI.free(d.paramsBuffer);
+      success = m_cudaAPI.free(d.params);
       if (!success) {
         log(
           std::string("Could not correctly destroy parameters buffer associated to thread ") + std::to_string(id) +

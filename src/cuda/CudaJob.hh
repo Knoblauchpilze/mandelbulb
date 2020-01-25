@@ -23,6 +23,18 @@ namespace utils {
       getInputDataSize() = 0;
 
       /**
+       * @brief - Interface method allowing to retrieve the amount of memory needed to store
+       *          a single element of the result buffer expected by this job. The size uses
+       *          bytes and should be sufficient to store the data produced by the cuda job
+       *          computing the data for this tile.
+       *          Used and checked internally by the cuda executor to make sure that it is
+       *          consistent with its reserved space and to actually pass the data to the
+       *          jobs.
+       */
+      virtual unsigned
+      getOutputDataSize() = 0;
+
+      /**
        * @brief - Retrieve the priority associated to this job. We assume that the priority
        *          cannot be modified once the job has been created hence the fact that we
        *          are allowed to access it without locking anything.

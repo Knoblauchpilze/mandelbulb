@@ -55,6 +55,18 @@ namespace mandelbulb {
       getPropsSize() noexcept;
 
       /**
+       * @brief - Similar to `getPropsSize` but provides the size in bytes of a
+       *          single element of the result buffer of this tile. In the case
+       *          of a raytracing tile it is a single `float` which translates
+       *          the depth to reach the fractal object.
+       * @return - the size in bytes needed to describe a single element of the
+       *           result buffer.
+       */
+      static
+      constexpr unsigned
+      getResultSize() noexcept;
+
+      /**
        * @brief - Reimplementation of the base class method which basically wraps
        *          the information returned by the `getPropsSize` method. See the
        *          description of this method for more info.
@@ -62,6 +74,15 @@ namespace mandelbulb {
        */
       unsigned
       getInputDataSize() override;
+
+      /**
+       * @brief - Reimplementation of the base class method which basically wraps
+       *          the information returned by the `getResultSize` method. See the
+       *          description of this method for more info.
+       * @return - the size in bytes for a single element of the result buffer.
+       */
+      unsigned
+      getOutputDataSize() override;
 
       /**
        * @brief - TODO: Update.

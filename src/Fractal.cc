@@ -16,8 +16,9 @@ namespace mandelbulb {
     m_scheduler(
       std::make_shared<utils::CudaExecutor>(
         getWorkerThreadCount(),
+        RaytracingTile::getPropsSize(),
         utils::Sizei(getTileWidth(), getTileHeight()),
-        RaytracingTile::getPropsSize()
+        RaytracingTile::getResultSize()
       )
     ),
     m_tilesRenderedSignalID(utils::Signal<>::NoID),
@@ -57,9 +58,6 @@ namespace mandelbulb {
       this,
       &Fractal::handleTilesRendered
     );
-
-    // Disable logging for the scheduler.
-    m_scheduler->allowLog(false);
   }
 
   void

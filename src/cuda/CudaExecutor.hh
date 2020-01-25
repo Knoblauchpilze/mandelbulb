@@ -31,17 +31,22 @@ namespace utils {
      *          through the calls so as not to waste processing time allocating
      *          a buffer for a single use.
      * @param size - the number of cuda streams to create for this pool.
+     * @param inElementSize - the size in bytes of the parameter to the kernel.
+     *                        Right now we only handle a single parameter for
+     *                        each kernel. It will be assigned this number of
+     *                        bytes.
      * @param bufferSize - the size of the buffers passed to cuda kernels using
      *                     a single element metric: the total size is computed
-     *                     from this value and the `elementSize` value.
-     * @param elementSize - the size in bytes of a single element of the output
+     *                     from this value and the `outElementSize` value.
+     * @param inElementSize - the size in bytes of a single element of the output
      *                      buffer. The total size to allocate is computed from
      *                      both this value and `bufferSize` and is persisted
      *                      through launches.
      */
     CudaExecutor(unsigned size,
-                  const Sizei& bufferSize,
-                  unsigned elementSize);
+                 unsigned inElementSize,
+                 const Sizei& bufferSize,
+                 unsigned outElementSize);
 
     /**
      * @brief - Used to destroy the pool and terminate all the threads used to
@@ -97,12 +102,14 @@ namespace utils {
       cuda::stream_t stream; ///< The stream to use to perform the gpu operations. This
                              ///< will be used to wait upon and to ensure some level of
                              ///< concurrency within the cuda kernels.
+      void* params;          ///< A memory pointer allowing to pass on parameters to
+                             ///< the cuda kernel.
+      unsigned paramSize;    ///< The size in bytes of the input structure used to fill
+                             ///< the `params` buffer.
       void* resBuffer;       ///< A device memory pointer holding the results computed
                              ///< by each job. This segment of memory is then copied to
                              ///< host memory and to the job that started the process.
-      void* paramsBuffer;    ///< A memory pointer allowing to pass on parameters to
-                             ///< the cuda kernel.
-      unsigned step;         ///< The lenght in bytes of a single line of data of the
+      unsigned step;         ///< The length in bytes of a single line of data of the
                              ///< `resBuffer`. Basically represents the advance of a
                              ///< single unit for the `y` coordinate.
     };
@@ -138,12 +145,14 @@ namespace utils {
      *          the executor service.
      * @param count - the number of resources to create. This usually corresponds to
      *                the number of threads to create to process the jobs.
+     * @param paramSize - the size in bytes of the parameter of the kernel.
      * @param buffer - the number of elements in the output buffer used by the jobs to
      *                 communicate back the results.
      * @param elementSize - the size in bytes of a single element of the output buffer.
      */
     void
     createCudaSchedulingData(unsigned count,
+                             unsigned paramSize,
                              const utils::Sizei& bufferSize,
                              unsigned elementSize);
 
@@ -361,6 +370,19 @@ namespace utils {
      *          we could hang the program.
      */
     std::thread m_resultsHandlingThread;
+
+    /**
+     * @brief - Used to retrieve the size in bytes allocated for parameter of the jobs.
+     *          This value is copied into the scheduling data of each thread and is used
+     *          to check input job for consistency.
+     */
+    unsigned m_paramSize;
+
+    /**
+     * @brief - Similar as `m_paramSize` but hold the size in bytes for a single element
+     *          of the output buffer of a job.
+     */
+    unsigned m_outElemSize;
 
   public:
 

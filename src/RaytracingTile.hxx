@@ -12,9 +12,21 @@ namespace mandelbulb {
   }
 
   inline
+  constexpr unsigned
+  RaytracingTile::getResultSize() noexcept {
+    return sizeof(float);
+  }
+
+  inline
   unsigned
   RaytracingTile::getInputDataSize() {
     return getPropsSize();
+  }
+
+  inline
+  unsigned
+  RaytracingTile::getOutputDataSize() {
+    return getResultSize();
   }
 
   inline
