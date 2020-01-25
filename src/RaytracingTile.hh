@@ -76,6 +76,24 @@ namespace mandelbulb {
       getInputDataSize() override;
 
       /**
+       * @brief - Reimplementation of the base class method to retrieve the dims
+       *          of the output buffer needed by this job. In the case of a tile
+       *          we just return the size of the internal depth map.
+       * @return - the size of the internal depth map.
+       */
+      utils::Sizei
+      getOutputSize() override;
+
+      /**
+       * @brief - Reimplementation of the base class method to provide the step of
+       *          the output buffer. Here we're storing the depth map using a vec
+       *          so the step does not include any padding.
+       * @return - the size of a single line of data in the internal depth map.
+       */
+      unsigned
+      getOutputDataStep() override;
+
+      /**
        * @brief - Reimplementation of the base class method which basically wraps
        *          the information returned by the `getResultSize` method. See the
        *          description of this method for more info.
@@ -83,6 +101,22 @@ namespace mandelbulb {
        */
       unsigned
       getOutputDataSize() override;
+
+      /**
+       * @brief - Reimplementation of the base class method to provide a pointer
+       *          to the actual memory location of the rendering properties.
+       * @return - a pointer to the internal rendering properties.
+       */
+      void*
+      getInputData() override;
+
+      /**
+       * @brief - Reimplementation of the base class method to expose a pointer to
+       *          the internal `m_depthMap` vector where data can be saved.
+       * @return - a pointer to the output result buffer for this job.
+       */
+      void*
+      getOutputData() override;
 
       /**
        * @brief - TODO: Update.

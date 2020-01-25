@@ -24,9 +24,33 @@ namespace mandelbulb {
   }
 
   inline
+  utils::Sizei
+  RaytracingTile::getOutputSize() {
+    return m_area.toSize();
+  }
+
+  inline
+  unsigned
+  RaytracingTile::getOutputDataStep() {
+    return m_area.w() * getOutputDataSize();
+  }
+
+  inline
   unsigned
   RaytracingTile::getOutputDataSize() {
     return getResultSize();
+  }
+
+  inline
+  void*
+  RaytracingTile::getInputData() {
+    return &m_props;
+  }
+
+  inline
+  void*
+  RaytracingTile::getOutputData() {
+    return m_depthMap.data();
   }
 
   inline

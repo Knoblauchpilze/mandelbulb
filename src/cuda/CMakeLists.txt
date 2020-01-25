@@ -9,7 +9,6 @@ set (CUDAFLAGS "${CUDAFLAGS};-arch=sm_50")
 
 set (SOURCES
   CudaExecutor.cu
-  CudaJob.cc
   CudaWrapper.cu
   )
 

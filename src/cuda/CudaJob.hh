@@ -11,6 +11,15 @@ namespace utils {
     public:
 
       /**
+       * @brief - Retrieve the priority associated to this job. We assume that the priority
+       *          cannot be modified once the job has been created hence the fact that we
+       *          are allowed to access it without locking anything.
+       * @return - the priority associated to this job.
+       */
+      Priority
+      getPriority() const noexcept;
+
+      /**
        * @brief - Interface method allowing to retrieve the amount of memory needed to store
        *          the input data for this job. This size is expressed in bytes and should be
        *          sufficient to store all the data that will be passed as input arguments of
@@ -21,6 +30,29 @@ namespace utils {
        */
       virtual unsigned
       getInputDataSize() = 0;
+
+      /**
+       * @brief - Interface method describing the dimensions of the result buffer to allocate
+       *          for this job. It is an indication of the amount of data that should be used
+       *          by the scheduler to execute the job in the cuda kernels. Combined with the
+       *          `getOutputDataSize` one can determine precisely the amount of memory that
+       *          will have to be reserved to correctly execute the job.
+       * @return - a size describing the dimensions of the output buffer needed by this job.
+       */
+      virtual utils::Sizei
+      getOutputSize() = 0;
+
+      /**
+       * @brief - Interface method to provide the step of the output buffer for this job. As
+       *          the precise implementation of the memory layout for this job is not known
+       *          we need to fetch the length in bytes of a single line of data for this job.
+       *          This value should at least be `getOutputSize().w() * getOutputDataSize()`
+       *          but can be larger if some padding is added.
+       * @return - a value indicating the length in bytes of a single line of data in the
+       *           output buffer for this job.
+       */
+      virtual unsigned
+      getOutputDataStep() = 0;
 
       /**
        * @brief - Interface method allowing to retrieve the amount of memory needed to store
@@ -35,13 +67,24 @@ namespace utils {
       getOutputDataSize() = 0;
 
       /**
-       * @brief - Retrieve the priority associated to this job. We assume that the priority
-       *          cannot be modified once the job has been created hence the fact that we
-       *          are allowed to access it without locking anything.
-       * @return - the priority associated to this job.
+       * @brief - Interface method allowing to retrieve a pointer to the input parameter to
+       *          pass to the kernel executing this job. This should point to a contiguous
+       *          block of memory of `getInputDataSize` bytes.
+       *          Used by the scheduler to populate the cuda kernel's argument.
+       * @return - a pointer to the parameter's data for this job.
        */
-      Priority
-      getPriority() const noexcept;
+      virtual void*
+      getInputData() = 0;
+
+      /**
+       * @brief - Interface method allowing to retrieve a pointer to the output buffer where
+       *          results of the cuda kernel's execution should be saved. This should point
+       *          to a contiguous memory area of `getOutputDataSize() * getOutputSize()`
+       *          bytes where the cuda scheduler can copy back the result.
+       * @return - a pointer to the output result buffer for this job.
+       */
+      virtual void*
+      getOutputData() = 0;
 
     protected:
 

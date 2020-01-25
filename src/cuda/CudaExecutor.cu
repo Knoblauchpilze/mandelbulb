@@ -539,21 +539,22 @@ namespace utils {
   CudaExecutor::scheduleAndExecute(CudaJob& job,
                                    CudaSchedulingData data)
   {
+    // TODO: To fully benefit from the asyncrhonicity we should allocate the
+    // host memory using `cudaMallocHost`. See here (slide 11):
+    // https://developer.download.nvidia.com/CUDA/training/StreamsAndConcurrencyWebinar.pdf
+
     // We need to first copy the input parameters of the job to device memory.
-    bool success = true;
-    // TODO: Implementation.
+    bool success = m_cudaAPI.copyToDevice(data.stream, job.getInputData(), data.paramSize, data.params);
     if (!success) {
       log(
-        std::string("Could not schedule job ") + job.getName() + ("err: \"") + m_cudaAPI.getLastError() + "\")",
+        std::string("Could not copy parameter for job ") + job.getName() +
+        "err: \"" + m_cudaAPI.getLastError() + "\")",
         utils::Level::Error
       );
 
       return false;
     }
 
-    // TODO: To fully benefit from the asyncrhonicity we should allocate the
-    // host memory using `cudaMallocHost`. See here (slide 11):
-    // https://developer.download.nvidia.com/CUDA/training/StreamsAndConcurrencyWebinar.pdf
 
     // Execute the job.
     success = m_cudaAPI.launch(
@@ -565,7 +566,8 @@ namespace utils {
     );
     if (!success) {
       log(
-        std::string("Could not launch job ") + job.getName() + ("err: \"") + m_cudaAPI.getLastError() + "\")",
+        std::string("Could not launch job ") + job.getName() + ("err: \"") +
+        m_cudaAPI.getLastError() + "\")",
         utils::Level::Error
       );
 
@@ -576,7 +578,8 @@ namespace utils {
     success = m_cudaAPI.wait(data.stream);
     if (!success) {
       log(
-        std::string("Job \"") + job.getName() + "\" failed (err: \"" + m_cudaAPI.getLastError() + "\")",
+        std::string("Job \"") + job.getName() + "\" failed (err: \"" +
+        m_cudaAPI.getLastError() + "\")",
         utils::Level::Error
       );
 
@@ -584,9 +587,26 @@ namespace utils {
     }
 
     // Copy back the results to the job.
+    success = m_cudaAPI.copyToHost2D(
+      data.stream,
+      job.getOutputSize(),
+      data.resBuffer,
+      data.step,
+      job.getOutputData(),
+      job.getOutputDataStep()
+    );
+    if (!success) {
+      log(
+        std::string("Could not copy back result for job \"") + job.getName() +
+        "\" (err: \"" + m_cudaAPI.getLastError() + "\")",
+        utils::Level::Error
+      );
+
+      return false;
+    }
     // TODO: Implementation.
 
-    return false;
+    return true;
   }
 
 }
