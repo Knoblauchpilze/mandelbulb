@@ -145,14 +145,15 @@ namespace mandelbulb {
         1.0f * props->tot_h
       );
 
+      // Generate the ray direction.
+      float4 dir = generate_ray_dir(x, y, u, v, w, dims);
+
+      // Retrieve global memory elements to local registries.
       float proxThresh = props->hit_thresh;
       uint32_t maxSteps = props->ray_steps;
       float bailout = props->bailout;
       float exp = props->exponent;
       uint32_t acc = props->accuracy;
-
-      // Generate the ray direction.
-      float4 dir = generate_ray_dir(x, y, u, v, w, dims);
 
       // March on the ray until we reach a point close enough to
       // the fractal or we escape or we reach the maximum number
