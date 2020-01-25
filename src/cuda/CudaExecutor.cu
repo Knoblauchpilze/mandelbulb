@@ -15,6 +15,7 @@ namespace utils {
 
     m_threadsLocker(),
     m_threads(),
+    m_cudaAPI(),
     m_schedulingData(),
 
     m_jobsLocker(),
@@ -266,12 +267,77 @@ namespace utils {
                                          const utils::Sizei& bufferSize,
                                          unsigned elementSize)
   {
-    // TODO: Implementation.
+    // Protect from concurrent accesses to the threads' data.
+    Guard guard(m_threadsLocker);
+
+    // Create resources for each needed thread.
+    bool success = false;
+
+    unsigned id = 0u;
+    while (id < count) {
+      // Create the stream to use to schedule operations.
+      cuda::stream_t stream = m_cudaAPI.create(&success);
+      if (!success) {
+        error(
+          std::string("Could not create cuda executor service"),
+          m_cudaAPI.getLastError()
+        );
+      }
+
+      // Allocate the output buffer.
+      // TODO: Implementation.
+      if (!success) {
+        error(
+          std::string("Could not create cuda executor service"),
+          m_cudaAPI.getLastError()
+        );
+      }
+
+      // Allocate the input parameters memory.
+      // TODO: Implementation.
+      if (!success) {
+        error(
+          std::string("Could not create cuda executor service"),
+          m_cudaAPI.getLastError()
+        );
+      }
+
+      // Create the scheduling data and register it in the internal array.
+      m_schedulingData.push_back(
+        CudaSchedulingData{
+          stream,
+          nullptr,
+          nullptr
+        }
+      );
+    }
   }
 
   void
   CudaExecutor::destroyCudaSchedulingData() {
-    // TODO: Implementation.
+    // Protect from concurrent accesses to the threads' data.
+    Guard guard(m_threadsLocker);
+
+    // Release memory for each created stream.
+    for (unsigned id = 0u ; id < m_schedulingData.size() ; ++id) {
+      CudaSchedulingData& d = m_schedulingData[id];
+
+      // Destroy the stream.
+      bool success = m_cudaAPI.destroy(d.stream);
+      if (!success) {
+        log(
+          std::string("Could not correctly destroy stream associated to thread ") + std::to_string(id) +
+          " (error: \"" + m_cudaAPI.getLastError() + "\")",
+          utils::Level::Error
+        );
+      }
+
+      // Free the output buffer memory.
+      // TODO: Implementation.
+
+      // Free the input parameters memory.
+      // TODO: Implementation.
+    }
   }
 
   void

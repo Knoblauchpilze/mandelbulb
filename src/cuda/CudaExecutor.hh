@@ -9,6 +9,7 @@
 # include <condition_variable>
 # include <core_utils/Signal.hh>
 # include "CudaJob.hh"
+# include "CudaWrapper.cuh"
 
 namespace utils {
 
@@ -198,7 +199,9 @@ namespace utils {
      *          iteself and not the threads.
      */
     struct CudaSchedulingData {
-
+      cuda::stream_t stream;
+      void* resBuffer;
+      void* paramsBuffer;
     };
 
     /**
@@ -242,6 +245,14 @@ namespace utils {
      *          not be accessed directly.
      */
     std::vector<std::thread> m_threads;
+
+    /**
+     * @brief - Convenience object allowing to have a nice interface with the cuda API
+     *          by wrapping most function call and providing easy error checking. Note
+     *          that most of the creation of cuda resources should be handled by this
+     *          object in order to have a single point of access to the underlying API.
+     */
+    CudaWrapper m_cudaAPI;
 
     /**
      * @brief - An array holding the cuda resources created to perform the scheduling
