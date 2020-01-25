@@ -79,25 +79,33 @@ namespace mandelbulb {
   MandelbulbRenderer::keyPressEvent(const sdl::core::engine::KeyEvent& e) {
     // Check for arrow keys.
     bool move = false;
-    float angle = 0.0f;
-    utils::Vector3f axis(0.0f, 0.0f, 1.0f);
+    float theta = 0.0f;
+    float phi = 0.0f;
 
     float delta = getArrowKeyRotationAngle();
 
     if (e.getRawKey() == sdl::core::engine::RawKey::Left) {
       move = true;
-      angle += delta;
+      theta += delta;
     }
     if (e.getRawKey() == sdl::core::engine::RawKey::Right) {
       move = true;
-      angle -= delta;
+      theta -= delta;
+    }
+    if (e.getRawKey() == sdl::core::engine::RawKey::Up) {
+      move = true;
+      phi += delta;
+    }
+    if (e.getRawKey() == sdl::core::engine::RawKey::Down) {
+      move = true;
+      phi -= delta;
     }
 
     // Schedule a scrolling if some motion has been detected.
     if (move) {
       Guard guard(m_propsLocker);
 
-      m_fractal->rotateCamera(utils::Vector2f(angle, 0.0f));
+      m_fractal->rotateCamera(utils::Vector2f(theta, phi));
 
       requestRepaint();
     }
