@@ -109,9 +109,6 @@ namespace utils {
       void* resBuffer;       ///< A device memory pointer holding the results computed
                              ///< by each job. This segment of memory is then copied to
                              ///< host memory and to the job that started the process.
-      unsigned step;         ///< The length in bytes of a single line of data of the
-                             ///< `resBuffer`. Basically represents the advance of a
-                             ///< single unit for the `y` coordinate.
     };
 
     /**

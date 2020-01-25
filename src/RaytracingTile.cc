@@ -23,6 +23,8 @@ namespace mandelbulb {
 
     m_props(props),
 
+    m_cudaProps(),
+
     m_depthMap()
   {
     // Check consistency.
@@ -38,47 +40,8 @@ namespace mandelbulb {
         std::string("Invalid area")
       );
     }
-  }
 
-  void
-  RaytracingTile::compute() {
-    // Allocate the internal vector array.
-    m_depthMap.resize(m_area.w() * m_area.h(), -1.0f);
-
-    for (int y = 0 ; y < m_area.h() ; ++y) {
-      for (int x = 0 ; x < m_area.w() ; ++x) {
-        // Generate a direction for the ray to march on.
-        utils::Vector3f dir = generateRayDir(x, y);
-
-        // March on this ray until we reach a point close
-        // enough from the fractal.
-        float tDist = 0.0f;
-        unsigned steps = 0u;
-        float dist = m_props.hitThreshold + 1.0f;
-        bool escaped = false;
-
-        utils::Vector3f p = m_eye + tDist * dir;
-
-        while (steps < m_props.raySteps && !escaped && dist > m_props.hitThreshold) {
-          // Get an estimation of the distance.
-          dist = getDistanceEstimator(p, m_props);
-
-          // Add this and move on to the next step.
-          tDist += dist;
-          ++steps;
-
-          // March on the ray.
-          p = m_eye + tDist * dir;
-
-          // Update escape status.
-          escaped = (p.length() >= m_props.bailout);
-        }
-
-        if (!escaped) {
-          m_depthMap[y * m_area.w() + x] = tDist;
-        }
-      }
-    }
+    build();
   }
 
   float
@@ -124,29 +87,41 @@ namespace mandelbulb {
     return 0.5f * std::log(r) * r / dr;
   }
 
-  utils::Vector3f
-  RaytracingTile::generateRayDir(int x,
-                                 int y) const
-  {
-    // Compute the general direction of the ray from the input
-    // coordinates.
-    int lX = x + m_area.getLeftBound() + m_total.w() / 2;
-    int lY = y + m_area.getBottomBound() + m_total.h() / 2;
 
-    // Handle some jittering.
-    float rnd = 1.0f * std::rand() / RAND_MAX;
-    float jX = 1.0f * lX + std::cos(rnd) * getJitteringRadius();
-    float jY = 1.0f * lY + std::sin(rnd) * getJitteringRadius();
+  void
+  RaytracingTile::build() {
+    // Allocate the internal vector array.
+    m_depthMap.resize(m_area.w() * m_area.h(), -1.0f);
 
-    // Express this pixel's value into a percentage of the total
-    // area and offset it to obtain a centered value.
-    float percX = -0.5f + jX / m_total.w();
-    float percY = -0.5f + jY / m_total.h();
+    // Package the internal properties into a valid `KernelProps` struct.
+    m_cudaProps = gpu::KernelProps{
+      m_props.accuracy,
+      m_props.exponent,
+      m_props.bailout,
+      m_props.hitThreshold,
+      m_props.raySteps,
 
-    // This can be used to compute the ray direction.
-    utils::Vector3f rawDir = percX * m_u + percY * m_v + m_w;
+      m_eye.x(),
+      m_eye.y(),
+      m_eye.z(),
 
-    return rawDir.normalized();
+      m_u.x(),
+      m_u.y(),
+      m_u.z(),
+
+      m_v.x(),
+      m_v.y(),
+      m_v.z(),
+
+      m_w.x(),
+      m_w.y(),
+      m_w.z(),
+
+      m_area.getLeftBound(),
+      m_area.getBottomBound(),
+      m_total.w(),
+      m_total.h()
+    };
   }
 
 }

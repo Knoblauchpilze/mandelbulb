@@ -8,6 +8,7 @@
 # include <maths_utils/Vector3.hh>
 # include "CudaJob.hh"
 # include "RenderProperties.hh"
+# include "mandelbulb_kernel.cuh"
 
 namespace mandelbulb {
 
@@ -85,15 +86,6 @@ namespace mandelbulb {
       getOutputSize() override;
 
       /**
-       * @brief - Reimplementation of the base class method to provide the step of
-       *          the output buffer. Here we're storing the depth map using a vec
-       *          so the step does not include any padding.
-       * @return - the size of a single line of data in the internal depth map.
-       */
-      unsigned
-      getOutputDataStep() override;
-
-      /**
        * @brief - Reimplementation of the base class method which basically wraps
        *          the information returned by the `getResultSize` method. See the
        *          description of this method for more info.
@@ -117,15 +109,6 @@ namespace mandelbulb {
        */
       void*
       getOutputData() override;
-
-      /**
-       * @brief - TODO: Update.
-       *          Reimplementation of the interface method allowing to perform
-       *          the computation of the fractal's data for the area associated
-       *          to this tile.
-       */
-      void
-      compute();
 
       /**
        * @brief - Retrieves the area associated to this tile. Note that this value
@@ -162,29 +145,13 @@ namespace mandelbulb {
     private:
 
       /**
-       * @brief - Define a suitable default value for subpixel jittering. This will
-       *          be applied to offset slightly the ray direction when generating it
-       *          so that we get different rays for each pixel and thus obtain some
-       *          sort of built-in antialiasing.
-       * @return - a suited value for subpixel jittering.
+       * @brief - Used to create and initialize internal variables so that this tile
+       *          is ready to be compute. This mainly consists into packaging internal
+       *          attributes into a single structure and allocating the internal depth
+       *          map which will store the result of the rendering.
        */
-      static
-      constexpr float
-      getJitteringRadius() noexcept;
-
-      /**
-       * @brief - Used to generate a ray direction from the pixel at coordinates
-       *          `(x, y)`. This will use the internal vectors `m_u/v/w` and some
-       *          jittering information so that we get some built-in antialiasing.
-       * @param x - the `x` coordinate of the pixel for which the ray direction is
-       *            to be generated.
-       * @param y - the `y` coordinate of the pixel for which the ray direction is
-       *            to be generated.
-       * @return - the direction for the corresponding pixel.
-       */
-      utils::Vector3f
-      generateRayDir(int x,
-                     int y) const;
+      void
+      build();
 
     private:
 
@@ -233,6 +200,13 @@ namespace mandelbulb {
        * @brief - A general description of the fractal object to compute.
        */
       RenderProperties m_props;
+
+      /**
+       * @brief - Translation of all the internal properties into a single
+       *          struct that can be passed on to the cuda kernel used to
+       *          compute this tile.
+       */
+      gpu::KernelProps m_cudaProps;
 
       /**
        * @brief - The depth map accumulated by the process of computing this

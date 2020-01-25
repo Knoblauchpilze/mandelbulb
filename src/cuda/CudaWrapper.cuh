@@ -29,16 +29,8 @@ namespace utils {
       /**
        * @brief - Create a new cuda wrapper allowing to wrap cuda API calls and provide
        *          some error checking.
-       *          The input arguments will definee the padding to apply when allocating
-       *          gpu memory so that the requests are always aligned on some predefined
-       *          pattern which can lead to greater performance (by rationalizing the
-       *          fetching instructions when accesing the data).
-       *          Note that if any of the dimension of the `alignment` vector is set to
-       *          `0` no alignment will be performed on this axis.
-       * @param alignment - a vector describing the desired alignment for each dimension
-       *                    when allocating gpu memory.
        */
-      CudaWrapper(const utils::Vector2i& alignment);
+      CudaWrapper();
 
       virtual ~CudaWrapper();
 
@@ -140,9 +132,6 @@ namespace utils {
        * @param elemSize - the size in byte(s) of each inidividual elements to store.
        *                   This value is typically obtained through a call to `sizeof`
        *                   on the relevant data type.
-       * @param step - an output reference which will contain the size in bytes of a
-       *               single line of data. Considering the padding it might be a bit
-       *               different from `size.w() * elemSize`.
        * @param success - a value set to `true` in case the allocation succeeded (and
        *                  if it is not `null`).
        * @return - a pointer to the device memory allocated by this function or `null`
@@ -151,7 +140,6 @@ namespace utils {
       void*
       allocate2D(const Sizei& size,
                  unsigned elemSize,
-                 unsigned& step,
                  bool* success);
 
       /**
@@ -189,22 +177,17 @@ namespace utils {
        *          other pending gpu operations.
        *          Note that in case any of `src` or `dst` are `null` an error is raised.
        * @param size - the size of the input data to copy.
+       * @param elemSize - the size in bytes of a single element of the `src` buffer.
        * @param src - the host pointer to copy.
-       * @param srcStep - the size in bytes of a single line of data in the `src`
-       *                  pointer. This is usually equivalent to `size.w() * elemSize`
-       *                  for host pointers.
        * @param dst - the device pointer to which the data should be copied.
-       * @param dstStep - the size in bytes of a single line of data in the `dst` data.
-       *                  Unlike the host case the device pointers may inculde padding.
        * @return - `true` if the copy could be performed and `false` otherwise.
        */
       bool
       copyToDevice2D(cuda::stream_t stream,
                      const utils::Sizei& size,
+                     unsigned elemSize,
                      void* src,
-                     unsigned srcStep,
-                     void* dst,
-                     unsigned dstStep);
+                     void* dst);
 
       /**
        * @brief - Used to perform the copy of the single value from device memory to host
@@ -229,22 +212,17 @@ namespace utils {
        *          This is almost the exact opposite of the `copyToDevice2D` method.
        *          Note that in case any of `src` or `dst` are `null` an error is raised.
        * @param size - the size of the device data to copy.
+       * @param elemSize - the size in bytes of a single element of the `src` buffer.
        * @param src - the device pointer to copy.
-       * @param srcStep - the size in bytes of a single line of data in the `src` data.
-       *                  Note that this may include padding (and thus be different from
-       *                  `size.w() * elemSize`).
        * @param dst - the host pointer to which the data should be copied.
-       * @param dstStep - the size in bytes of a single line of data in the `dst` data.
-       *                  In the case of host pointer this usually doesn't have padding.
        * @return - `true` if the copy could be performed and `false` otherwise.
        */
       bool
       copyToHost2D(cuda::stream_t stream,
                    const utils::Sizei& size,
+                   unsigned elemSize,
                    void* src,
-                   unsigned srcStep,
-                   void* dst,
-                   unsigned dstStep);
+                   void* dst);
 
     private:
 
@@ -279,13 +257,6 @@ namespace utils {
        *          This value is reset whenever the `getLastError` method is called.
        */
       std::string m_lastError;
-
-      /**
-       * @brief - The alignment to apply when allocating gpu memory. Allows to produce
-       *          memory with consistent access patterns which in general increase the
-       *          performance.
-       */
-      utils::Vector2i m_alignment;
   };
 
 }

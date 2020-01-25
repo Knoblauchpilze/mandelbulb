@@ -43,7 +43,7 @@ namespace mandelbulb {
 
     // Rotate about the `z` axis of an angle corresponding to the conversion
     // between the input motion and real world radians.
-    m_fractal->rotateCamera(utils::Vector2f(motion.x() * getPixelToRadiansRatio(), 0.0f));
+    m_fractal->rotateCamera(utils::Vector2f(-motion.x() * getPixelToRadiansRatio(), 0.0f));
 
     // Notify the caller that we changed the area.
     return true;

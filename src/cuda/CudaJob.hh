@@ -43,18 +43,6 @@ namespace utils {
       getOutputSize() = 0;
 
       /**
-       * @brief - Interface method to provide the step of the output buffer for this job. As
-       *          the precise implementation of the memory layout for this job is not known
-       *          we need to fetch the length in bytes of a single line of data for this job.
-       *          This value should at least be `getOutputSize().w() * getOutputDataSize()`
-       *          but can be larger if some padding is added.
-       * @return - a value indicating the length in bytes of a single line of data in the
-       *           output buffer for this job.
-       */
-      virtual unsigned
-      getOutputDataStep() = 0;
-
-      /**
        * @brief - Interface method allowing to retrieve the amount of memory needed to store
        *          a single element of the result buffer expected by this job. The size uses
        *          bytes and should be sufficient to store the data produced by the cuda job

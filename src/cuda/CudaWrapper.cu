@@ -3,23 +3,13 @@
 
 namespace utils {
 
-  CudaWrapper::CudaWrapper(const utils::Vector2i& alignment):
+  CudaWrapper::CudaWrapper():
     CoreObject(std::string("wrapper")),
 
     m_propsLocker(),
-    m_lastError(),
-
-    m_alignment(alignment)
+    m_lastError()
   {
     setService("cuda");
-
-    // Consistency check.
-    if (m_alignment.x() < 0 || m_alignment.y() < 0) {
-      error(
-        std::string("Cannot create cuda wrapper"),
-        std::string("Invalid alignment pattern provided: ") + m_alignment.toString()
-      );
-    }
   }
 
   bool
@@ -80,7 +70,7 @@ namespace utils {
     checkAndSaveError(err);
 
     if (!isError(err)) {
-      log("Destroyed cuda stream", utils::Level::Debug);
+      log("Destroyed cuda stream", utils::Level::Verbose);
     }
 
     return !isError(err);
@@ -109,7 +99,6 @@ namespace utils {
   void*
   CudaWrapper::allocate2D(const utils::Sizei& size,
                           unsigned elemSize,
-                          unsigned& step,
                           bool* success)
   {
     // Declare the output buffer.
@@ -119,13 +108,6 @@ namespace utils {
     int wBytes = size.w() * elemSize;
     int h = size.h();
 
-    if (m_alignment.x() > 0) {
-      wBytes += (m_alignment.x() - wBytes % m_alignment.x());
-    }
-    if (m_alignment.y() > 0) {
-      h += (m_alignment.y() - h % m_alignment.y());
-    }
-
     // Perform the allocation.
     cudaError_t err = cudaMalloc(&out, wBytes * h);
 
@@ -134,11 +116,6 @@ namespace utils {
     // Populate `success` boolean if needed.
     if (success != nullptr) {
       *success = !isError(err);
-    }
-
-    // Populate the step if the allocation was successful.
-    if (!isError(err)) {
-      step = wBytes;
     }
 
     return out;
@@ -197,10 +174,9 @@ namespace utils {
   bool
   CudaWrapper::copyToDevice2D(cuda::stream_t stream,
                               const utils::Sizei& size,
+                              unsigned elemSize,
                               void* src,
-                              unsigned srcStep,
-                              void* dst,
-                              unsigned dstStep)
+                              void* dst)
   {
     // Cast input stream to usable data.
     cudaStream_t rawStream = reinterpret_cast<cudaStream_t>(stream);
@@ -222,10 +198,10 @@ namespace utils {
     // Perform the copy.
     cudaError_t err = cudaMemcpy2DAsync(
       dst,
-      dstStep,
+      size.w() * elemSize,
       src,
-      srcStep,
-      size.w(),
+      size.w() * elemSize,
+      size.w() * elemSize,
       size.h(),
       cudaMemcpyHostToDevice,
       rawStream
@@ -269,10 +245,9 @@ namespace utils {
   bool
   CudaWrapper::copyToHost2D(cuda::stream_t stream,
                             const utils::Sizei& size,
+                            unsigned elemSize,
                             void* src,
-                            unsigned srcStep,
-                            void* dst,
-                            unsigned dstStep)
+                            void* dst)
   {
     // Cast input stream to usable data.
     cudaStream_t rawStream = reinterpret_cast<cudaStream_t>(stream);
@@ -294,10 +269,10 @@ namespace utils {
     // Perform the copy.
     cudaError_t err = cudaMemcpy2DAsync(
       dst,
-      dstStep,
+      size.w() * elemSize,
       src,
-      srcStep,
-      size.w(),
+      size.w() * elemSize,
+      size.w() * elemSize,
       size.h(),
       cudaMemcpyDeviceToHost,
       rawStream

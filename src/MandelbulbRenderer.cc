@@ -86,11 +86,11 @@ namespace mandelbulb {
 
     if (e.getRawKey() == sdl::core::engine::RawKey::Left) {
       move = true;
-      angle -= delta;
+      angle += delta;
     }
     if (e.getRawKey() == sdl::core::engine::RawKey::Right) {
       move = true;
-      angle += delta;
+      angle -= delta;
     }
 
     // Schedule a scrolling if some motion has been detected.

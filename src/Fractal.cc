@@ -84,7 +84,7 @@ namespace mandelbulb {
       return;
     }
 
-    m_scheduler->enqueueJobs(tilesAsJobs, false);
+    m_scheduler->enqueueJobs(tilesAsJobs, reset);
 
     // Notify listeners that the progression is now empty.
     m_progress.taskProgress = 0u;
@@ -107,8 +107,6 @@ namespace mandelbulb {
     {
       // Protect from concurrent accesses.
       Guard guard(m_propsLocker);
-
-      log("Handling " + std::to_string(tiles.size()) + " result(s) to process");
 
       // We need to copy the tiles data to the internal array. This will
       // allow to keep track of the content computed for the fractal and

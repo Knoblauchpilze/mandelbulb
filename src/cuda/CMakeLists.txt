@@ -10,6 +10,7 @@ set (CUDAFLAGS "${CUDAFLAGS};-arch=sm_50")
 set (SOURCES
   CudaExecutor.cu
   CudaWrapper.cu
+  mandelbulb_kernel.cu
   )
 
 add_library (mandelbulb_cuda_lib SHARED

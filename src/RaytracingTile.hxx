@@ -8,7 +8,7 @@ namespace mandelbulb {
   inline
   constexpr unsigned
   RaytracingTile::getPropsSize() noexcept {
-    return sizeof(RenderProperties);
+    return sizeof(gpu::KernelProps);
   }
 
   inline
@@ -31,12 +31,6 @@ namespace mandelbulb {
 
   inline
   unsigned
-  RaytracingTile::getOutputDataStep() {
-    return m_area.w() * getOutputDataSize();
-  }
-
-  inline
-  unsigned
   RaytracingTile::getOutputDataSize() {
     return getResultSize();
   }
@@ -44,7 +38,7 @@ namespace mandelbulb {
   inline
   void*
   RaytracingTile::getInputData() {
-    return &m_props;
+    return &m_cudaProps;
   }
 
   inline
@@ -63,12 +57,6 @@ namespace mandelbulb {
   const std::vector<float>&
   RaytracingTile::getDepthMap() const noexcept {
     return m_depthMap;
-  }
-
-  inline
-  constexpr float
-  RaytracingTile::getJitteringRadius() noexcept {
-    return 0.1f;
   }
 
 }
