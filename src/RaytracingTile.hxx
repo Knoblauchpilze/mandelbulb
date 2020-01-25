@@ -6,6 +6,18 @@
 namespace mandelbulb {
 
   inline
+  constexpr unsigned
+  RaytracingTile::getPropsSize() noexcept {
+    return sizeof(RenderProperties);
+  }
+
+  inline
+  unsigned
+  RaytracingTile::getInputDataSize() {
+    return getPropsSize();
+  }
+
+  inline
   utils::Boxi
   RaytracingTile::getArea() const noexcept {
     return m_area;

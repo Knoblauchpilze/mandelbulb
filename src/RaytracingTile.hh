@@ -4,14 +4,14 @@
 # include <mutex>
 # include <vector>
 # include <memory>
-# include <core_utils/AsynchronousJob.hh>
 # include <maths_utils/Box.hh>
 # include <maths_utils/Vector3.hh>
+# include "CudaJob.hh"
 # include "RenderProperties.hh"
 
 namespace mandelbulb {
 
-  class RaytracingTile: public utils::AsynchronousJob {
+  class RaytracingTile: public utils::CudaJob {
     public:
 
       /**
@@ -41,12 +41,36 @@ namespace mandelbulb {
       virtual ~RaytracingTile() = default;
 
       /**
-       * @brief - Reimplementation of the interface method allowing to perform
+       * @brief - Provide the size in bytes of the input parameters to provide so
+       *          that this kind of job can be executed.
+       *          In the case of a raytracing tile we need to provide some info
+       *          about the properties to compute the fractal. This is basically
+       *          described by the `RenderProperties` structure which contains all
+       *          needed information.
+       * @return - the size in bytes needed to describe the properties of the data
+       *           needed to perform the computation of such a tile.
+       */
+      static
+      constexpr unsigned
+      getPropsSize() noexcept;
+
+      /**
+       * @brief - Reimplementation of the base class method which basically wraps
+       *          the information returned by the `getPropsSize` method. See the
+       *          description of this method for more info.
+       * @return - the size in bytes for the input parameters of a raytracing job.
+       */
+      unsigned
+      getInputDataSize() override;
+
+      /**
+       * @brief - TODO: Update.
+       *          Reimplementation of the interface method allowing to perform
        *          the computation of the fractal's data for the area associated
        *          to this tile.
        */
       void
-      compute() override;
+      compute();
 
       /**
        * @brief - Retrieves the area associated to this tile. Note that this value

@@ -6,6 +6,8 @@
 # include <functional>
 # include <cuda_runtime.h>
 # include <core_utils/CoreObject.hh>
+# include <maths_utils/Vector2.hh>
+# include <maths_utils/Size.hh>
 
 namespace utils {
 
@@ -27,8 +29,16 @@ namespace utils {
       /**
        * @brief - Create a new cuda wrapper allowing to wrap cuda API calls and provide
        *          some error checking.
+       *          The input arguments will definee the padding to apply when allocating
+       *          gpu memory so that the requests are always aligned on some predefined
+       *          pattern which can lead to greater performance (by rationalizing the
+       *          fetching instructions when accesing the data).
+       *          Note that if any of the dimension of the `alignment` vector is set to
+       *          `0` no alignment will be performed on this axis.
+       * @param alignment - a vector describing the desired alignment for each dimension
+       *                    when allocating gpu memory.
        */
-      CudaWrapper();
+      CudaWrapper(const utils::Vector2i& alignment);
 
       virtual ~CudaWrapper();
 
@@ -107,6 +117,54 @@ namespace utils {
       std::string
       getLastError();
 
+      /**
+       * @brief - Used to perform the allocation of a segment of memory with said size
+       *          expressed in bytes.
+       * @param size - the size of the memory to allocate in bytes.
+       * @param success - a value set to `true` in case the allocation succeeeded (and
+       *                  if it is not `null`).
+       * @return - a pointer to the device memory allocated or `null` if the memory is
+       *           not valid.
+       */
+      void*
+      allocate(unsigned size,
+               bool* success);
+
+      /**
+       * @brief - Used to perform the allocation of a patch of memory allowing to hold
+       *          `size` elements of size `elemSize` byte(s).
+       *          The memory is allocated using some padding so as to keep the length
+       *          of each individual line of data an entire multiple of some dimension
+       *          provided when building this object.
+       * @param size - the size of the memory to allocate.
+       * @param elemSize - the size in byte(s) of each inidividual elements to store.
+       *                   This value is typically obtained through a call to `sizeof`
+       *                   on the relevant data type.
+       * @param step - an output reference which will contain the size in bytes of a
+       *               single line of data. Considering the padding it might be a bit
+       *               different from `size.w() * elemSize`.
+       * @param success - a value set to `true` in case the allocation succeeded (and
+       *                  if it is not `null`).
+       * @return - a pointer to the device memory allocated by this function or `null`
+       *           if something went wrong.
+       */
+      void*
+      allocate2D(const Sizei& size,
+                 unsigned elemSize,
+                 unsigned& step,
+                 bool* success);
+
+      /**
+       * @brief - Call the underlying cuda API to release the resources pointed at by
+       *          the input `buffer`. This pointer should no longer be used after the
+       *          free operation.
+       *          Nothing happen if the buffer is `null`.
+       * @param buffer - the gpu memory to release.
+       * @return - `true` if the pointer was successfully released or `false` otherwise.
+       */
+      bool
+      free(void* buffer);
+
     private:
 
       /**
@@ -116,7 +174,17 @@ namespace utils {
        * @return - `true` if the error code indicates an error and `false` otherwise.
        */
       bool
-      isError(cudaError_t error);
+      isError(const cudaError_t& error);
+
+      /**
+       * @brief - Used to update the internal `m_lastError` string in case the input
+       *          `error` value indicates an error. The string saved corresponds to
+       *          the description provided by the cuda API of the error code.
+       * @param error - the error which should be saved in case it indicates a real
+       *                problem.
+       */
+      void
+      checkAndSaveError(const cudaError_t& error);
 
     private:
 
@@ -130,6 +198,13 @@ namespace utils {
        *          This value is reset whenever the `getLastError` method is called.
        */
       std::string m_lastError;
+
+      /**
+       * @brief - The alignment to apply when allocating gpu memory. Allows to produce
+       *          memory with consistent access patterns which in general increase the
+       *          performance.
+       */
+      utils::Vector2i m_alignment;
   };
 
 }

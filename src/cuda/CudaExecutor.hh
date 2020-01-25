@@ -1,6 +1,7 @@
 #ifndef    CUDA_EXECUTOR_HH
 # define   CUDA_EXECUTOR_HH
 
+# include <memory>
 # include <core_utils/CoreObject.hh>
 # include <maths_utils/Size.hh>
 # include <mutex>
@@ -199,9 +200,17 @@ namespace utils {
      *          iteself and not the threads.
      */
     struct CudaSchedulingData {
-      cuda::stream_t stream;
-      void* resBuffer;
-      void* paramsBuffer;
+      cuda::stream_t stream; ///< The stream to use to perform the gpu operations. This
+                             ///< will be used to wait upon and to ensure some level of
+                             ///< concurrency within the cuda kernels.
+      void* resBuffer;       ///< A device memory pointer holding the results computed
+                             ///< by each job. This segment of memory is then copied to
+                             ///< host memory and to the job that started the process.
+      void* paramsBuffer;    ///< A memory pointer allowing to pass on parameters to
+                             ///< the cuda kernel.
+      unsigned step;         ///< The lenght in bytes of a single line of data of the
+                             ///< `resBuffer`. Basically represents the advance of a
+                             ///< single unit for the `y` coordinate.
     };
 
     /**
@@ -345,6 +354,7 @@ namespace utils {
     Signal<const std::vector<CudaJobShPtr>&> onJobsCompleted;
   };
 
+  using CudaExecutorShPtr = std::shared_ptr<CudaExecutor>;
 }
 
 # include "CudaExecutor.hxx"

@@ -15,7 +15,7 @@ namespace utils {
 
     m_threadsLocker(),
     m_threads(),
-    m_cudaAPI(),
+    m_cudaAPI(utils::Vector2i(0, 0)),
     m_schedulingData(),
 
     m_jobsLocker(),
@@ -285,8 +285,9 @@ namespace utils {
       }
 
       // Allocate the output buffer.
-      // TODO: Implementation.
-      if (!success) {
+      unsigned step = 0u;
+      void* resBuffer = m_cudaAPI.allocate2D(bufferSize, elementSize, step, &success);
+      if (!success || resBuffer == nullptr) {
         error(
           std::string("Could not create cuda executor service"),
           m_cudaAPI.getLastError()
@@ -294,7 +295,7 @@ namespace utils {
       }
 
       // Allocate the input parameters memory.
-      // TODO: Implementation.
+      void* paramsBuffer = m_cudaAPI.allocate(elementSize, &success);
       if (!success) {
         error(
           std::string("Could not create cuda executor service"),
@@ -306,10 +307,13 @@ namespace utils {
       m_schedulingData.push_back(
         CudaSchedulingData{
           stream,
+          resBuffer,
           nullptr,
-          nullptr
+          step
         }
       );
+
+      ++id;
     }
   }
 
@@ -333,10 +337,24 @@ namespace utils {
       }
 
       // Free the output buffer memory.
-      // TODO: Implementation.
+      success = m_cudaAPI.free(d.resBuffer);
+      if (!success) {
+        log(
+          std::string("Could not correctly destroy result buffer associated to thread ") + std::to_string(id) +
+          " (error: \"" + m_cudaAPI.getLastError() + "\")",
+          utils::Level::Error
+        );
+      }
 
       // Free the input parameters memory.
-      // TODO: Implementation.
+      success = m_cudaAPI.free(d.paramsBuffer);
+      if (!success) {
+        log(
+          std::string("Could not correctly destroy parameters buffer associated to thread ") + std::to_string(id) +
+          " (error: \"" + m_cudaAPI.getLastError() + "\")",
+          utils::Level::Error
+        );
+      }
     }
   }
 

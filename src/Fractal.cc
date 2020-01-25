@@ -14,8 +14,10 @@ namespace mandelbulb {
 
     m_computationState(State::Converged),
     m_scheduler(
-      std::make_shared<utils::ThreadPool>(
-        getWorkerThreadCount()
+      std::make_shared<utils::CudaExecutor>(
+        getWorkerThreadCount(),
+        utils::Sizei(getTileWidth(), getTileHeight()),
+        RaytracingTile::getPropsSize()
       )
     ),
     m_tilesRenderedSignalID(utils::Signal<>::NoID),
@@ -69,7 +71,7 @@ namespace mandelbulb {
     std::vector<RaytracingTileShPtr> tiles = generateSchedule();;
 
     // Convert to required pointer type.
-    std::vector<utils::AsynchronousJobShPtr> tilesAsJobs(tiles.begin(), tiles.end());
+    std::vector<utils::CudaJobShPtr> tilesAsJobs(tiles.begin(), tiles.end());
 
     // Return early if nothing needs to be scheduled.
     if (tilesAsJobs.empty()) {
@@ -101,12 +103,14 @@ namespace mandelbulb {
   }
 
   void
-  Fractal::handleTilesRendered(const std::vector<utils::AsynchronousJobShPtr>& tiles) {
+  Fractal::handleTilesRendered(const std::vector<utils::CudaJobShPtr>& tiles) {
     float perc = 0.0f;
 
     {
       // Protect from concurrent accesses.
       Guard guard(m_propsLocker);
+
+      log("Handling " + std::to_string(tiles.size()) + " result(s) to process");
 
       // We need to copy the tiles data to the internal array. This will
       // allow to keep track of the content computed for the fractal and
@@ -129,40 +133,48 @@ namespace mandelbulb {
         utils::Boxi area = tile->getArea();
         const std::vector<float>& map = tile->getDepthMap();
 
-        for (int y = 0 ; y < area.h() ; ++y) {
-          // Compute the equivalent of the `y` coordinate both in local tile's
-          // coordinate frame and in general fractal coordinate frame.
-          int sOff = y * area.w();
-          int lY = (y + area.getBottomBound() + m_dims.h() / 2);
-          int dOff = lY * m_dims.w();
+        if (map.empty()) {
+          log(
+            std::string("Cannot interpret tile ") + area.toString() + " with no depth map",
+            utils::Level::Error
+          );
+        }
+        else {
+          for (int y = 0 ; y < area.h() ; ++y) {
+            // Compute the equivalent of the `y` coordinate both in local tile's
+            // coordinate frame and in general fractal coordinate frame.
+            int sOff = y * area.w();
+            int lY = (y + area.getBottomBound() + m_dims.h() / 2);
+            int dOff = lY * m_dims.w();
 
-          for (int x = 0 ; x < area.w() ; ++x) {
-            // Do the same for `x` coordinate.
-            int dX = (x + area.getLeftBound() + m_dims.w() / 2);
+            for (int x = 0 ; x < area.w() ; ++x) {
+              // Do the same for `x` coordinate.
+              int dX = (x + area.getLeftBound() + m_dims.w() / 2);
 
-            if (dX < 0 || dX >= m_dims.w() ||
-                lY < 0 || lY >= m_dims.h())
-            {
-              log(
-                std::string("Could not copy data at ") + std::to_string(x) + "x" + std::to_string(y) + " from " +
-                area.toString() + ", local is " + std::to_string(dX) + "x" + std::to_string(lY),
-                utils::Level::Error
-              );
+              if (dX < 0 || dX >= m_dims.w() ||
+                  lY < 0 || lY >= m_dims.h())
+              {
+                log(
+                  std::string("Could not copy data at ") + std::to_string(x) + "x" + std::to_string(y) + " from " +
+                  area.toString() + ", local is " + std::to_string(dX) + "x" + std::to_string(lY),
+                  utils::Level::Error
+                );
 
-              continue;
-            }
-
-            float depth = map[sOff + x];
-            if (depth >= 0.0f) {
-              if (m_samples[dOff + dX].iter == 0u) {
-                m_samples[dOff + dX].depth = depth;
+                continue;
               }
-              else {
-                m_samples[dOff + dX].depth += depth;
-              }
-            }
 
-            ++m_samples[dOff + dX].iter;
+              float depth = map[sOff + x];
+              if (depth >= 0.0f) {
+                if (m_samples[dOff + dX].iter == 0u) {
+                  m_samples[dOff + dX].depth = depth;
+                }
+                else {
+                  m_samples[dOff + dX].depth += depth;
+                }
+              }
+
+              ++m_samples[dOff + dX].iter;
+            }
           }
         }
       }

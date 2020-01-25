@@ -23,8 +23,6 @@ add_library (mandelbulb_lib SHARED
   ${SOURCES}
   )
 
-set(MANDELBULB_LIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" PARENT_SCOPE)
-
 target_link_libraries(mandelbulb_lib
   sdl_core
   sdl_graphic

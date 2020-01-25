@@ -10,7 +10,7 @@ namespace mandelbulb {
                                  const utils::Sizei& total,
                                  const utils::Boxi& area,
                                  const RenderProperties& props):
-    utils::AsynchronousJob(std::string("tile_") + area.toString()),
+    utils::CudaJob(std::string("tile_") + area.toString()),
 
     m_eye(eye),
 

@@ -5,7 +5,7 @@ set (CMAKE_CXX_STANDARD 14)
 #set (CMAKE_VERBOSE_MAKEFILE ON)
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set (CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-gencode=arch=compute_50,code=sm_50")
+set (CUDAFLAGS "${CUDAFLAGS};-arch=sm_50")
 
 set (SOURCES
   CudaExecutor.cu
@@ -25,4 +25,5 @@ target_link_libraries(mandelbulb_cuda_lib
 
 target_include_directories (mandelbulb_cuda_lib PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
+  ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
   )

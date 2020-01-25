@@ -3,13 +3,23 @@
 
 namespace utils {
 
-  CudaWrapper::CudaWrapper():
+  CudaWrapper::CudaWrapper(const utils::Vector2i& alignment):
     CoreObject(std::string("wrapper")),
 
     m_propsLocker(),
-    m_lastError()
+    m_lastError(),
+
+    m_alignment(alignment)
   {
     setService("cuda");
+
+    // Consistency check.
+    if (m_alignment.x() < 0 || m_alignment.y() < 0) {
+      error(
+        std::string("Cannot create cuda wrapper"),
+        std::string("Invalid alignment pattern provided: ") + m_alignment.toString()
+      );
+    }
   }
 
   bool
@@ -37,10 +47,7 @@ namespace utils {
 
     cudaError_t err = cudaStreamCreateWithFlags(&rawStream, cudaStreamNonBlocking);
 
-    if (isError(err)) {
-      Guard guard(m_propsLocker);
-      m_lastError = cudaGetErrorString(err);
-    }
+    checkAndSaveError(err);
 
     // Fill the error status.
     if (success != nullptr) {
@@ -58,10 +65,7 @@ namespace utils {
     // Wait for the stream to terminate.
     cudaError_t err = cudaStreamSynchronize(rawStream);
 
-    if (isError(err)) {
-      Guard guard(m_propsLocker);
-      m_lastError = cudaGetErrorString(err);
-    }
+    checkAndSaveError(err);
 
     return !isError(err);
   }
@@ -73,14 +77,89 @@ namespace utils {
 
     cudaError_t err = cudaStreamDestroy(rawStream);
 
-    if (isError(err)) {
-      Guard guard(m_propsLocker);
-      m_lastError = cudaGetErrorString(err);
-    }
+    checkAndSaveError(err);
 
     if (!isError(err)) {
       log("Destroyed cuda stream", utils::Level::Debug);
     }
+
+    return !isError(err);
+  }
+
+  void*
+  CudaWrapper::allocate(unsigned size,
+                        bool* success)
+  {
+    // Declare the output memory location.
+    void* out = nullptr;
+
+    // Perform the allocation.
+    cudaError_t err = cudaMalloc(&out, size);
+
+    checkAndSaveError(err);
+
+    // Populate `success` boolean if needed.
+    if (success != nullptr) {
+      *success = !isError(err);
+    }
+
+    return out;
+  }
+
+  void*
+  CudaWrapper::allocate2D(const utils::Sizei& size,
+                          unsigned elemSize,
+                          unsigned& step,
+                          bool* success)
+  {
+    // Declare the output buffer.
+    void* out = nullptr;
+
+    // Compute aligned dimensions of the buffer.
+    int wBytes = size.w() * elemSize;
+    int h = size.h();
+
+    if (m_alignment.x() > 0) {
+      wBytes += (m_alignment.x() - wBytes % m_alignment.x());
+    }
+    if (m_alignment.y() > 0) {
+      h += (m_alignment.y() - h % m_alignment.y());
+    }
+
+    // Perform the allocation.
+    cudaError_t err = cudaMalloc(&out, wBytes * h);
+
+    checkAndSaveError(err);
+
+    // Populate `success` boolean if needed.
+    if (success != nullptr) {
+      *success = !isError(err);
+    }
+
+    // Populate the step if the allocation was successful.
+    if (!isError(err)) {
+      step = wBytes;
+    }
+
+    return out;
+  }
+
+  bool
+  CudaWrapper::free(void* buffer) {
+    // In case the buffer is already `null` we don't need to do anything.
+    if (buffer == nullptr) {
+      log(
+        std::string("Could not release gpu memory, buffer is already null"),
+        utils::Level::Error
+      );
+
+      return true;
+    }
+
+    // Release the memory.
+    cudaError_t err = cudaFree(buffer);
+
+    checkAndSaveError(err);
 
     return !isError(err);
   }
