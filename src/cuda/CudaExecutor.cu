@@ -582,7 +582,6 @@ namespace utils {
           size.w(),
           size.h()
         );
-        // TODO: Implementation.
       }
     );
     if (!success) {
