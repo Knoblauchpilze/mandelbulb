@@ -164,4 +164,148 @@ namespace utils {
     return !isError(err);
   }
 
+  bool
+  CudaWrapper::copyToDevice(cuda::stream_t stream,
+                            void* src,
+                            unsigned elemSize,
+                            void* dst)
+  {
+    // Cast input stream to usable data.
+    cudaStream_t rawStream = reinterpret_cast<cudaStream_t>(stream);
+
+    // Check consistency.
+    if (src == nullptr) {
+      error(
+        std::string("Could not perform copy of data with size ") + std::to_string(elemSize) + " to host",
+        std::string("Invalid null source pointer")
+      );
+    }
+    if (dst == nullptr) {
+      error(
+        std::string("Could not perform copy of data with size ") + std::to_string(elemSize) + " to host",
+        std::string("Invalid null destination pointer")
+      );
+    }
+
+    cudaError_t err = cudaMemcpyAsync(dst, src, elemSize, cudaMemcpyHostToDevice, rawStream);
+
+    checkAndSaveError(err);
+
+    return !isError(err);
+  }
+
+  bool
+  CudaWrapper::copyToDevice2D(cuda::stream_t stream,
+                              const utils::Sizei& size,
+                              void* src,
+                              unsigned srcStep,
+                              void* dst,
+                              unsigned dstStep)
+  {
+    // Cast input stream to usable data.
+    cudaStream_t rawStream = reinterpret_cast<cudaStream_t>(stream);
+
+    // Check consistency.
+    if (src == nullptr) {
+      error(
+        std::string("Could not perform copy of data with size ") + size.toString() + " to device",
+        std::string("Invalid null source pointer")
+      );
+    }
+    if (dst == nullptr) {
+      error(
+        std::string("Could not perform copy of data with size ") + size.toString() + " to device",
+        std::string("Invalid null destination pointer")
+      );
+    }
+
+    // Perform the copy.
+    cudaError_t err = cudaMemcpy2DAsync(
+      dst,
+      dstStep,
+      src,
+      srcStep,
+      size.w(),
+      size.h(),
+      cudaMemcpyHostToDevice,
+      rawStream
+    );
+
+    checkAndSaveError(err);
+
+    return !isError(err);
+  }
+
+  bool
+  CudaWrapper::copyToHost(cuda::stream_t stream,
+                          void* src,
+                          unsigned elemSize,
+                          void* dst)
+  {
+    // Cast input stream to usable data.
+    cudaStream_t rawStream = reinterpret_cast<cudaStream_t>(stream);
+
+    // Check consistency.
+    if (src == nullptr) {
+      error(
+        std::string("Could not perform copy of data with size ") + std::to_string(elemSize) + " to host",
+        std::string("Invalid null source pointer")
+      );
+    }
+    if (dst == nullptr) {
+      error(
+        std::string("Could not perform copy of data with size ") + std::to_string(elemSize) + " to host",
+        std::string("Invalid null destination pointer")
+      );
+    }
+
+    cudaError_t err = cudaMemcpyAsync(dst, src, elemSize, cudaMemcpyDeviceToHost, rawStream);
+
+    checkAndSaveError(err);
+
+    return !isError(err);
+  }
+
+  bool
+  CudaWrapper::copyToHost2D(cuda::stream_t stream,
+                            const utils::Sizei& size,
+                            void* src,
+                            unsigned srcStep,
+                            void* dst,
+                            unsigned dstStep)
+  {
+    // Cast input stream to usable data.
+    cudaStream_t rawStream = reinterpret_cast<cudaStream_t>(stream);
+
+    // Check consistency.
+    if (src == nullptr) {
+      error(
+        std::string("Could not perform copy of data with size ") + size.toString() + " to host",
+        std::string("Invalid null source pointer")
+      );
+    }
+    if (dst == nullptr) {
+      error(
+        std::string("Could not perform copy of data with size ") + size.toString() + " to host",
+        std::string("Invalid null destination pointer")
+      );
+    }
+
+    // Perform the copy.
+    cudaError_t err = cudaMemcpy2DAsync(
+      dst,
+      dstStep,
+      src,
+      srcStep,
+      size.w(),
+      size.h(),
+      cudaMemcpyDeviceToHost,
+      rawStream
+    );
+
+    checkAndSaveError(err);
+
+    return !isError(err);
+  }
+
 }

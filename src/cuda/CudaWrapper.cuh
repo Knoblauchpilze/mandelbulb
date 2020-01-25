@@ -165,6 +165,87 @@ namespace utils {
       bool
       free(void* buffer);
 
+      /**
+       * @brief - Used to perform the copy of the single value from host memory to device
+       *          memory. If any of the `src` or `dst` pointers are `null` an error is
+       *          raised.
+       *          Note that we assume that the `dst` is actually large enough to handle
+       *          and receive `elemSize` elements.
+       * @param stream - the stream to use to copy the data.
+       * @param src - the host pointer to copy.
+       * @param elemSize - the size in bytes of the data to copy.
+       * @param dst - the device pointer to copy to.
+       * @return - `true` if the copy succeeded and `false` otherwise.
+       */
+      bool
+      copyToDevice(cuda::stream_t stream,
+                   void* src,
+                   unsigned elemSize,
+                   void* dst);
+
+      /**
+       * @brief - Used to perform the copy to device memory of the input host pointer.
+       *          The provided stream is used in order to schedule the copy along the
+       *          other pending gpu operations.
+       *          Note that in case any of `src` or `dst` are `null` an error is raised.
+       * @param size - the size of the input data to copy.
+       * @param src - the host pointer to copy.
+       * @param srcStep - the size in bytes of a single line of data in the `src`
+       *                  pointer. This is usually equivalent to `size.w() * elemSize`
+       *                  for host pointers.
+       * @param dst - the device pointer to which the data should be copied.
+       * @param dstStep - the size in bytes of a single line of data in the `dst` data.
+       *                  Unlike the host case the device pointers may inculde padding.
+       * @return - `true` if the copy could be performed and `false` otherwise.
+       */
+      bool
+      copyToDevice2D(cuda::stream_t stream,
+                     const utils::Sizei& size,
+                     void* src,
+                     unsigned srcStep,
+                     void* dst,
+                     unsigned dstStep);
+
+      /**
+       * @brief - Used to perform the copy of the single value from device memory to host
+       *          memory. If any of the `src` or `dst` pointers are `null` an error is
+       *          raised.
+       *          Note that we assume that the `dst` is actually large enough to handle
+       *          and receive `elemSize` elements.
+       * @param stream - the stream to use to copy the data.
+       * @param src - the device pointer to copy.
+       * @param elemSize - the size in bytes of the data to copy.
+       * @param dst - the host pointer to copy to.
+       * @return - `true` if the copy succeeded and `false` otherwise.
+       */
+      bool
+      copyToHost(cuda::stream_t stream,
+                 void* src,
+                 unsigned elemSize,
+                 void* dst);
+
+      /**
+       * @brief - Used to perform the copy from device memory of the input device data.
+       *          This is almost the exact opposite of the `copyToDevice2D` method.
+       *          Note that in case any of `src` or `dst` are `null` an error is raised.
+       * @param size - the size of the device data to copy.
+       * @param src - the device pointer to copy.
+       * @param srcStep - the size in bytes of a single line of data in the `src` data.
+       *                  Note that this may include padding (and thus be different from
+       *                  `size.w() * elemSize`).
+       * @param dst - the host pointer to which the data should be copied.
+       * @param dstStep - the size in bytes of a single line of data in the `dst` data.
+       *                  In the case of host pointer this usually doesn't have padding.
+       * @return - `true` if the copy could be performed and `false` otherwise.
+       */
+      bool
+      copyToHost2D(cuda::stream_t stream,
+                   const utils::Sizei& size,
+                   void* src,
+                   unsigned srcStep,
+                   void* dst,
+                   unsigned dstStep);
+
     private:
 
       /**

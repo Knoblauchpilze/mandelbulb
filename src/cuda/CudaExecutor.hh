@@ -195,6 +195,19 @@ namespace utils {
     bool
     hasJobs() const noexcept;
 
+    /**
+     * @brief - Used to execute and schedule the input job with the specified gpu
+     *          resources. This method will copy the input data for the job and
+     *          wait for the cuda kernels binded to this executor to terminate. It
+     *          will then copy back the data from device memory to the input `job`.
+     * @param job - the job to schedule.
+     * @param data - the gpu data to use to schedule the job.
+     * @return - `true` if the job was successfully executed and `false` otherwise.
+     */
+    bool
+    scheduleAndExecute(CudaJob& job,
+                       CudaSchedulingData data);
+
   private:
 
     /**

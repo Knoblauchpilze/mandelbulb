@@ -309,7 +309,7 @@ namespace utils {
         CudaSchedulingData{
           stream,
           resBuffer,
-          nullptr,
+          paramsBuffer,
           step
         }
       );
@@ -424,14 +424,14 @@ namespace utils {
           Level::Verbose
         );
 
-        // TODO: Actually schedule the job on the gpu.
-        log("Should process job \"" + job.task->getName() + "\"", utils::Level::Warning);
+        // Execute the job and push it to the results array if it succeeded.
+        if (scheduleAndExecute(*job.task, gpuData)) {
+          // Notify the main thread about the result.
+          UniqueGuard guard(m_resultsLocker);
+          m_results.push_back(job);
 
-        // Notify the main thread about the result.
-        UniqueGuard guard(m_resultsLocker);
-        m_results.push_back(job);
-
-        m_resWaiter.notify_one();
+          m_resWaiter.notify_one();
+        }
       }
 
       // Once the job is done, reacquire the mutex in order to re-wait on
@@ -491,6 +491,60 @@ namespace utils {
       );
       rLock.lock();
     }
+  }
+
+  bool
+  CudaExecutor::scheduleAndExecute(CudaJob& job,
+                                   CudaSchedulingData data)
+  {
+    // We need to first copy the input parameters of the job to device memory.
+    bool success = true;
+    // TODO: Implementation.
+    if (!success) {
+      log(
+        std::string("Could not schedule job ") + job.getName() + ("err: \"") + m_cudaAPI.getLastError() + "\")",
+        utils::Level::Error
+      );
+
+      return false;
+    }
+
+    // TODO: To fully benefit from the asyncrhonicity we should allocate the
+    // host memory using `cudaMallocHost`. See here (slide 11):
+    // https://developer.download.nvidia.com/CUDA/training/StreamsAndConcurrencyWebinar.pdf
+
+    // Execute the job.
+    success = m_cudaAPI.launch(
+      data.stream,
+      []() {
+        // TODO: Implementation.
+        return cudaErrorInvalidDeviceFunction;
+      }
+    );
+    if (!success) {
+      log(
+        std::string("Could not launch job ") + job.getName() + ("err: \"") + m_cudaAPI.getLastError() + "\")",
+        utils::Level::Error
+      );
+
+      return false;
+    }
+
+    // Wait for the job to complete.
+    success = m_cudaAPI.wait(data.stream);
+    if (!success) {
+      log(
+        std::string("Job \"") + job.getName() + "\" failed (err: \"" + m_cudaAPI.getLastError() + "\")",
+        utils::Level::Error
+      );
+
+      return false;
+    }
+
+    // Copy back the results to the job.
+    // TODO: Implementation.
+
+    return false;
   }
 
 }
