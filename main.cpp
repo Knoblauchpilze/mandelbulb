@@ -44,6 +44,11 @@
 # include "RenderMenu.hh"
 # include "RenderSettings.hh"
 
+// TODO: Should add no data color as part of the customization process.
+// TODO: Should add the properties of tonemapping ?
+// TODO: Should add the color of the fractal ?
+// TODO: Could be in its own dedicated panel.
+
 int main(int /*argc*/, char** /*argv*/) {
   // Create the logger.
   utils::StdLogger logger;

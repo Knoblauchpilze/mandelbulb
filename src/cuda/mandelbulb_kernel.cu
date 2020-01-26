@@ -383,6 +383,7 @@ namespace mandelbulb {
       res[4u * (y * width + x) + 2u] = (n.y + 1.0f) / 2.0f;
       res[4u * (y * width + x) + 3u] = (n.z + 1.0f) / 2.0f;
 # else
+      // TODO: Should be replaced by the lights coming from the input props.
       // Add various lights with various colors.
       float3 c = make_float3(0.0f, 0.0f, 0.0f);
 
