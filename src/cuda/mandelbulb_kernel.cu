@@ -406,10 +406,6 @@ namespace mandelbulb {
       res[4u * (y * width + x) + 0u] = tone * c.x;
       res[4u * (y * width + x) + 1u] = tone * c.y;
       res[4u * (y * width + x) + 2u] = tone * c.z;
-
-      // res[4u * (y * width + x) + 0u] = c.x;
-      // res[4u * (y * width + x) + 1u] = c.y;
-      // res[4u * (y * width + x) + 2u] = c.z;
 # endif
     }
 
