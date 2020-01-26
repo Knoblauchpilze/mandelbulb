@@ -109,22 +109,6 @@ namespace mandelbulb {
       sdl::graphic::TextBox*
       getRayStepsTextBox();
 
-      // Max iterations.
-      static
-      const char*
-      getMaxIterationsLabelName() noexcept;
-
-      static
-      const char*
-      getMaxIterationsTextBoxName() noexcept;
-
-      static
-      constexpr unsigned
-      getDefaultMaxIterations() noexcept;
-
-      sdl::graphic::TextBox*
-      getMaxIterationsTextBox();
-
       // Bailout.
       static
       const char*

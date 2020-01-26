@@ -190,41 +190,6 @@ namespace mandelbulb {
 
     maxRayValue->setMaxSize(szMax);
 
-    // Create iterations data.
-    sdl::graphic::LabelWidget* maxIterLabel = new sdl::graphic::LabelWidget(
-      getMaxIterationsLabelName(),
-      std::string("Iterations:"),
-      getGeneralTextFont(),
-      getGeneralTextSize(),
-      sdl::graphic::LabelWidget::HorizontalAlignment::Left,
-      sdl::graphic::LabelWidget::VerticalAlignment::Center,
-      this,
-      getBackgroundColor()
-    );
-    if (maxIterLabel == nullptr) {
-      error(
-        std::string("Could not create render settings"),
-        std::string("Max iterations label not created")
-      );
-    }
-
-    maxIterLabel->setMaxSize(szMax);
-
-    sdl::graphic::TextBox* maxIterValue = new sdl::graphic::TextBox(
-      getMaxIterationsTextBoxName(),
-      getGeneralTextFont(),
-      std::to_string(getDefaultMaxIterations()),
-      getGeneralTextSize(),this
-    );
-    if (maxIterValue == nullptr) {
-      error(
-        std::string("Could not create render settings"),
-        std::string("Max iterations textbox not created")
-      );
-    }
-
-    maxIterValue->setMaxSize(szMax);
-
     // Create bailout data.
     sdl::graphic::LabelWidget* bailoutLabel = new sdl::graphic::LabelWidget(
       getBailoutLabelName(),
@@ -292,8 +257,6 @@ namespace mandelbulb {
     hitThreshValue->allowLog(false);
     maxRayLabel->allowLog(false);
     maxRayValue->allowLog(false);
-    maxIterLabel->allowLog(false);
-    maxIterValue->allowLog(false);
     bailoutLabel->allowLog(false);
     bailoutValue->allowLog(false);
     apply->allowLog(false);
@@ -307,8 +270,6 @@ namespace mandelbulb {
     layout->addItem(hitThreshValue);
     layout->addItem(maxRayLabel);
     layout->addItem(maxRayValue);
-    layout->addItem(maxIterLabel);
-    layout->addItem(maxIterValue);
     layout->addItem(bailoutLabel);
     layout->addItem(bailoutValue);
     layout->addItem(apply);
@@ -325,12 +286,10 @@ namespace mandelbulb {
   RenderSettings::onApplyButtonClicked(const std::string& /*dummy*/) {
     // We need to retrieve the value for the power, the maximum iterations
     // and the accuracy.
-    std::string powerStr, accStr, maxIterStr, hitThreshStr, rayStStr, bailoutStr;
+    std::string powerStr, accStr, hitThreshStr, rayStStr, bailoutStr;
 
     sdl::graphic::TextBox* powerTB = getPowerValueTextBox();
     sdl::graphic::TextBox* accTB = getAccuracyTextBox();
-    sdl::graphic::TextBox* maxItTB = getMaxIterationsTextBox();
-
     sdl::graphic::TextBox* hitTB = getHitThresholdTextBox();
     sdl::graphic::TextBox* rayStTB = getRayStepsTextBox();
     sdl::graphic::TextBox* bailoutTB = getBailoutTextBox();
@@ -346,14 +305,6 @@ namespace mandelbulb {
     if (accTB == nullptr) {
       log(
         std::string("Could not gather rendering properties (invalid accuracy label)"),
-        utils::Level::Error
-      );
-
-      return;
-    }
-    if (maxItTB == nullptr) {
-      log(
-        std::string("Could not gather rendering properties (invalid max iterations label)"),
         utils::Level::Error
       );
 
@@ -385,10 +336,9 @@ namespace mandelbulb {
     }
 
     withSafetyNet(
-      [&powerStr, &accStr, &maxIterStr, powerTB, accTB, maxItTB]() {
+      [&powerStr, &accStr, powerTB, accTB]() {
         powerStr = powerTB->getValue();
         accStr = accTB->getValue();
-        maxIterStr = maxItTB->getValue();
       },
       std::string("RenderSettings::gatherProps")
     );
@@ -403,11 +353,10 @@ namespace mandelbulb {
     );
 
     // Convert each property.
-    bool sPower = false, sAcc = false, sMaxIt = false, sHitThr = false, sRaySt = false, sBailout = false;
+    bool sPower = false, sAcc = false, sHitThr = false, sRaySt = false, sBailout = false;
 
     float power = utils::convert(powerStr, getDefaultPower(), sPower);
     unsigned acc = utils::convert(accStr, getDefaultAccuracy(), sAcc);
-    unsigned maxIter = utils::convert(maxIterStr, getDefaultMaxIterations(), sMaxIt);
     float hitThresh = utils::convert(hitThreshStr, getDefaultHitThreshold(), sHitThr);
     unsigned raySt = utils::convert(rayStStr, getDefaultRaySteps(), sRaySt);
     float bailout = utils::convert(bailoutStr, getDefaultBailout(), sBailout);
@@ -421,12 +370,6 @@ namespace mandelbulb {
     if (!sAcc) {
       log(
         std::string("Could not convert provided accuracy of \"") + accStr + "\", using " + std::to_string(acc) + " instead",
-        utils::Level::Warning
-      );
-    }
-    if (!sMaxIt) {
-      log(
-        std::string("Could not convert provided max iterations count of \"") + maxIterStr + "\", using " + std::to_string(maxIter) + " instead",
         utils::Level::Warning
       );
     }
@@ -454,7 +397,6 @@ namespace mandelbulb {
 
     // Create the rendering properties object.
     RenderProperties props = RenderProperties{
-      maxIter,
       acc,
       power,
       hitThresh,

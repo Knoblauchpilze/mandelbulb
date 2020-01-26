@@ -83,7 +83,7 @@ namespace mandelbulb {
   inline
   constexpr unsigned
   RenderSettings::getDefaultAccuracy() noexcept {
-    return 128u;
+    return 10u;
   }
 
   sdl::graphic::TextBox*
@@ -137,30 +137,6 @@ namespace mandelbulb {
   sdl::graphic::TextBox*
   RenderSettings::getRayStepsTextBox() {
     return getChildAs<sdl::graphic::TextBox>(getRayStepsTextBoxName());
-  }
-
-  inline
-  const char*
-  RenderSettings::getMaxIterationsLabelName() noexcept {
-    return "max_iter_label";
-  }
-
-  inline
-  const char*
-  RenderSettings::getMaxIterationsTextBoxName() noexcept {
-    return "max_iter_value";
-  }
-
-  inline
-  sdl::graphic::TextBox*
-  RenderSettings::getMaxIterationsTextBox() {
-    return getChildAs<sdl::graphic::TextBox>(getMaxIterationsTextBoxName());
-  }
-
-  inline
-  constexpr unsigned
-  RenderSettings::getDefaultMaxIterations() noexcept {
-    return 10u;
   }
 
   inline
