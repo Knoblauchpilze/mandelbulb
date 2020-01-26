@@ -93,7 +93,7 @@ namespace mandelbulb {
     // Reset iterations if needed.
     if (reset) {
       m_progress.iterationProgress = 0u;
-      m_progress.desiredIterations = m_props.iterations;
+      m_progress.desiredIterations = 1u;
     }
 
     // Start the computing.
