@@ -256,7 +256,7 @@ namespace mandelbulb {
     // We want a complete recompute of the iterations so we need to
     // reset everything regarding the progression.
     m_computationState = State::Accumulating;
-    scheduleRendering(true);
+    scheduleRendering();
   }
 
 }

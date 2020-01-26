@@ -183,19 +183,11 @@ namespace mandelbulb {
        * @brief - Used to generate the schedule or raytracing tiles to use to
        *          perform the rendering of the fractal given the internal cam
        *          and properties.
-       *          Note that as this method is called each time a new iteration
-       *          is created, we need a way to indicate whether we want to
-       *          completely reset the progression (i.e. iterations included
-       *          or only the task progress).
        *          Note that this method assumes that the internal locker is
        *          already acquired.
-       * @param reset - `true` if the progression of the iterations should be
-       *                reset (usually because a new rendering should take
-       *                place) and `false` otherwise (meaning that probably
-       *                a new iteration is to be scheduled for the same props).
        */
       void
-      scheduleRendering(bool reset);
+      scheduleRendering();
 
       /**
        * @brief - Local slot allowing to handle notifications from the internal

@@ -53,7 +53,7 @@ namespace mandelbulb {
   }
 
   void
-  Fractal::scheduleRendering(bool reset) {
+  Fractal::scheduleRendering() {
     // Cancel existing rendering operations.
     m_scheduler->cancelJobs();
 
@@ -76,7 +76,7 @@ namespace mandelbulb {
       return;
     }
 
-    m_scheduler->enqueueJobs(tilesAsJobs, reset);
+    m_scheduler->enqueueJobs(tilesAsJobs, true);
 
     // Notify listeners that the progression is now empty.
     m_progress.taskProgress = 0u;
