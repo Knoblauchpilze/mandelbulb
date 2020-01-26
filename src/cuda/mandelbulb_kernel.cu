@@ -104,9 +104,17 @@ namespace mandelbulb {
       while (iter < acc && r < bailout) {
         r = length(z);
 
-        // Only iterate if we didn't escape yet.
+        // We could add a test like `if (r < bailout)` here but we won't for two
+        // reasons:
+        // - first it only saves a single iteration. Chances are that if this it
+        //   is already larger than the bailout things will get worse.
+        // - second it allows to actually initialize a correct value for the `dr`
+        //   value which in turns allow to produce a valid distance estimation
+        //   even for the cases where the point is outside of the convergence
+        //   radius from the beginning. This helps a *lot* for the raymarching.
+
+        // Convert to spherical coordinates.
         if (r < bailout) {
-          // Convert to spherical coordinates.
           theta = acosf(z.z / r);
           phi = atan2f(z.y, z.x);
 
@@ -129,8 +137,15 @@ namespace mandelbulb {
         ++iter;
       }
 
-      // Return the distance estimator.
-      return 0.5f * logf(r) * r / dr;
+      // Return the distance estimator. Note that compared to the formular described here:
+      // http://celarek.at/wp/wp-content/uploads/2014/05/realTimeFractalsReport.pdf
+      // we ivided itby `2`. Another discussion here:
+      // http://www.fractalforums.com/3d-fractal-generation/true-3d-mandlebrot-type-fractal/msg8540/#msg8540
+      // It seems that the distance estimator is very inaccurate anyways for small values
+      // of the bailout. So we need to lower it to not pass through the fractal. This is
+      // basically what we had to do by dividing it by `2`. As it's an estimation anyways
+      // we will consider that it's okay.
+      return 0.25f * logf(r) * r / dr;
     }
 
     __device__ __inline__
@@ -311,7 +326,7 @@ namespace mandelbulb {
 
       // Do not handle rays that did not intersect the fractal object.
       if (res[4u * (y * width + x)] < 0.0f) {
-        // Set a black color.
+        // Set the no data color.
         res[4u * (y * width + x) + 1u] = props->no_data_r;
         res[4u * (y * width + x) + 2u] = props->no_data_g;
         res[4u * (y * width + x) + 3u] = props->no_data_b;

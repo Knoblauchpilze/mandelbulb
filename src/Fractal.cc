@@ -85,7 +85,7 @@ namespace mandelbulb {
     // Retrieve the depth at this point: this will be used both to fill
     // the return value and to get the real world coordinates of the
     // point located at said screen coordinates.
-    int off = lScreen.y() * m_dims.w() + lScreen.x();
+    int off = (m_dims.h() - 1u - lScreen.y()) * m_dims.w() + lScreen.x();
     depth = m_samples[off].depth;
 
     // Check whether we have a hit.
@@ -105,7 +105,10 @@ namespace mandelbulb {
     utils::Vector3f dir = m_camera->getDirection(perc);
     worldCoord = m_camera->getEye() + depth * dir;
 
-    log("Screen: " + screenCoord.toString() + " dir: " + dir.toString() + ", depth: " + std::to_string(depth), utils::Level::Verbose);
+    log(
+      "Screen: " + screenCoord.toString() + " dir: " + dir.toString() + ", depth: " + std::to_string(depth),
+      utils::Level::Verbose
+    );
 
     return depth;
   }

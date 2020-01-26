@@ -130,7 +130,7 @@ namespace mandelbulb {
   inline
   constexpr unsigned
   RenderSettings::getDefaultRaySteps() noexcept {
-    return 50u;
+    return 100u;
   }
 
   inline
@@ -140,27 +140,9 @@ namespace mandelbulb {
   }
 
   inline
-  const char*
-  RenderSettings::getBailoutLabelName() noexcept {
-    return "bailout_label";
-  }
-
-  inline
-  const char*
-  RenderSettings::getBailoutTextBoxName() noexcept {
-    return "bailout_value";
-  }
-
-  inline
   float
   RenderSettings::getDefaultBailout() noexcept {
-    return 4.0f;
-  }
-
-  inline
-  sdl::graphic::TextBox*
-  RenderSettings::getBailoutTextBox() {
-    return getChildAs<sdl::graphic::TextBox>(getBailoutTextBoxName());
+    return 8.0f;
   }
 
   inline

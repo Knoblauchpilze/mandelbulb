@@ -111,19 +111,8 @@ namespace mandelbulb {
 
       // Bailout.
       static
-      const char*
-      getBailoutLabelName() noexcept;
-
-      static
-      const char*
-      getBailoutTextBoxName() noexcept;
-
-      static
       float
       getDefaultBailout() noexcept;
-
-      sdl::graphic::TextBox*
-      getBailoutTextBox();
 
       static
       const char*

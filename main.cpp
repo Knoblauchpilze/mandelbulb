@@ -79,8 +79,7 @@ int main(int /*argc*/, char** /*argv*/) {
     // allowing the display of the mandelbulb. The rigth dock widget allows
     // to control the computation parameters of this object.
     const float fov = 40.0f;
-    std::vector<float> transform(16u, 0.0f);
-    const float distance = 2.0f;
+    const float distance = 6.83f;
 
     mandelbulb::CameraShPtr cam = std::make_shared<mandelbulb::Camera>(
       utils::Sizei(512, 256),
@@ -89,7 +88,7 @@ int main(int /*argc*/, char** /*argv*/) {
       utils::Vector2f()
     );
 
-    mandelbulb::RenderProperties props{10u, 8.0f, 0.01f, 50u, 4.0f};
+    mandelbulb::RenderProperties props{10u, 8.0f, 0.01f, 100u, 8.0f};
     mandelbulb::FractalShPtr fractal = std::make_shared<mandelbulb::Fractal>(cam, props);
 
     mandelbulb::RenderMenu* menu = new mandelbulb::RenderMenu();

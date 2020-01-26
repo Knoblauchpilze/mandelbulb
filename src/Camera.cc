@@ -9,7 +9,7 @@ namespace mandelbulb {
                  const utils::Vector2f& rotations):
     utils::CoreObject(std::string("cam_") + dims.toString() + "_fov_" + std::to_string(fov)),
 
-    m_fov(fov),
+    m_fov(fov * 3.1415926535f / 180.0f),
     m_dims(),
     m_distance(),
     m_rotations(),

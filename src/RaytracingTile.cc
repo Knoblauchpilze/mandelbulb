@@ -82,8 +82,9 @@ namespace mandelbulb {
       ++iter;
     }
 
-    // Return the distance estimator.
-    return 0.5f * std::log(r) * r / dr;
+    // Return the distance estimator. See the `mandelbulb_kernel.cu` file for
+    // a more accurate discussion about this formula.
+    return 0.25f * std::log(r) * r / dr;
   }
 
   void

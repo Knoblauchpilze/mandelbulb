@@ -190,45 +190,6 @@ namespace mandelbulb {
 
     maxRayValue->setMaxSize(szMax);
 
-    // Create bailout data.
-    sdl::graphic::LabelWidget* bailoutLabel = new sdl::graphic::LabelWidget(
-      getBailoutLabelName(),
-      std::string("Bailout:"),
-      getGeneralTextFont(),
-      getGeneralTextSize(),
-      sdl::graphic::LabelWidget::HorizontalAlignment::Left,
-      sdl::graphic::LabelWidget::VerticalAlignment::Center,
-      this,
-      getBackgroundColor()
-    );
-    if (bailoutLabel == nullptr) {
-      error(
-        std::string("Could not create render settings"),
-        std::string("Bailout label not created")
-      );
-    }
-
-    bailoutLabel->setMaxSize(szMax);
-
-    ss.str("");
-    ss.clear();
-    ss << std::setprecision(1) << getDefaultBailout();
-
-    sdl::graphic::TextBox* bailoutValue = new sdl::graphic::TextBox(
-      getBailoutTextBoxName(),
-      getGeneralTextFont(),
-      ss.str(),
-      getGeneralTextSize(),this
-    );
-    if (bailoutValue == nullptr) {
-      error(
-        std::string("Could not create render settings"),
-        std::string("Bailout textbox not created")
-      );
-    }
-
-    bailoutValue->setMaxSize(szMax);
-
     // Create apply button.
     sdl::graphic::Button* apply = new sdl::graphic::Button(
       getApplyButtonName(),
@@ -257,8 +218,6 @@ namespace mandelbulb {
     hitThreshValue->allowLog(false);
     maxRayLabel->allowLog(false);
     maxRayValue->allowLog(false);
-    bailoutLabel->allowLog(false);
-    bailoutValue->allowLog(false);
     apply->allowLog(false);
 
     // Build layout.
@@ -270,8 +229,6 @@ namespace mandelbulb {
     layout->addItem(hitThreshValue);
     layout->addItem(maxRayLabel);
     layout->addItem(maxRayValue);
-    layout->addItem(bailoutLabel);
-    layout->addItem(bailoutValue);
     layout->addItem(apply);
 
     // Connect the button `onClick` signal to the local slot in
@@ -286,13 +243,12 @@ namespace mandelbulb {
   RenderSettings::onApplyButtonClicked(const std::string& /*dummy*/) {
     // We need to retrieve the value for the power, the maximum iterations
     // and the accuracy.
-    std::string powerStr, accStr, hitThreshStr, rayStStr, bailoutStr;
+    std::string powerStr, accStr, hitThreshStr, rayStStr;
 
     sdl::graphic::TextBox* powerTB = getPowerValueTextBox();
     sdl::graphic::TextBox* accTB = getAccuracyTextBox();
     sdl::graphic::TextBox* hitTB = getHitThresholdTextBox();
     sdl::graphic::TextBox* rayStTB = getRayStepsTextBox();
-    sdl::graphic::TextBox* bailoutTB = getBailoutTextBox();
 
     if (powerTB == nullptr) {
       log(
@@ -326,14 +282,6 @@ namespace mandelbulb {
 
       return;
     }
-    if (bailoutTB == nullptr) {
-      log(
-        std::string("Could not gather rendering properties (invalid bailout label)"),
-        utils::Level::Error
-      );
-
-      return;
-    }
 
     withSafetyNet(
       [&powerStr, &accStr, powerTB, accTB]() {
@@ -344,22 +292,20 @@ namespace mandelbulb {
     );
 
     withSafetyNet(
-      [&hitThreshStr, &rayStStr, &bailoutStr, hitTB, rayStTB, bailoutTB]() {
+      [&hitThreshStr, &rayStStr, hitTB, rayStTB]() {
         hitThreshStr = hitTB->getValue();
         rayStStr = rayStTB->getValue();
-        bailoutStr = bailoutTB->getValue();
       },
       std::string("RenderSettings::gatherProps")
     );
 
     // Convert each property.
-    bool sPower = false, sAcc = false, sHitThr = false, sRaySt = false, sBailout = false;
+    bool sPower = false, sAcc = false, sHitThr = false, sRaySt = false;
 
     float power = utils::convert(powerStr, getDefaultPower(), sPower);
     unsigned acc = utils::convert(accStr, getDefaultAccuracy(), sAcc);
     float hitThresh = utils::convert(hitThreshStr, getDefaultHitThreshold(), sHitThr);
     unsigned raySt = utils::convert(rayStStr, getDefaultRaySteps(), sRaySt);
-    float bailout = utils::convert(bailoutStr, getDefaultBailout(), sBailout);
 
     if (!sPower) {
       log(
@@ -385,12 +331,6 @@ namespace mandelbulb {
         utils::Level::Warning
       );
     }
-    if (!sBailout) {
-      log(
-        std::string("Could not convert provided bailout value of \"") + bailoutStr + "\", using " + std::to_string(bailout) + " instead",
-        utils::Level::Warning
-      );
-    }
 
     // Protect from concurrent accesses.
     Guard guard(m_propsLocker);
@@ -401,7 +341,7 @@ namespace mandelbulb {
       power,
       hitThresh,
       raySt,
-      bailout
+      getDefaultBailout()
     };
 
     // Notify listeners through the signal.
