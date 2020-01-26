@@ -181,7 +181,7 @@ namespace mandelbulb {
     // the return value and to get the real world coordinates of the
     // point located at said screen coordinates.
     int off = lScreen.y() * m_dims.w() + lScreen.x();
-    depth = m_samples[off].depth / m_samples[off].iter;
+    depth = m_samples[off].depth;
 
     // Check whether we have a hit.
     if (depth < 0.0f) {
@@ -249,11 +249,7 @@ namespace mandelbulb {
     std::fill(
       m_samples.begin(),
       m_samples.end(),
-      Sample{
-        0u,
-        -1.0f,
-        getNoDataColor()
-      }
+      Sample{-1.0f, getNoDataColor()}
     );
 
     // Set the results to be accumulating and schedule a rendering.

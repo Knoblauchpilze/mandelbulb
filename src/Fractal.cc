@@ -155,24 +155,11 @@ namespace mandelbulb {
                   map[4u * (sOff + x) + 2u]
                 );
 
-                if (m_samples[off].iter == 0u) {
-                  // Save both the depth.
-                  m_samples[off].depth = depth;
-
-                  // And the color.
-                  m_samples[off].color = c;
-                }
-                else {
-                  // Mix depth.
-                  m_samples[off].depth += depth;
-
-                  // And colors.
-                  float perc = 1.0f * m_samples[off].iter / (m_samples[off].iter + 1.0f);
-                  m_samples[off].color = m_samples[off].color.blend(c, perc);
-                }
+                // Save both the depth.
+                m_samples[off].depth = depth;
+                // And the color.
+                m_samples[off].color = c;
               }
-
-              ++m_samples[off].iter;
             }
           }
         }

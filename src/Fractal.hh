@@ -258,7 +258,6 @@ namespace mandelbulb {
        *           regarding the depth and normal of the element.
        */
       struct Sample {
-        unsigned iter;                  ///< The number of iterations accumulated for this result.
         float depth;                    ///< The average depth of this pixel (based on the number
                                         ///< iterations accumulated).
         sdl::core::engine::Color color; ///< The color for this sample. Just like the depth it is
