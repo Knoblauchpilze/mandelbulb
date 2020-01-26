@@ -130,7 +130,7 @@ namespace mandelbulb {
   inline
   constexpr unsigned
   RenderSettings::getDefaultRaySteps() noexcept {
-    return 20u;
+    return 50u;
   }
 
   inline

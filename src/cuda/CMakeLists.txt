@@ -5,7 +5,8 @@ set (CMAKE_CXX_STANDARD 14)
 #set (CMAKE_VERBOSE_MAKEFILE ON)
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set (CUDAFLAGS "${CUDAFLAGS};-arch=sm_50")
+set (CUDAFLAGS "${CUDAFLAGS};-arch=sm_50;-lineinfo")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -lineinfo")
 
 set (SOURCES
   CudaExecutor.cu

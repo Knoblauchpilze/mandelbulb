@@ -121,19 +121,19 @@ namespace mandelbulb {
 
   inline
   utils::Sizei
-  Fractal::getData(std::vector<float>& depths) {
+  Fractal::getData(std::vector<sdl::core::engine::Color>& colors) {
     // Protect from concurrent accesses.
     Guard guard(m_propsLocker);
 
     // Copy the internal data to the output vector after resizing it
     // if needed.
-    if (depths.size() != m_samples.size()) {
-      depths.resize(m_samples.size());
+    if (colors.size() != m_samples.size()) {
+      colors.resize(m_samples.size());
     }
 
-    // Fill the depths values.
+    // Fill the colors values.
     for (unsigned id = 0u ; id < m_samples.size() ; ++id) {
-      depths[id] = m_samples[id].depth;
+      colors[id] = m_samples[id].color;
     }
 
     // Return the dimensions of the fractal.
@@ -214,11 +214,8 @@ namespace mandelbulb {
     // Update the internal properties.
     m_props = props;
 
-    // Reset existing results.
-    std::fill(m_samples.begin(), m_samples.end(), Sample{0u, -1.0f});
-
-    // Perform a new rendering.
-    scheduleRendering(true);
+    // Schedule rendering.
+    updateFromCamera();
   }
 
   inline
@@ -240,10 +237,24 @@ namespace mandelbulb {
   }
 
   inline
+  sdl::core::engine::Color
+  Fractal::getNoDataColor() noexcept {
+    return sdl::core::engine::Color::NamedColor::Black;
+  }
+
+  inline
   void
   Fractal::updateFromCamera() {
     // Reset existing results.
-    std::fill(m_samples.begin(), m_samples.end(), Sample{0u, -1.0f});
+    std::fill(
+      m_samples.begin(),
+      m_samples.end(),
+      Sample{
+        0u,
+        -1.0f,
+        getNoDataColor()
+      }
+    );
 
     // Set the results to be accumulating and schedule a rendering.
     // We want a complete recompute of the iterations so we need to

@@ -141,11 +141,12 @@ namespace mandelbulb {
             // coordinate frame and in general fractal coordinate frame.
             int sOff = y * area.w();
             int lY = (y + area.getBottomBound() + m_dims.h() / 2);
-            int dOff = lY * m_dims.w();
+            int dOff = (m_dims.h() - 1 - lY) * m_dims.w();
 
             for (int x = 0 ; x < area.w() ; ++x) {
               // Do the same for `x` coordinate.
               int dX = (x + area.getLeftBound() + m_dims.w() / 2);
+              int off = dOff + dX;
 
               if (dX < 0 || dX >= m_dims.w() ||
                   lY < 0 || lY >= m_dims.h())
@@ -159,17 +160,33 @@ namespace mandelbulb {
                 continue;
               }
 
-              float depth = map[sOff + x];
+              float depth = map[4u * (sOff + x) + 3u];
+
               if (depth >= 0.0f) {
-                if (m_samples[dOff + dX].iter == 0u) {
-                  m_samples[dOff + dX].depth = depth;
+                sdl::core::engine::Color c = sdl::core::engine::Color::fromRGB(
+                  map[4u * (sOff + x) + 0u],
+                  map[4u * (sOff + x) + 1u],
+                  map[4u * (sOff + x) + 2u]
+                );
+
+                if (m_samples[off].iter == 0u) {
+                  // Save both the depth.
+                  m_samples[off].depth = depth;
+
+                  // And the color.
+                  m_samples[off].color = c;
                 }
                 else {
-                  m_samples[dOff + dX].depth += depth;
+                  // Mix depth.
+                  m_samples[off].depth += depth;
+
+                  // And colors.
+                  float perc = 1.0f * m_samples[off].iter / (m_samples[off].iter + 1.0f);
+                  m_samples[off].color = m_samples[off].color.blend(c, perc);
                 }
               }
 
-              ++m_samples[dOff + dX].iter;
+              ++m_samples[off].iter;
             }
           }
         }

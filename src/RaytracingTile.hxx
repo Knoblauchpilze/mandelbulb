@@ -14,7 +14,7 @@ namespace mandelbulb {
   inline
   constexpr unsigned
   RaytracingTile::getResultSize() noexcept {
-    return sizeof(float);
+    return sizeof(float) * 4u;
   }
 
   inline

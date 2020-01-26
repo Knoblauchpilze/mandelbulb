@@ -91,7 +91,10 @@ namespace mandelbulb {
   void
   RaytracingTile::build() {
     // Allocate the internal vector array.
-    m_depthMap.resize(m_area.w() * m_area.h(), -1.0f);
+    m_depthMap.resize(m_area.w() * m_area.h() * 4u, 0.0f);
+    for (int id = 0 ; id < m_area.area() ; ++id) {
+      m_depthMap[4u * id + 3u] = -1.0f;
+    }
 
     // Package the internal properties into a valid `KernelProps` struct.
     m_cudaProps = gpu::KernelProps{

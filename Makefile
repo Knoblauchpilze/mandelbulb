@@ -32,3 +32,6 @@ r: sandbox
 d: sandboxDebug
 	cd sandbox && ./debug.sh local
 
+p:  sandbox
+	cd sandbox && ./profile.sh local
+

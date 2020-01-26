@@ -84,14 +84,14 @@ namespace mandelbulb {
        *          a peek at the view of the fractal given the camera settings.
        *          This method returns the internal data as a copy and return the
        *          actual dimensions of the provided vector.
-       * @param depths - the list of depths for each pixel of the camera plane.
+       * @param colors - the list of colors for each pixel of the camera plane.
        *                 Note that the input vector is resized if needed.
        * @return - a size indicating the actual dimensions covered by the camera
-       *           plane's data returned in `depths`. Allows to know how to use
+       *           plane's data returned in `colors`. Allows to know how to use
        *           the data.
        */
       utils::Sizei
-      getData(std::vector<float>& depths);
+      getData(std::vector<sdl::core::engine::Color>& colors);
 
       /**
        * @brief - Used to retrieve information about the point located at the
@@ -153,6 +153,16 @@ namespace mandelbulb {
       static
       constexpr unsigned
       getTileHeight() noexcept;
+
+      /**
+       * @brief - Used to provide a default color to use for pixels where no fractal
+       *          data is to be found. This will represent the background color used
+       *          to render the fractal.
+       * @return - a color suited to display the fractal.
+       */
+      static
+      sdl::core::engine::Color
+      getNoDataColor() noexcept;
 
       /**
        * @brief- Used  to connect the needed signals from the thread pool so
@@ -252,9 +262,11 @@ namespace mandelbulb {
        *           regarding the depth and normal of the element.
        */
       struct Sample {
-        unsigned iter; ///< The number of iterations accumulated for this result.
-        float depth;   ///< The average depth of this pixel (based on the number
-                       ///< iterations accumulated).
+        unsigned iter;                  ///< The number of iterations accumulated for this result.
+        float depth;                    ///< The average depth of this pixel (based on the number
+                                        ///< iterations accumulated).
+        sdl::core::engine::Color color; ///< The color for this sample. Just like the depth it is
+                                        ///< averaged with the iteration count.
       };
 
       /**

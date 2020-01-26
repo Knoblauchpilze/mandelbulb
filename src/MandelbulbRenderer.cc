@@ -17,12 +17,6 @@ namespace mandelbulb {
     m_tex(),
     m_tilesRendered(false),
 
-    // TODO: Provide customization of palette.
-    m_palette(RenderPalette{
-      generateDefaultPalette(),
-      getDefaultPaletteRange()
-    }),
-
     onCoordinatesChanged(),
     onDepthChanged()
   {
@@ -135,29 +129,8 @@ namespace mandelbulb {
     }
 
     // Retrieve the data from the fractal object.
-    std::vector<float> depths;
-    utils::Sizei s = m_fractal->getData(depths);
-
-    // Convert it into colors.
-    std::vector<sdl::core::engine::Color> colors(s.area(), getNoDataColor());
-
-    for (int y = 0 ; y < s.h() ; ++y) {
-      int off = y * s.w();
-
-      for (int x = 0 ; x < s.w() ; ++x) {
-        // Retrieve a color if this pixel contains data.
-        if (depths[off + x] >= 0.0f) {
-          // Convert the depth in the range.
-          float depth = std::fmod(depths[off + x], m_palette.range) / m_palette.range;
-
-          // Assign the color using the palette.
-          // Perform an inversion of the `y` axis so that the generated
-          // image is not upside down.
-          int rOff = (s.h() - 1 - y) * s.w();
-          colors[rOff + x] = m_palette.palette->getColorAt(depth);
-        }
-      }
-    }
+    std::vector<sdl::core::engine::Color> colors;
+    utils::Sizei s = m_fractal->getData(colors);
 
     // Create the engine from this data.
     sdl::core::engine::BrushShPtr brush = std::make_shared<sdl::core::engine::Brush>(

@@ -23,6 +23,12 @@
  *          use of raytracing. The approach followed here will
  *          be raytracing as well, with some sort of a deferred
  *          rendering either on the host or on a GPU device.
+ *          
+ *          We have to acknowledge the value of the information
+ *          found in the following resource:
+ *          http://celarek.at/wp/wp-content/uploads/2014/05/realTimeFractalsReport.pdf
+ *          which proved very useful to implement the distance
+ *          estimation techniques.
  *
  *          Implemented from:
  *            - 17/01/2020 - ??/??/2020
@@ -38,9 +44,6 @@
 # include "LightSettings.hh"
 # include "RenderMenu.hh"
 # include "RenderSettings.hh"
-
-// TODO: Fix issue with palette (maybe not needed if we refine the
-// notion of normal).
 
 int main(int /*argc*/, char** /*argv*/) {
   // Create the logger.
@@ -87,7 +90,7 @@ int main(int /*argc*/, char** /*argv*/) {
       utils::Vector2f()
     );
 
-    mandelbulb::RenderProperties props{10u, 128u, 8.0f, 0.01f, 20u, 4.0f};
+    mandelbulb::RenderProperties props{1u, 128u, 8.0f, 0.01f, 50u, 4.0f};
     mandelbulb::FractalShPtr fractal = std::make_shared<mandelbulb::Fractal>(cam, props);
 
     mandelbulb::RenderMenu* menu = new mandelbulb::RenderMenu();

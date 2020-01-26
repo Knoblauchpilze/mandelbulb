@@ -58,8 +58,9 @@ namespace mandelbulb {
       /**
        * @brief - Similar to `getPropsSize` but provides the size in bytes of a
        *          single element of the result buffer of this tile. In the case
-       *          of a raytracing tile it is a single `float` which translates
-       *          the depth to reach the fractal object.
+       *          of a raytracing tile it is a four channel `float` value where
+       *          the first three components represent the color and the last
+       *          one is used to indicate the depth to reach the fractal object.
        * @return - the size in bytes needed to describe a single element of the
        *           result buffer.
        */
