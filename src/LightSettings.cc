@@ -3,6 +3,7 @@
 # include <sstream>
 # include <iomanip>
 # include <sdl_graphic/GridLayout.hh>
+# include <core_utils/Conversion.hh>
 
 namespace mandelbulb {
 
@@ -11,7 +12,11 @@ namespace mandelbulb {
     sdl::core::SdlWidget(std::string("light_settings"),
                          sizeHint,
                          parent,
-                         getBackgroundColor())
+                         getBackgroundColor()),
+
+    m_colors(),
+
+    onLightsChanged()
   {
     build();
   }
@@ -324,7 +329,142 @@ namespace mandelbulb {
 
   void
   LightSettings::onApplyButtonClicked(const std::string& /*dummy*/) {
-    // TODO: Implementation.
+    // We need to traverse the internal elements to fetch all the lights
+    // and build the corresponding data vector.
+    std::vector<LightShPtr> lights;
+    bool success = false;
+
+    for (unsigned id = 0u ; id < getLightsCount() ; ++id) {
+      // Retrieve the properties for the current light if any.
+      sdl::graphic::Button* toggle = getButtonForLight(id);
+      if (toggle == nullptr) {
+        log("Could not retrieve palette for light " + std::to_string(id), utils::Level::Error);
+        continue;
+      }
+
+      if (!toggle->toggled()) {
+        // The light is not active, do not account for it.
+        continue;
+      }
+
+      // Retrieve the position of the light.
+      sdl::graphic::TextBox* xTB = getTextBoxForLightPosition(id, 'x');
+      sdl::graphic::TextBox* yTB = getTextBoxForLightPosition(id, 'y');
+      sdl::graphic::TextBox* zTB = getTextBoxForLightPosition(id, 'z');
+
+      if (xTB == nullptr) {
+        log("Could not retrieve x coordinate for light " + std::to_string(id), utils::Level::Error);
+        continue;
+      }
+      if (yTB == nullptr) {
+        log("Could not retrieve y coordinate for light " + std::to_string(id), utils::Level::Error);
+        continue;
+      }
+      if (zTB == nullptr) {
+        log("Could not retrieve z coordinate for light " + std::to_string(id), utils::Level::Error);
+        continue;
+      }
+
+      std::string xStr, yStr, zStr;
+      withSafetyNet(
+        [&xStr, &yStr, &zStr, xTB, yTB, zTB]() {
+          xStr = xTB->getValue();
+          yStr = yTB->getValue();
+          zStr = zTB->getValue();
+        },
+        std::string("Light_") + std::to_string(id) + "::getPos()"
+      );
+
+      utils::Vector3f pos(
+        getDefaultLightPosition(id, 'x'),
+        getDefaultLightPosition(id, 'y'),
+        getDefaultLightPosition(id, 'z')
+      );
+
+      pos.x() = utils::convert(xStr, getDefaultLightPower(), success);
+      if (!success) {
+        log(
+          std::string("Could not convert provided x coordinate of \"") + xStr + "\" for light " +
+          std::to_string(id) + " using " + std::to_string(getDefaultLightPosition(id, 'x')) + " instead",
+          utils::Level::Warning
+        );
+      }
+      pos.y() = utils::convert(yStr, getDefaultLightPower(), success);
+      if (!success) {
+        log(
+          std::string("Could not convert provided y coordinate of \"") + yStr + "\" for light " +
+          std::to_string(id) + " using " + std::to_string(getDefaultLightPosition(id, 'y')) + " instead",
+          utils::Level::Warning
+        );
+      }
+      pos.z() = utils::convert(zStr, getDefaultLightPower(), success);
+      if (!success) {
+        log(
+          std::string("Could not convert provided z coordinate of \"") + zStr + "\" for light " +
+          std::to_string(id) + " using " + std::to_string(getDefaultLightPosition(id, 'z')) + " instead",
+          utils::Level::Warning
+        );
+      }
+
+      // Retrieve the color.
+      sdl::graphic::SelectorWidget* palette = getPaletteForLightColor(id);
+      if (palette == nullptr) {
+        log("Could not retrieve palette for light " + std::to_string(id), utils::Level::Error);
+        continue;
+      }
+
+      // Populate the color based on the current active on in the palette
+      // and by checking the assocation in the internal colors table.
+      unsigned cID = static_cast<unsigned>(palette->getActiveItem());
+      if (cID >= m_colors.size()) {
+        log(
+          std::string("Cannot associate color ") + std::to_string(cID) + " for light " +
+          std::to_string(id) + ", palette only defines " + std::to_string(m_colors.size()),
+          utils::Level::Error
+        );
+
+        continue;
+      }
+
+      sdl::core::engine::Color c = m_colors[cID];
+
+      // Retrieve the intensity.
+      sdl::graphic::TextBox* powerTB = getTextBoxForLightPower(id);
+      if (powerTB == nullptr) {
+        log("Could not retrieve intensity for light " + std::to_string(id), utils::Level::Error);
+        continue;
+      }
+
+      std::string powerStr;
+      withSafetyNet(
+        [&powerStr, powerTB]() {
+          powerStr = powerTB->getValue();
+        },
+        std::string("Light_") + std::to_string(id) + "::getPower()"
+      );
+
+      float intensity = utils::convert(powerStr, getDefaultLightPower(), success);
+      if (!success) {
+        log(
+          std::string("Could not convert provided intensity of \"") + powerStr + "\" for light " +
+          std::to_string(id) + " using " + std::to_string(intensity) + " instead",
+          utils::Level::Warning
+        );
+      }
+
+      // Create the light and register it for the output signal.
+      LightShPtr light = Light::fromPositionAndTarget(pos, utils::Vector3f(0.0f, 0.0f, 0.0f));
+      light->setColor(c);
+      light->setIntensity(intensity);
+
+      lights.push_back(light);
+    }
+
+    // Notify listeners.
+    onLightsChanged.safeEmit(
+      std::string("onLightsChanged(") + std::to_string(lights.size()) + ")",
+      lights
+    );
   }
 
 }

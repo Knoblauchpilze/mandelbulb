@@ -70,15 +70,21 @@ namespace mandelbulb {
 
   inline
   float
+  LightSettings::getDefaultLightPositionCircleRadius() noexcept {
+    return 4.0f;
+  }
+
+  inline
+  float
   LightSettings::getDefaultLightPosition(unsigned id,
                                          char axis) noexcept
   {
     // Position the lights on a circle at a fixed `z` value using some trigonometry.
     switch (axis) {
       case 'x':
-        return std::cos(2.0f * id * 3.1415926535f / getLightsCount());
+        return getDefaultLightPositionCircleRadius() * std::cos(2.0f * id * 3.1415926535f / getLightsCount());
       case 'y':
-        return std::sin(2.0f * id * 3.1415926535f / getLightsCount());
+        return getDefaultLightPositionCircleRadius() * std::sin(2.0f * id * 3.1415926535f / getLightsCount());
       case 'z':
       default:
         // Assume `z` case by default.

@@ -3,29 +3,28 @@
 
 namespace mandelbulb {
 
-  RaytracingTile::RaytracingTile(const utils::Vector3f& eye,
-                                 const utils::Vector3f& u,
-                                 const utils::Vector3f& v,
-                                 const utils::Vector3f& w,
+  RaytracingTile::RaytracingTile(const utils::Boxi& area,
                                  const utils::Sizei& total,
-                                 const utils::Boxi& area,
-                                 const RenderProperties& props):
+                                 const sdl::core::engine::Color& noDataColor):
     utils::CudaJob(std::string("tile_") + area.toString()),
 
-    m_eye(eye),
+    m_eye(),
 
-    m_u(u),
-    m_v(v),
-    m_w(w),
+    m_u(),
+    m_v(),
+    m_w(),
 
     m_total(total),
     m_area(area),
 
-    m_props(props),
+    m_props(),
+    m_lights(),
+    m_noDataColor(noDataColor),
 
+    m_dirty(true),
     m_cudaProps(),
 
-    m_depthMap()
+    m_pixelsMap()
   {
     // Check consistency.
     if (!m_total.valid()) {
@@ -87,44 +86,59 @@ namespace mandelbulb {
     return 0.5f * std::log(r) * r / dr;
   }
 
-
   void
   RaytracingTile::build() {
-    // Allocate the internal vector array.
-    m_depthMap.resize(m_area.w() * m_area.h() * 4u, 0.0f);
-    for (int id = 0 ; id < m_area.area() ; ++id) {
-      m_depthMap[4u * id + 3u] = -1.0f;
-    }
+    // Allocate the internal pixels map.
+    m_pixelsMap.resize(
+      m_area.w() * m_area.h(),
+      pixel::Data{
+        -1.0f,
+        m_noDataColor.r(),
+        m_noDataColor.g(),
+        m_noDataColor.b()
+      }
+    );
 
-    // Package the internal properties into a valid `KernelProps` struct.
-    m_cudaProps = gpu::KernelProps{
-      m_props.accuracy,
-      m_props.exponent,
-      m_props.bailout,
-      m_props.hitThreshold,
-      m_props.raySteps,
+  }
 
-      m_eye.x(),
-      m_eye.y(),
-      m_eye.z(),
+  void
+  RaytracingTile::packageCudaProps() {
+    // Package the internal properties into their cuda equivalent structure.
+    // We will flatten the lights and register the missing one as inactive
+    // if needed.
+    m_cudaProps.accuracy = m_props.accuracy;
+    m_cudaProps.exponent =  m_props.exponent;
+    m_cudaProps.bailout =  m_props.bailout;
+    m_cudaProps.hit_thresh =  m_props.hitThreshold;
+    m_cudaProps.ray_steps =  m_props.raySteps;
 
-      m_u.x(),
-      m_u.y(),
-      m_u.z(),
+    m_cudaProps.eye_x = m_eye.x();
+    m_cudaProps.eye_y = m_eye.y();
+    m_cudaProps.eye_z = m_eye.z();
 
-      m_v.x(),
-      m_v.y(),
-      m_v.z(),
+    m_cudaProps.u_x = m_u.x();
+    m_cudaProps.u_y = m_u.y();
+    m_cudaProps.u_z = m_u.z();
 
-      m_w.x(),
-      m_w.y(),
-      m_w.z(),
+    m_cudaProps.v_x = m_v.x();
+    m_cudaProps.v_y = m_v.y();
+    m_cudaProps.v_z = m_v.z();
 
-      m_area.getLeftBound(),
-      m_area.getBottomBound(),
-      m_total.w(),
-      m_total.h()
-    };
+    m_cudaProps.w_x = m_w.x();
+    m_cudaProps.w_y = m_w.y();
+    m_cudaProps.w_z = m_w.z();
+
+    m_cudaProps.min_x = m_area.getLeftBound();
+    m_cudaProps.min_y = m_area.getBottomBound();
+    m_cudaProps.tot_w = m_total.w();
+    m_cudaProps.tot_h = m_total.h();
+
+    m_cudaProps.no_data_b = m_noDataColor.r();
+    m_cudaProps.no_data_g = m_noDataColor.g();
+    m_cudaProps.no_data_b = m_noDataColor.b();
+
+    // Copy lights.
+    // TODO: Implementation.
   }
 
 }

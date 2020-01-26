@@ -57,7 +57,20 @@ namespace mandelbulb {
     m_dims = iDims;
     m_samples.resize(m_dims.area());
 
-    updateFromCamera();
+    updateAndRender();
+  }
+
+  inline
+  void
+  Fractal::onLightsChanged(const std::vector<LightShPtr>& lights) {
+    // Protect from concurrent accesses.
+    Guard guard(m_propsLocker);
+
+    // Update the internal lights vector.
+    m_lights = lights;
+
+    // Update and render the fractal with the new lights.
+    updateAndRender();
   }
 
   inline
@@ -76,7 +89,7 @@ namespace mandelbulb {
       return;
     }
 
-    updateFromCamera();
+    updateAndRender();
   }
 
   inline
@@ -116,7 +129,7 @@ namespace mandelbulb {
       return;
     }
 
-    updateFromCamera();
+    updateAndRender();
   }
 
   inline
@@ -141,71 +154,6 @@ namespace mandelbulb {
   }
 
   inline
-  float
-  Fractal::getPoint(const utils::Vector2i& screenCoord,
-                    utils::Vector3f& worldCoord,
-                    bool& hit)
-  {
-    // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
-
-    // Assume no hit.
-    hit = false;
-
-    worldCoord.x() = std::numeric_limits<float>::lowest();
-    worldCoord.y() = std::numeric_limits<float>::lowest();
-    worldCoord.z() = std::numeric_limits<float>::lowest();
-
-    float depth = -1.0f;
-
-    // Convert to local coordinates.
-    utils::Vector2f lScreen(
-      screenCoord.x() + m_dims.w() / 2,
-      screenCoord.y() + m_dims.h() / 2
-    );
-
-    // Consistency check
-    if (lScreen.x() < 0 || lScreen.x() >= m_dims.w() ||
-        lScreen.y() < 0 || lScreen.y() >= m_dims.h())
-    {
-      log(
-        std::string("Trying to get point at coord ") + lScreen.toString() +
-        " not compatible with internal camera plane size " + m_dims.toString(),
-        utils::Level::Error
-      );
-
-      return -1.0f;
-    }
-
-    // Retrieve the depth at this point: this will be used both to fill
-    // the return value and to get the real world coordinates of the
-    // point located at said screen coordinates.
-    int off = lScreen.y() * m_dims.w() + lScreen.x();
-    depth = m_samples[off].depth;
-
-    // Check whether we have a hit.
-    if (depth < 0.0f) {
-      return depth;
-    }
-
-    // We have a hit !
-    hit = true;
-
-    // Use the camera to update the real world coordinate.
-    utils::Vector2f perc(
-      -0.5f + 1.0f * lScreen.x() / m_dims.w(),
-      -0.5f + 1.0f * lScreen.y() / m_dims.h()
-    );
-
-    utils::Vector3f dir = m_camera->getDirection(perc);
-    worldCoord = m_camera->getEye() + depth * dir;
-
-    log("Screen: " + screenCoord.toString() + " dir: " + dir.toString() + ", depth: " + std::to_string(depth), utils::Level::Verbose);
-
-    return depth;
-  }
-
-  inline
   void
   Fractal::onRenderingPropsChanged(RenderProperties props) {
     // Protect from concurrent accesses.
@@ -215,7 +163,7 @@ namespace mandelbulb {
     m_props = props;
 
     // Schedule rendering.
-    updateFromCamera();
+    updateAndRender();
   }
 
   inline
@@ -244,7 +192,7 @@ namespace mandelbulb {
 
   inline
   void
-  Fractal::updateFromCamera() {
+  Fractal::updateAndRender() {
     // Reset existing results.
     std::fill(
       m_samples.begin(),

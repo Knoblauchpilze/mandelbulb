@@ -6,6 +6,67 @@
 namespace mandelbulb {
 
   inline
+  utils::Boxi
+  RaytracingTile::getArea() const noexcept {
+    return m_area;
+  }
+
+  inline
+  const std::vector<pixel::Data>&
+  RaytracingTile::getPixelsMap() const noexcept {
+    return m_pixelsMap;
+  }
+
+  inline
+  void
+  RaytracingTile::setEye(const utils::Vector3f& eye) {
+    m_eye = eye;
+    makeDirty();
+  }
+
+  inline
+  void
+  RaytracingTile::setU(const utils::Vector3f& u) {
+    m_u = u;
+    makeDirty();
+  }
+
+  inline
+  void
+  RaytracingTile::setV(const utils::Vector3f& v) {
+    m_v = v;
+    makeDirty();
+  }
+
+  inline
+  void
+  RaytracingTile::setW(const utils::Vector3f& w)  {
+    m_w = w;
+    makeDirty();
+  }
+
+  inline
+  void
+  RaytracingTile::setRenderingProps(const RenderProperties& props) {
+    m_props = props;
+    makeDirty();
+  }
+
+  inline
+  void
+  RaytracingTile::setLights(const std::vector<LightShPtr>& lights) {
+    m_lights = lights;
+    makeDirty();
+  }
+
+  inline
+  void
+  RaytracingTile::setNoDataColor(const sdl::core::engine::Color& color) {
+    m_noDataColor = color;
+    makeDirty();
+  }
+
+  inline
   constexpr unsigned
   RaytracingTile::getPropsSize() noexcept {
     return sizeof(gpu::KernelProps);
@@ -14,7 +75,7 @@ namespace mandelbulb {
   inline
   constexpr unsigned
   RaytracingTile::getResultSize() noexcept {
-    return sizeof(float) * 4u;
+    return sizeof(pixel::Data);
   }
 
   inline
@@ -38,25 +99,24 @@ namespace mandelbulb {
   inline
   void*
   RaytracingTile::getInputData() {
+    // Verify whether we need to package the props.
+    if (m_dirty) {
+      packageCudaProps();
+    }
+
     return &m_cudaProps;
   }
 
   inline
   void*
   RaytracingTile::getOutputData() {
-    return m_depthMap.data();
+    return reinterpret_cast<void*>(m_pixelsMap.data());
   }
 
   inline
-  utils::Boxi
-  RaytracingTile::getArea() const noexcept {
-    return m_area;
-  }
-
-  inline
-  const std::vector<float>&
-  RaytracingTile::getDepthMap() const noexcept {
-    return m_depthMap;
+  void
+  RaytracingTile::makeDirty() {
+    m_dirty = true;
   }
 
 }

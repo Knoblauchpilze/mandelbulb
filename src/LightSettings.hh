@@ -1,7 +1,6 @@
 #ifndef    LIGHT_SETTINGS_HH
 # define   LIGHT_SETTINGS_HH
 
-# include <mutex>
 # include <vector>
 # include <sdl_engine/Color.hh>
 # include <maths_utils/Size.hh>
@@ -10,6 +9,8 @@
 # include <sdl_graphic/LabelWidget.hh>
 # include <sdl_graphic/TextBox.hh>
 # include <sdl_graphic/SelectorWidget.hh>
+# include <core_utils/Signal.hh>
+# include "Light.hh"
 
 namespace mandelbulb {
 
@@ -61,6 +62,10 @@ namespace mandelbulb {
 
       sdl::graphic::Button*
       getButtonForLight(unsigned id);
+
+      static
+      float
+      getDefaultLightPositionCircleRadius() noexcept;
 
       static
       float
@@ -139,11 +144,6 @@ namespace mandelbulb {
     private:
 
       /**
-       * @brief - A mutex to protect the internal properties of this widget.
-       */
-      mutable std::mutex m_propsLocker;
-
-      /**
        * @brief - An ordered list of colors which is assigned to the item
        *          allowing to select colors for a light. This ordered list
        *          is used when the rendering options should be packaged to
@@ -152,6 +152,14 @@ namespace mandelbulb {
        *          props.
        */
       std::vector<sdl::core::engine::Color> m_colors;
+
+    public:
+
+      /**
+       * @brief - External signal allowing to notify listeners that the
+       *          lights described by this component have been changed.
+       */
+      utils::Signal<const std::vector<LightShPtr>&> onLightsChanged;
   };
 
 }

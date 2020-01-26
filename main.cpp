@@ -127,6 +127,11 @@ int main(int /*argc*/, char** /*argv*/) {
       &mandelbulb::Fractal::onRenderingPropsChanged
     );
 
+    int slot5 = lights->onLightsChanged.connect_member<mandelbulb::Fractal>(
+      fractal.get(),
+      &mandelbulb::Fractal::onLightsChanged
+    );
+
     // Run it.
     app->run();
 
@@ -136,6 +141,8 @@ int main(int /*argc*/, char** /*argv*/) {
 
     fractal->onRenderingCompletionAdvanced.disconnect(slot3);
     render->onRenderingSettingsChanged.disconnect(slot4);
+
+    lights->onLightsChanged.disconnect(slot5);
   }
   catch (const utils::CoreException& e) {
     utils::LoggerLocator::getLogger().logMessage(

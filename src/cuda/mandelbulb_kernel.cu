@@ -278,12 +278,12 @@ namespace mandelbulb {
       // writing of elements which are out of bounds.
       if (y < height && x < width) {
         // Initialize with invalid data.
-        res[4u * (y * width + x) + 3u] = -1.0f;
+        res[4u * (y * width + x)] = -1.0f;
 
         // Update with distance to the fractal object if we reached
         // it.
         if (!escaped) {
-          res[4u * (y * width + x) + 3u] = tDist;
+          res[4u * (y * width + x)] = tDist;
         }
       }
     }
@@ -310,11 +310,11 @@ namespace mandelbulb {
       }
 
       // Do not handle rays that did not intersect the fractal object.
-      if (res[4u * (y * width + x) + 3u] < 0.0f) {
+      if (res[4u * (y * width + x)] < 0.0f) {
         // Set a black color.
-        res[4u * (y * width + x) + 0u] = 0.0f;
-        res[4u * (y * width + x) + 1u] = 0.0f;
-        res[4u * (y * width + x) + 2u] = 0.0f;
+        res[4u * (y * width + x) + 1u] = props->no_data_r;
+        res[4u * (y * width + x) + 2u] = props->no_data_g;
+        res[4u * (y * width + x) + 3u] = props->no_data_b;
 
         return;
       }
@@ -331,7 +331,7 @@ namespace mandelbulb {
       float4 e = make_float4(props->eye_x, props->eye_y, props->eye_z, 0.0f);
 
       // Retrieve the distance estimated for the fractal point.
-      float depth = res[4u * (y * width + x) + 3u];
+      float depth = res[4u * (y * width + x)];
 
       // Compute the current point to light.
       float4 dir;
@@ -364,9 +364,9 @@ namespace mandelbulb {
       float4 n = normalize(make_float4(dx, dy, dz, 0.0f));
 
 # ifdef NORMAL_DISPLAY
-      res[4u * (y * width + x) + 0u] = (n.x + 1.0f) / 2.0f;
-      res[4u * (y * width + x) + 1u] = (n.y + 1.0f) / 2.0f;
-      res[4u * (y * width + x) + 2u] = (n.z + 1.0f) / 2.0f;
+      res[4u * (y * width + x) + 1u] = (n.x + 1.0f) / 2.0f;
+      res[4u * (y * width + x) + 2u] = (n.y + 1.0f) / 2.0f;
+      res[4u * (y * width + x) + 3u] = (n.z + 1.0f) / 2.0f;
 # else
       // Add various lights with various colors.
       float3 c = make_float3(0.0f, 0.0f, 0.0f);
@@ -403,9 +403,9 @@ namespace mandelbulb {
       float tone = mapped / lum;
 
       // Save the result in the output buffer.
-      res[4u * (y * width + x) + 0u] = tone * c.x;
-      res[4u * (y * width + x) + 1u] = tone * c.y;
-      res[4u * (y * width + x) + 2u] = tone * c.z;
+      res[4u * (y * width + x) + 1u] = tone * c.x;
+      res[4u * (y * width + x) + 2u] = tone * c.y;
+      res[4u * (y * width + x) + 3u] = tone * c.z;
 # endif
     }
 

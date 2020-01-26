@@ -11,8 +11,11 @@ namespace mandelbulb {
 
     m_camera(cam),
     m_props(props),
+    // TODO: Should be consistent with what is displayed in the lights panel.
+    m_lights(),
 
     m_computationState(State::Converged),
+    m_schedule(),
     m_scheduler(
       std::make_shared<utils::CudaExecutor>(
         getWorkerThreadCount(),
@@ -41,6 +44,70 @@ namespace mandelbulb {
     }
 
     build();
+  }
+
+  float
+  Fractal::getPoint(const utils::Vector2i& screenCoord,
+                    utils::Vector3f& worldCoord,
+                    bool& hit)
+  {
+    // Protect from concurrent accesses.
+    Guard guard(m_propsLocker);
+
+    // Assume no hit.
+    hit = false;
+
+    worldCoord.x() = std::numeric_limits<float>::lowest();
+    worldCoord.y() = std::numeric_limits<float>::lowest();
+    worldCoord.z() = std::numeric_limits<float>::lowest();
+
+    float depth = -1.0f;
+
+    // Convert to local coordinates.
+    utils::Vector2f lScreen(
+      screenCoord.x() + m_dims.w() / 2,
+      screenCoord.y() + m_dims.h() / 2
+    );
+
+    // Consistency check
+    if (lScreen.x() < 0 || lScreen.x() >= m_dims.w() ||
+        lScreen.y() < 0 || lScreen.y() >= m_dims.h())
+    {
+      log(
+        std::string("Trying to get point at coord ") + lScreen.toString() +
+        " not compatible with internal camera plane size " + m_dims.toString(),
+        utils::Level::Error
+      );
+
+      return -1.0f;
+    }
+
+    // Retrieve the depth at this point: this will be used both to fill
+    // the return value and to get the real world coordinates of the
+    // point located at said screen coordinates.
+    int off = lScreen.y() * m_dims.w() + lScreen.x();
+    depth = m_samples[off].depth;
+
+    // Check whether we have a hit.
+    if (depth < 0.0f) {
+      return depth;
+    }
+
+    // We have a hit !
+    hit = true;
+
+    // Use the camera to update the real world coordinate.
+    utils::Vector2f perc(
+      -0.5f + 1.0f * lScreen.x() / m_dims.w(),
+      -0.5f + 1.0f * lScreen.y() / m_dims.h()
+    );
+
+    utils::Vector3f dir = m_camera->getDirection(perc);
+    worldCoord = m_camera->getEye() + depth * dir;
+
+    log("Screen: " + screenCoord.toString() + " dir: " + dir.toString() + ", depth: " + std::to_string(depth), utils::Level::Verbose);
+
+    return depth;
   }
 
   void
@@ -169,54 +236,29 @@ namespace mandelbulb {
           getTileHeight()
         );
 
-        // Clamp the area so that it does not exceed the available dimensions
-        // as defined in the `m_dims` attribute.
-        int excessW = std::max(0, area.getRightBound() - m_dims.w() / 2);
-        int excessH = std::max(0, area.getTopBound() - m_dims.h() / 2);
-
-        if (excessW > 0) {
-          if (excessW % 2 != 0) {
-            log(
-              std::string("Area ") + area.toString() + " will not correctly be cropped to match " +
-              m_dims.toString(),
-              utils::Level::Error
-            );
-          }
-
-          area.x() -= excessW / 2;
-          area.w() -= excessW;
-        }
-        if (excessH > 0) {
-          if (excessH % 2 != 0) {
-            log(
-              std::string("Area ") + area.toString() + " will not correctly be cropped to match " +
-              m_dims.toString(),
-              utils::Level::Error
-            );
-          }
-
-          area.y() -= excessH / 2;
-          area.h() -= excessH;
-        }
+        // Handle cases where the dimensions of the camera plane is not a
+        // perfect multiple of the tiles' dimensions.
+        evenize(area);
 
         log(
-          std::string("Generating tile ") + std::to_string(x) + "x" + std::to_string(y) +
-          " with area " + area.toString(),
+          std::string("Generating tile ") + std::to_string(x) + "x" + std::to_string(y) + " with area " + area.toString(),
           utils::Level::Verbose
         );
 
         // Create the tile and register it in the schedule.
-        tiles.push_back(
-          std::make_shared<RaytracingTile>(
-            m_camera->getEye(),
-            m_camera->getU(),
-            m_camera->getV(),
-            m_camera->getW(),
-            m_dims,
-            area,
-            m_props
-          )
-        );
+        RaytracingTileShPtr tile = std::make_shared<RaytracingTile>(area, m_dims, getNoDataColor());
+
+        tile->setEye(m_camera->getEye());
+        tile->setU(m_camera->getU());
+        tile->setV(m_camera->getV());
+        tile->setW(m_camera->getW());
+
+        tile->setRenderingProps(m_props);
+        tile->setLights(m_lights);
+        tile->setNoDataColor(getNoDataColor());
+
+        // Register this tile.
+        tiles.push_back(tile);
       }
     }
 
@@ -225,12 +267,43 @@ namespace mandelbulb {
   }
 
   void
+  Fractal::evenize(utils::Boxi& area) {
+    // Clamp the area so that it does not exceed the available dimensions
+    // as defined in the `m_dims` attribute.
+    int excessW = std::max(0, area.getRightBound() - m_dims.w() / 2);
+    int excessH = std::max(0, area.getTopBound() - m_dims.h() / 2);
+
+    if (excessW > 0) {
+      if (excessW % 2 != 0) {
+        log(
+          std::string("Area ") + area.toString() + " will not correctly be cropped to match " + m_dims.toString(),
+          utils::Level::Error
+        );
+      }
+
+      area.x() -= excessW / 2;
+      area.w() -= excessW;
+    }
+    if (excessH > 0) {
+      if (excessH % 2 != 0) {
+        log(
+          std::string("Area ") + area.toString() + " will not correctly be cropped to match " + m_dims.toString(),
+          utils::Level::Error
+        );
+      }
+
+      area.y() -= excessH / 2;
+      area.h() -= excessH;
+    }
+  }
+
+  void
   Fractal::copyTileData(RaytracingTile& tile) {
     // Retrieve the depth map associated to the current tile and copy it to
     // the internal array. This includes copying the depth and adjusting the
     // color of each pixel.
     utils::Boxi area = tile.getArea();
-    const std::vector<float>& map = tile.getDepthMap();
+    const std::vector<pixel::Data>& map = tile.getPixelsMap();
 
     if (map.empty()) {
       log(
@@ -267,11 +340,11 @@ namespace mandelbulb {
         }
 
         // Save the pixel's data.
-        m_samples[off].depth = map[4u * (sOff + x) + 3u];
+        m_samples[off].depth = map[sOff + x].depth;
         m_samples[off].color = sdl::core::engine::Color::fromRGB(
-          map[4u * (sOff + x) + 0u],
-          map[4u * (sOff + x) + 1u],
-          map[4u * (sOff + x) + 2u]
+          map[sOff + x].r,
+          map[sOff + x].g,
+          map[sOff + x].b
         );
       }
     }

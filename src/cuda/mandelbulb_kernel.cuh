@@ -13,42 +13,79 @@ namespace mandelbulb {
      *          the mandelbulb computation kernel.
      */
     struct KernelProps {
-      // accuracy.
+      // General rendering properties.
       uint32_t accuracy;
-      // exponent.
       float exponent;
-      // bailout.
       float bailout;
-      // hit threshold.
       float hit_thresh;
-      // ray steps.
       uint32_t ray_steps;
 
-      // `eye` vector.
+      // Camera properties.
       float eye_x;
       float eye_y;
       float eye_z;
-      // `u` vector.
+
       float u_x;
       float u_y;
       float u_z;
-      // `v` vector.
+
       float v_x;
       float v_y;
       float v_z;
-      // `w` vector.
+
       float w_x;
       float w_y;
       float w_z;
 
-      // min `x`.
+      // Area description.
       int min_x;
-      // min `y`.
       int min_y;
-      // total `w`.
       int tot_w;
-      // total `h`.
       int tot_h;
+
+      // No data color.
+      float no_data_r;
+      float no_data_g;
+      float no_data_b;
+
+      // Light 1.
+      bool l1_active;
+
+      float l1_dx;
+      float l1_dy;
+      float l1_dz;
+
+      float l1_r;
+      float l1_g;
+      float l1_b;
+
+      float l1_i;
+
+      // Light 2.
+      bool l2_active;
+
+      float l2_dx;
+      float l2_dy;
+      float l2_dz;
+
+      float l2_r;
+      float l2_g;
+      float l2_b;
+
+      float l2_i;
+
+      // Light 3.
+      bool l3_active;
+
+      float l3_dx;
+      float l3_dy;
+      float l3_dz;
+
+      float l3_r;
+      float l3_g;
+      float l3_b;
+
+      float l3_i;
     };
 
   }

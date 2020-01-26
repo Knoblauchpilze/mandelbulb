@@ -10,6 +10,7 @@
 # include "RenderProperties.hh"
 # include "RaytracingTile.hh"
 # include "CudaExecutor.hh"
+# include "Light.hh"
 
 namespace mandelbulb {
 
@@ -37,6 +38,15 @@ namespace mandelbulb {
        */
       void
       setCameraDims(const utils::Sizef& dims);
+
+      /**
+       * @brief - Used to update the internal properties describing lights and
+       *          maybe schedule a new rendering if needed.
+       * @param lights - a vector describing the lights to use to provide some
+       *                 lighting on the scene.
+       */
+      void
+      onLightsChanged(const std::vector<LightShPtr>& lights);
 
       /**
        * @brief - Used to rotate the camera associated to this fractal from the
@@ -173,11 +183,11 @@ namespace mandelbulb {
 
       /**
        * @brief - Used to update the internal properties and schedule a rendering
-       *          by considering that the camera has changed. We will also notify
-       *          listeners of the new camera.
+       *          by considering that the camera has changed and maybe some other
+       *          internal properties as well.
        */
       void
-      updateFromCamera();
+      updateAndRender();
 
       /**
        * @brief - Used to generate the schedule or raytracing tiles to use to
@@ -213,6 +223,17 @@ namespace mandelbulb {
        */
       std::vector<RaytracingTileShPtr>
       generateSchedule();
+
+      /**
+       * @brief - Used to make the input area not get past the dimensions of the
+       *          total area defined for this fractal. This is basically used to
+       *          account for cases where the total camera plane has not dims
+       *          that are consistent with the desired tiles width/height. It can
+       *          result in very small tiles being produced.
+       * @param area - the area to evenize.
+       */
+      void
+      evenize(utils::Boxi& area);
 
       /**
        * @brief - Used to copy back the data from the input vector into the internal
@@ -293,6 +314,13 @@ namespace mandelbulb {
       RenderProperties m_props;
 
       /**
+       * @brief - The list of lights used to illuminate the scene. Received
+       *          from the dedicated control panel and passed on to the tiles
+       *          used to perform the computations.
+       */
+      std::vector<LightShPtr> m_lights;
+
+      /**
        * @brief - Describes the current computation state for this fractal.
        *          It allows to determine what to do when the last tile is
        *          declared finished: we can either schedule some more tiles
@@ -300,6 +328,22 @@ namespace mandelbulb {
        *          of the properties or stop the process.
        */
       State m_computationState;
+
+      /**
+       * @brief - Describe the array of tiles to be executed to produce a
+       *          rendering of the fractal. As the tiles are mostly linked
+       *          to a camera dimensions and not to the position of the
+       *          camera we figured that it might be interesting to persist
+       *          this rather than creating it each time a new rendering is
+       *          requested.
+       *          The class provides convenience methods to populate the
+       *          varying parts (namely the rendering properties and the
+       *          lights) so it got us covered.
+       *          The only way this vector needs to be rebuilt is when the
+       *          dimensions of the camera used to visualize the fractal
+       *          are changed.
+       */
+      std::vector<RaytracingTileShPtr> m_schedule;
 
       /**
        * @brief - The scheduler allowing to launch the jobs needed to update
