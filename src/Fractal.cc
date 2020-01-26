@@ -22,15 +22,7 @@ namespace mandelbulb {
       )
     ),
     m_tilesRenderedSignalID(utils::Signal<>::NoID),
-    m_progress(RenderingProgress{
-      // Current iteration
-      0u,
-      1u,
-
-      // Iterations count
-      0u,
-      1u
-    }),
+    m_progress(RenderingProgress{0u, 1u}),
 
     m_dims(),
     m_samples(),
@@ -89,12 +81,6 @@ namespace mandelbulb {
     // Notify listeners that the progression is now empty.
     m_progress.taskProgress = 0u;
     m_progress.taskTotal = tilesAsJobs.size();
-
-    // Reset iterations if needed.
-    if (reset) {
-      m_progress.iterationProgress = 0u;
-      m_progress.desiredIterations = 1u;
-    }
 
     // Start the computing.
     m_scheduler->notifyJobs();
@@ -197,37 +183,22 @@ namespace mandelbulb {
 
       log(
         "Handled " + std::to_string(tiles.size()) + " tile(s), task: " +
-        std::to_string(m_progress.taskProgress) + "/" + std::to_string(m_progress.taskTotal) + ", " +
-        " iteration: " + std::to_string(m_progress.iterationProgress) + "/" + std::to_string(m_progress.desiredIterations),
+        std::to_string(m_progress.taskProgress) + "/" + std::to_string(m_progress.taskTotal),
         utils::Level::Verbose
       );
 
       // In case an iteration has been finished, schedule the next one (or stop
       // the process if we already accumulated enough iterations).
       if (m_progress.taskProgress == m_progress.taskTotal) {
-        ++m_progress.iterationProgress;
-
-        // Check whether we should start a new iteration.
-        if (m_progress.iterationProgress == m_progress.desiredIterations) {
-          // No need to start a new iteration, we already accumulate enough. We
-          // need to reset the local state.
-          m_computationState = State::Converged;
-        }
-        else {
-          // Schedule a new iteration: we don't want to erase the complete
-          // progression as it's still the same rendering.
-          scheduleRendering(false);
-        }
+        // Accumulate enough samples.
+        m_computationState = State::Converged;
       }
 
       // Compute the global progression: we need to clamp to `100%` in case we
       // reach the last iteration and all the tasks related to it have completed
       // as in this case we didn't schedule a rendering and thus the progress is
       // still such that `m_progress.taskProgress = m_progress.taskTotal`.
-      perc = std::min(1.0f, 1.0f *
-        (m_progress.iterationProgress * m_progress.taskTotal + m_progress.taskProgress) /
-        (m_progress.desiredIterations * m_progress.taskTotal)
-      );
+      perc = std::min(1.0f, 1.0f * m_progress.taskProgress / m_progress.taskTotal);
     }
 
     // Notify external listeners.

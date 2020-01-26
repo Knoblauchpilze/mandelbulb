@@ -245,14 +245,10 @@ namespace mandelbulb {
        *          iteration and the overall progress of the rendering job.
        */
       struct RenderingProgress {
-        unsigned taskProgress;       ///< Holds the number of finished tiles for
-                                     ///< the current iteration.
-        unsigned taskTotal;          ///< Holds the number of tiles generated for
-                                     ///< this single iteration.
-
-        unsigned iterationProgress;  ///< Holds the number of completed iterations
-                                     ///< so far.
-        unsigned desiredIterations;  ///< Holds the desired number of iterations.
+        unsigned taskProgress; ///< Holds the number of finished tiles for
+                               ///< the current iteration.
+        unsigned taskTotal;    ///< Holds the number of tiles generated for
+                               ///< this single iteration.
       };
 
       /**
