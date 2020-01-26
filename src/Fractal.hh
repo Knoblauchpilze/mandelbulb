@@ -214,6 +214,16 @@ namespace mandelbulb {
       std::vector<RaytracingTileShPtr>
       generateSchedule();
 
+      /**
+       * @brief - Used to copy back the data from the input vector into the internal
+       *          array. The data is assumed to represent the area provided as input
+       *          and should contain both the depth and the color to assign to the
+       *          points.
+       * @param tile - the raytracing tile representing the data to copy.
+       */
+      void
+      copyTileData(RaytracingTile& tile);
+
     private:
 
       /**

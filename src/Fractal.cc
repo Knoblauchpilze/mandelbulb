@@ -109,60 +109,7 @@ namespace mandelbulb {
           continue;
         }
 
-        // Retrieve the depth map associated to the current tile and copy it to
-        // the internal array. This includes copying the depth and adjusting the
-        // iterations count.
-        utils::Boxi area = tile->getArea();
-        const std::vector<float>& map = tile->getDepthMap();
-
-        if (map.empty()) {
-          log(
-            std::string("Cannot interpret tile ") + area.toString() + " with no depth map",
-            utils::Level::Error
-          );
-        }
-        else {
-          for (int y = 0 ; y < area.h() ; ++y) {
-            // Compute the equivalent of the `y` coordinate both in local tile's
-            // coordinate frame and in general fractal coordinate frame.
-            int sOff = y * area.w();
-            int lY = (y + area.getBottomBound() + m_dims.h() / 2);
-            int dOff = (m_dims.h() - 1 - lY) * m_dims.w();
-
-            for (int x = 0 ; x < area.w() ; ++x) {
-              // Do the same for `x` coordinate.
-              int dX = (x + area.getLeftBound() + m_dims.w() / 2);
-              int off = dOff + dX;
-
-              if (dX < 0 || dX >= m_dims.w() ||
-                  lY < 0 || lY >= m_dims.h())
-              {
-                log(
-                  std::string("Could not copy data at ") + std::to_string(x) + "x" + std::to_string(y) + " from " +
-                  area.toString() + ", local is " + std::to_string(dX) + "x" + std::to_string(lY),
-                  utils::Level::Error
-                );
-
-                continue;
-              }
-
-              float depth = map[4u * (sOff + x) + 3u];
-
-              if (depth >= 0.0f) {
-                sdl::core::engine::Color c = sdl::core::engine::Color::fromRGB(
-                  map[4u * (sOff + x) + 0u],
-                  map[4u * (sOff + x) + 1u],
-                  map[4u * (sOff + x) + 2u]
-                );
-
-                // Save both the depth.
-                m_samples[off].depth = depth;
-                // And the color.
-                m_samples[off].color = c;
-              }
-            }
-          }
-        }
+        copyTileData(*tile);
       }
 
       // Add the rendered tiles to the internal progress.
@@ -210,6 +157,7 @@ namespace mandelbulb {
     unsigned w = (m_dims.w() + getTileWidth() - 1u) / getTileWidth();
     unsigned h = (m_dims.h() + getTileHeight() - 1u) / getTileHeight();
 
+    // TODO: Maybe we should persist this schedule.
     for (unsigned y = 0u ; y < h ; ++y) {
       for (unsigned x = 0u ; x < w ; ++x) {
         // The area covered by this tile can be computed from its index
@@ -274,6 +222,59 @@ namespace mandelbulb {
 
     // Return the generated schedule.
     return tiles;
+  }
+
+  void
+  Fractal::copyTileData(RaytracingTile& tile) {
+    // Retrieve the depth map associated to the current tile and copy it to
+    // the internal array. This includes copying the depth and adjusting the
+    // color of each pixel.
+    utils::Boxi area = tile.getArea();
+    const std::vector<float>& map = tile.getDepthMap();
+
+    if (map.empty()) {
+      log(
+        std::string("Cannot interpret tile ") + area.toString() + " with no depth map",
+        utils::Level::Error
+      );
+
+      return;
+    }
+
+    // Process each pixel of the area.
+    for (int y = 0 ; y < area.h() ; ++y) {
+      // Compute the equivalent of the `y` coordinate both in local tile's
+      // coordinate frame and in general fractal coordinate frame.
+      int sOff = y * area.w();
+      int lY = (y + area.getBottomBound() + m_dims.h() / 2);
+      int dOff = (m_dims.h() - 1 - lY) * m_dims.w();
+
+      for (int x = 0 ; x < area.w() ; ++x) {
+        // Do the same for `x` coordinate.
+        int dX = (x + area.getLeftBound() + m_dims.w() / 2);
+        int off = dOff + dX;
+
+        if (dX < 0 || dX >= m_dims.w() ||
+            lY < 0 || lY >= m_dims.h())
+        {
+          log(
+            std::string("Could not copy data at ") + std::to_string(x) + "x" + std::to_string(y) + " from " +
+            area.toString() + ", local is " + std::to_string(dX) + "x" + std::to_string(lY),
+            utils::Level::Error
+          );
+
+          continue;
+        }
+
+        // Save the pixel's data.
+        m_samples[off].depth = map[4u * (sOff + x) + 3u];
+        m_samples[off].color = sdl::core::engine::Color::fromRGB(
+          map[4u * (sOff + x) + 0u],
+          map[4u * (sOff + x) + 1u],
+          map[4u * (sOff + x) + 2u]
+        );
+      }
+    }
   }
 
 }

@@ -311,6 +311,11 @@ namespace mandelbulb {
 
       // Do not handle rays that did not intersect the fractal object.
       if (res[4u * (y * width + x) + 3u] < 0.0f) {
+        // Set a black color.
+        res[4u * (y * width + x) + 0u] = 0.0f;
+        res[4u * (y * width + x) + 1u] = 0.0f;
+        res[4u * (y * width + x) + 2u] = 0.0f;
+
         return;
       }
 

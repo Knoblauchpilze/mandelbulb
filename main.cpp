@@ -23,7 +23,6 @@
  *          use of raytracing. The approach followed here will
  *          be raytracing as well, with some sort of a deferred
  *          rendering either on the host or on a GPU device.
- *          
  *          We have to acknowledge the value of the information
  *          found in the following resource:
  *          http://celarek.at/wp/wp-content/uploads/2014/05/realTimeFractalsReport.pdf
