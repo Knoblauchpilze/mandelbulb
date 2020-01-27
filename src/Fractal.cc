@@ -4,15 +4,15 @@
 namespace mandelbulb {
 
   Fractal::Fractal(CameraShPtr cam,
-                   RenderProperties props):
+                   RenderProperties props,
+                   const std::vector<LightShPtr>& lights):
     utils::CoreObject(std::string("mandelbulb")),
 
     m_propsLocker(),
 
     m_camera(cam),
     m_props(props),
-    // TODO: Should be consistent with what is displayed in the lights panel.
-    m_lights(),
+    m_lights(lights),
 
     m_computationState(State::Converged),
     m_schedule(),

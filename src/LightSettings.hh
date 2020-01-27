@@ -22,6 +22,18 @@ namespace mandelbulb {
 
       virtual ~LightSettings();
 
+      /**
+       * @brief - Used to generate default lights as they will be filled
+       *          in the layout defined for this element. This is useful
+       *          to transmit the knowledge of the default lights in some
+       *          other place of the application.
+       * @return - a vector describing the light as they will be defined
+       *           in the controls of this component.
+       */
+      static
+      std::vector<LightShPtr>
+      generateDefaultLights() noexcept;
+
     private:
 
       static
@@ -64,6 +76,10 @@ namespace mandelbulb {
       getButtonForLight(unsigned id);
 
       static
+      utils::Vector3f
+      getLightCircleNormal() noexcept;
+
+      static
       float
       getDefaultLightPositionCircleRadius() noexcept;
 
@@ -92,18 +108,10 @@ namespace mandelbulb {
 
       static
       std::string
-      generateNameForLightPowerLabel(unsigned id) noexcept;
-
-      static
-      std::string
       generateNameForLightPowerValue(unsigned id) noexcept;
 
       sdl::graphic::TextBox*
       getTextBoxForLightPower(unsigned id);
-
-      static
-      std::string
-      generateNameForLightColorLabel(unsigned id) noexcept;
 
       static
       std::string

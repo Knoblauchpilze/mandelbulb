@@ -41,7 +41,7 @@ namespace mandelbulb {
   inline
   unsigned
   LightSettings::getLightsCount() noexcept {
-    return 3u;
+    return 5u;
   }
 
   inline
@@ -69,6 +69,13 @@ namespace mandelbulb {
   }
 
   inline
+  utils::Vector3f
+  LightSettings::getLightCircleNormal() noexcept {
+    // Normalization of the vector `(-1, -1, 1)`.
+    return utils::Vector3f(-0.57735026919f, -0.57735026919f, 0.57735026919f);
+  }
+
+  inline
   float
   LightSettings::getDefaultLightPositionCircleRadius() noexcept {
     return 4.0f;
@@ -79,16 +86,32 @@ namespace mandelbulb {
   LightSettings::getDefaultLightPosition(unsigned id,
                                          char axis) noexcept
   {
-    // Position the lights on a circle at a fixed `z` value using some trigonometry.
+    // Position the lights on a circle with a specified radius. In order
+    // to provide more interesting results we will use a titlted circle
+    // rather than one covering a fixed `z` value.
+
+    // Compute a coordinate frame for the titlted circle.
+    utils::Vector3f n = getLightCircleNormal();
+    utils::Vector3f u = utils::Vector3f(-n.y(), n.x(), 0.0f).normalized();
+    utils::Vector3f v = n ^ u;
+
+    float r = getDefaultLightPositionCircleRadius();
+
+    // Compute the position of the point in the circle given the identifier.
+    utils::Vector3f p =
+      r * u * std::cos(2.0f * id * 3.1415926535f / getLightsCount()) +
+      r * v * std::sin(2.0f * id * 3.1415926535f / getLightsCount())
+    ;
+
     switch (axis) {
       case 'x':
-        return getDefaultLightPositionCircleRadius() * std::cos(2.0f * id * 3.1415926535f / getLightsCount());
+        return p.x();
       case 'y':
-        return getDefaultLightPositionCircleRadius() * std::sin(2.0f * id * 3.1415926535f / getLightsCount());
+        return p.y();
       case 'z':
       default:
         // Assume `z` case by default.
-        return 3.0f;
+        return p.z();
     }
   }
 
@@ -124,12 +147,6 @@ namespace mandelbulb {
 
   inline
   std::string
-  LightSettings::generateNameForLightPowerLabel(unsigned id) noexcept {
-    return std::string("light_power_label_") + std::to_string(id);
-  }
-
-  inline
-  std::string
   LightSettings::generateNameForLightPowerValue(unsigned id) noexcept {
     return std::string("light_power_value_") + std::to_string(id);
   }
@@ -138,12 +155,6 @@ namespace mandelbulb {
   sdl::graphic::TextBox*
   LightSettings::getTextBoxForLightPower(unsigned id) {
     return getChildAs<sdl::graphic::TextBox>(generateNameForLightPowerValue(id));
-  }
-
-  inline
-  std::string
-  LightSettings::generateNameForLightColorLabel(unsigned id) noexcept {
-    return std::string("light_color_label_") + std::to_string(id);
   }
 
   inline

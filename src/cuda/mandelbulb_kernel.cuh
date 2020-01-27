@@ -7,7 +7,7 @@
 /**
  * @brief - Define the number of lights available for shading.
  */
-# define MAX_LIGHTS 3
+# define MAX_LIGHTS 5
 
 namespace mandelbulb {
 

@@ -378,11 +378,6 @@ namespace mandelbulb {
 
       float4 n = normalize(make_float4(dx, dy, dz, 0.0f));
 
-# ifdef NORMAL_DISPLAY
-      res[4u * (y * width + x) + 1u] = (n.x + 1.0f) / 2.0f;
-      res[4u * (y * width + x) + 2u] = (n.y + 1.0f) / 2.0f;
-      res[4u * (y * width + x) + 3u] = (n.z + 1.0f) / 2.0f;
-# else
       // Compute the color by lighting the object with provided information
       // from the kernel properties. We will cycle through lights and only
       // consider the active one to provide lighting.
@@ -414,29 +409,6 @@ namespace mandelbulb {
         c += w * directional_light(p, n, -l, lc, proxThresh, maxSteps, acc, bailout, exp);
       }
 
-# ifdef SAVE_COOL_LIGHTS
-
-      float4 l1 = normalize(make_float4(-1.0f, 0.0f, -1.0f, 0.0f));
-      const float w1 = 1.0f;
-      c += w1 * directional_light(p, n, -l1, make_float3(1.0f, 1.0f, 1.0f), proxThresh, maxSteps, acc, bailout, exp);
-
-      float4 l2 = normalize(make_float4(1.0f, 1.0f, -1.0f, 0.0f));
-      const float w2 = 1.0f;
-      c += w2 * directional_light(p, n, -l2, make_float3(0.7f, 0.7f, 0.3f), proxThresh, maxSteps, acc, bailout, exp);
-
-      float4 l3 = normalize(make_float4(0.0f, -1.0f, 1.0f, 0.0f));
-      const float w3 = 1.0f;
-      c += w3 * directional_light(p, n, -l3, make_float3(0.0f, 0.5f, 1.0f), proxThresh, maxSteps, acc, bailout, exp);
-
-      float4 l4 = normalize(make_float4(-1.0f, 0.0f, 0.0f, 0.0f));
-      const float w4 = 1.0f;
-      c += w4 * directional_light(p, n, -l4, make_float3(1.0f, 0.5f, 0.0f), proxThresh, maxSteps, acc, bailout, exp);
-
-      float4 l5 = normalize(make_float4(0.0f, 0.0f, -1.0f, 0.0f));
-      const float w5 = 1.0f;
-      c += w5 * directional_light(p, n, -l5, make_float3(0.0f, 1.0f, 0.0f), proxThresh, maxSteps, acc, bailout, exp);
-# endif
-
       // Apply a simple reinhard tonemapping to handle bruned areas.
       float lum = c.x * 0.2126f + c.y * 0.7152f + c.z * 0.0722f;
 
@@ -452,7 +424,6 @@ namespace mandelbulb {
       res[4u * (y * width + x) + 1u] = tone * c.x;
       res[4u * (y * width + x) + 2u] = tone * c.y;
       res[4u * (y * width + x) + 3u] = tone * c.z;
-# endif
     }
 
   }

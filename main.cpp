@@ -48,6 +48,8 @@
 // TODO: Should add the properties of tonemapping ?
 // TODO: Should add the color of the fractal ?
 // TODO: Could be in its own dedicated panel.
+// TODO: Maybe try out the option of casting primary rays first and then
+// secondary rays.
 
 int main(int /*argc*/, char** /*argv*/) {
   // Create the logger.
@@ -94,7 +96,11 @@ int main(int /*argc*/, char** /*argv*/) {
     );
 
     mandelbulb::RenderProperties props{10u, 8.0f, 0.001f, 100u, 8.0f};
-    mandelbulb::FractalShPtr fractal = std::make_shared<mandelbulb::Fractal>(cam, props);
+    mandelbulb::FractalShPtr fractal = std::make_shared<mandelbulb::Fractal>(
+      cam,
+      props,
+      mandelbulb::LightSettings::generateDefaultLights()
+    );
 
     mandelbulb::RenderMenu* menu = new mandelbulb::RenderMenu();
     app->setMenuBar(menu);

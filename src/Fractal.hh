@@ -23,9 +23,11 @@ namespace mandelbulb {
        *          method is called.
        * @param cam - the viewpoint on the fractal object.
        * @param props - the rendering properties for this fractal object.
+       * @param lights - the lights for this fractal object.
        */
       Fractal(CameraShPtr cam,
-              RenderProperties props);
+              RenderProperties props,
+              const std::vector<LightShPtr>& lights);
 
       virtual ~Fractal();
 

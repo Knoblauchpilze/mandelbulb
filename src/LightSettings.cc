@@ -21,6 +21,55 @@ namespace mandelbulb {
     build();
   }
 
+  std::vector<LightShPtr>
+  LightSettings::generateDefaultLights() noexcept {
+    std::vector<LightShPtr> lights;
+
+    for (unsigned id = 0u ; id < getLightsCount() ; ++id) {
+      // Generate default position.
+      utils::Vector3f pos(
+        getDefaultLightPosition(id, 'x'),
+        getDefaultLightPosition(id, 'y'),
+        getDefaultLightPosition(id, 'z')
+      );
+
+      // Choose color.
+      sdl::core::engine::Color c;
+      switch (id) {
+        case 1u:
+          c = sdl::core::engine::Color::fromRGB(0.7f, 0.7f, 0.3f);
+          break;
+        case 2u:
+          c = sdl::core::engine::Color::fromRGB(0.0f, 0.5f, 1.0f);
+          break;
+        case 3u:
+          c = sdl::core::engine::Color::NamedColor::Orange;
+          break;
+        case 4u:
+          c = sdl::core::engine::Color::NamedColor::Green;
+          break;
+        case 0u:
+        default:
+          // Default case fallbacks to white.
+          c = sdl::core::engine::Color::NamedColor::White;
+          break;
+      }
+
+      // Generate default intensity.
+      float intensity = getDefaultLightPower();
+
+      // Create the light.
+      LightShPtr light = Light::fromPositionAndTarget(pos, utils::Vector3f(0.0f, 0.0f, 0.0f));
+      light->setColor(c);
+      light->setIntensity(intensity);
+
+      // Register it in the output vector.
+      lights.push_back(light);
+    }
+
+    return lights;
+  }
+
   void
   LightSettings::build() {
     // Create the palette to be used when creating color panels for lights.
@@ -29,16 +78,15 @@ namespace mandelbulb {
     // This component uses a grid layout to position the internal components.
     // Each light panel contains:
     //  - a toggle button to de/activate it.
-    //  - three lines for its position.
-    //  - a line for its power.
-    //  - a line for its color.
-    // So a grand total of `6` values for each light panel.
-    const unsigned lightPanelSize = 6u;
+    //  - in the same line a power and a color.
+    //  - two lines for the position's labels and textbox
+    // So a grand total of `3` values for each light panel.
+    const unsigned lightPanelSize = 3u;
 
     sdl::graphic::GridLayoutShPtr layout = std::make_shared<sdl::graphic::GridLayout>(
       "info_panel_layout",
       this,
-      2u,
+      3u,
       1u + getLightsCount() * lightPanelSize,
       getGlobalMargins()
     );
@@ -57,7 +105,7 @@ namespace mandelbulb {
       // Create the toggle button.
       sdl::graphic::Button* toggle = new sdl::graphic::Button(
         generateNameForLightToggle(id),
-        std::string("Toggle"),
+        std::string("Use"),
         std::string(),
         getGeneralTextFont(),
         sdl::graphic::button::Type::Toggle,
@@ -177,23 +225,6 @@ namespace mandelbulb {
       }
 
       // Create the label and textbox to enter the power of the light.
-      sdl::graphic::LabelWidget* powerLabel = new sdl::graphic::LabelWidget(
-        generateNameForLightPowerLabel(id),
-        power,
-        getGeneralTextFont(),
-        getGeneralTextSize(),
-        sdl::graphic::LabelWidget::HorizontalAlignment::Left,
-        sdl::graphic::LabelWidget::VerticalAlignment::Center,
-        this,
-        getBackgroundColor()
-      );
-      if (powerLabel == nullptr) {
-        error(
-          std::string("Could not create light settings"),
-          std::string("Power label for light ") + std::to_string(id) + " not created"
-        );
-      }
-
       ss.clear();
       ss.str("");
       ss << std::setprecision(2) << getDefaultLightPower();
@@ -212,23 +243,6 @@ namespace mandelbulb {
       }
 
       // Create the label and palettes to enter the color of the light.
-      sdl::graphic::LabelWidget* colorLabel = new sdl::graphic::LabelWidget(
-        generateNameForLightColorLabel(id),
-        color,
-        getGeneralTextFont(),
-        getGeneralTextSize(),
-        sdl::graphic::LabelWidget::HorizontalAlignment::Left,
-        sdl::graphic::LabelWidget::VerticalAlignment::Center,
-        this,
-        getBackgroundColor()
-      );
-      if (colorLabel == nullptr) {
-        error(
-          std::string("Could not create light settings"),
-          std::string("Color label for light ") + std::to_string(id) + " not created"
-        );
-      }
-
       sdl::graphic::SelectorWidget* colorValue = createPaletteFromIndex(id);
       if (colorValue == nullptr) {
         error(
@@ -240,11 +254,11 @@ namespace mandelbulb {
       // Apply size restrictions to each component.
       utils::Sizef maxSz(getLabelMaxWidth(), std::numeric_limits<float>::max());
 
+      toggle->toggle(true);
+
       xLabel->setMaxSize(maxSz);
       yLabel->setMaxSize(maxSz);
       zLabel->setMaxSize(maxSz);
-      powerLabel->setMaxSize(maxSz);
-      colorLabel->setMaxSize(maxSz);
 
       toggle->allowLog(false);
       xLabel->allowLog(false);
@@ -253,23 +267,19 @@ namespace mandelbulb {
       yValue->allowLog(false);
       zLabel->allowLog(false);
       zValue->allowLog(false);
-      powerLabel->allowLog(false);
       powerValue->allowLog(false);
-      colorLabel->allowLog(false);
       colorValue->allowLog(false);
 
       // Append each item to the layout.
-      layout->addItem(toggle,     0u, id * lightPanelSize + 0u, 2u, 1u);
+      layout->addItem(toggle,     0u, id * lightPanelSize + 0u, 1u, 1u);
+      layout->addItem(powerValue, 1u, id * lightPanelSize + 0u, 1u, 1u);
+      layout->addItem(colorValue, 2u, id * lightPanelSize + 0u, 1u, 1u);
       layout->addItem(xLabel,     0u, id * lightPanelSize + 1u, 1u, 1u);
-      layout->addItem(xValue,     1u, id * lightPanelSize + 1u, 1u, 1u);
-      layout->addItem(yLabel,     0u, id * lightPanelSize + 2u, 1u, 1u);
+      layout->addItem(yLabel,     1u, id * lightPanelSize + 1u, 1u, 1u);
+      layout->addItem(zLabel,     2u, id * lightPanelSize + 1u, 1u, 1u);
+      layout->addItem(xValue,     0u, id * lightPanelSize + 2u, 1u, 1u);
       layout->addItem(yValue,     1u, id * lightPanelSize + 2u, 1u, 1u);
-      layout->addItem(zLabel,     0u, id * lightPanelSize + 3u, 1u, 1u);
-      layout->addItem(zValue,     1u, id * lightPanelSize + 3u, 1u, 1u);
-      layout->addItem(powerLabel, 0u, id * lightPanelSize + 4u, 1u, 1u);
-      layout->addItem(powerValue, 1u, id * lightPanelSize + 4u, 1u, 1u);
-      layout->addItem(colorLabel, 0u, id * lightPanelSize + 5u, 1u, 1u);
-      layout->addItem(colorValue, 1u, id * lightPanelSize + 5u, 1u, 1u);
+      layout->addItem(zValue,     2u, id * lightPanelSize + 2u, 1u, 1u);
     }
 
     // Create the apply button data.
@@ -305,14 +315,18 @@ namespace mandelbulb {
 
   void
   LightSettings::generatePalette() noexcept {
-    // Generate palette in order they are defined.
+    // Generate a palette. We will use five pre-defined colors and
+    // then add all named colors in order they are defined.
     m_colors.push_back(sdl::core::engine::Color::NamedColor::White);
+    m_colors.push_back(sdl::core::engine::Color::fromRGB(0.7f, 0.7f, 0.3f));
+    m_colors.push_back(sdl::core::engine::Color::fromRGB(0.0f, 0.5f, 1.0f));
+    m_colors.push_back(sdl::core::engine::Color::NamedColor::Orange);
+    m_colors.push_back(sdl::core::engine::Color::NamedColor::Green);
+
     // Do not register black as a valid light color.
     m_colors.push_back(sdl::core::engine::Color::NamedColor::Red);
-    m_colors.push_back(sdl::core::engine::Color::NamedColor::Green);
     m_colors.push_back(sdl::core::engine::Color::NamedColor::Blue);
     m_colors.push_back(sdl::core::engine::Color::NamedColor::Yellow);
-    m_colors.push_back(sdl::core::engine::Color::NamedColor::Orange);
     m_colors.push_back(sdl::core::engine::Color::NamedColor::Cyan);
     m_colors.push_back(sdl::core::engine::Color::NamedColor::Magenta);
     m_colors.push_back(sdl::core::engine::Color::NamedColor::Silver);
