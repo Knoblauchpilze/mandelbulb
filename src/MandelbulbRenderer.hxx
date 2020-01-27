@@ -130,7 +130,7 @@ namespace mandelbulb {
   inline
   constexpr float
   MandelbulbRenderer::getMinimumViewingDistance() noexcept {
-    return 1.5f;
+    return 0.05f;
   }
 
   inline
