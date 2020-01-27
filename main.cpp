@@ -1,8 +1,7 @@
 
 /**
- * @brief - Reimplementation of a program that have seen a lot
- *          of trials along the years with the notable examples
- *          listed below:
+ * @brief - Reimplementation of a program that have seen a lot of trials along
+ *          the years with the notable examples listed below:
  *
  *              +-------------------------+---------------+
  *              |      Name               | Creation date |
@@ -16,18 +15,16 @@
  *              | MANDELBULB RAYTRACING   |  ~15/04/2017  |
  *              +-------------------------+---------------+
  *
- *          The goal of the tool is to provide a way to display
- *          the `Mandelbulb` which is analogous to the fractal
- *          `Mandelbrot` in 2D.
- *          Several approaches have been tried out including the
- *          use of raytracing. The approach followed here will
- *          be raytracing as well, with some sort of a deferred
- *          rendering either on the host or on a GPU device.
- *          We have to acknowledge the value of the information
- *          found in the following resource:
+ *          The goal of the tool is to provide a way to display the `Mandelbulb`
+ *          which is analogous to the `Mandelbrot` set fractal in 2D.
+ *          Several approaches have been tried out including the use of raytracing
+ *          (even though it does not seem to have paid off). The approach followed
+ *          here will be raytracing as well, with some sort of a deferred rendering
+ *          on a GPU device.
+ *          We have to acknowledge the value of the information found in the link
+ *          below:
  *          http://celarek.at/wp/wp-content/uploads/2014/05/realTimeFractalsReport.pdf
- *          which proved very useful to implement the distance
- *          estimation techniques.
+ *          which proved very useful to implement the distance estimation techniques.
  *
  *          Implemented from:
  *            - 17/01/2020 - ??/??/2020
