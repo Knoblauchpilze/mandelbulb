@@ -17,6 +17,7 @@ set (SOURCES
   RenderSettings.cc
   Fractal.cc
   RaytracingTile.cc
+  FractalSettings.cc
   )
 
 add_library (mandelbulb_lib SHARED

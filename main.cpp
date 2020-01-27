@@ -43,6 +43,7 @@
 # include "LightSettings.hh"
 # include "RenderMenu.hh"
 # include "RenderSettings.hh"
+# include "FractalSettings.hh"
 
 // TODO: Should add no data color as part of the customization process.
 // TODO: Should add the properties of tonemapping ?
@@ -113,6 +114,9 @@ int main(int /*argc*/, char** /*argv*/) {
 
     mandelbulb::LightSettings* lights = new mandelbulb::LightSettings();
     app->addDockWidget(lights, sdl::app::DockWidgetArea::RightArea, "Lights");
+
+    mandelbulb::FractalSettings* settings = new mandelbulb::FractalSettings();
+    app->addDockWidget(settings, sdl::app::DockWidgetArea::RightArea, "Fractal");
 
     mandelbulb::InfoPanel* info = new mandelbulb::InfoPanel();
     app->setStatusBar(info);
