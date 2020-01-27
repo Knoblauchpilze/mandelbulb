@@ -307,7 +307,7 @@ namespace mandelbulb {
   LightSettings::generatePalette() noexcept {
     // Generate palette in order they are defined.
     m_colors.push_back(sdl::core::engine::Color::NamedColor::White);
-    m_colors.push_back(sdl::core::engine::Color::NamedColor::Black);
+    // Do not register black as a valid light color.
     m_colors.push_back(sdl::core::engine::Color::NamedColor::Red);
     m_colors.push_back(sdl::core::engine::Color::NamedColor::Green);
     m_colors.push_back(sdl::core::engine::Color::NamedColor::Blue);
