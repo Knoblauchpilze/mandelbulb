@@ -383,9 +383,38 @@ namespace mandelbulb {
       res[4u * (y * width + x) + 2u] = (n.y + 1.0f) / 2.0f;
       res[4u * (y * width + x) + 3u] = (n.z + 1.0f) / 2.0f;
 # else
-      // TODO: Should be replaced by the lights coming from the input props.
-      // Add various lights with various colors.
+      // Compute the color by lighting the object with provided information
+      // from the kernel properties. We will cycle through lights and only
+      // consider the active one to provide lighting.
       float3 c = make_float3(0.0f, 0.0f, 0.0f);
+
+      for (unsigned id = 0u ; id < MAX_LIGHTS ; ++id) {
+        // Retrieve light properties and use it if it is active.
+        if (LIGHT_PROP(props->lights, id, ACTIVE) < 0.0f) {
+          continue;
+        }
+
+        float4 l = normalize(
+          make_float4(
+            LIGHT_PROP(props->lights, id, DIR_X),
+            LIGHT_PROP(props->lights, id, DIR_Y),
+            LIGHT_PROP(props->lights, id, DIR_Z),
+            0.0f
+          )
+        );
+
+        float3 lc = make_float3(
+          LIGHT_PROP(props->lights, id, COLOR_R),
+          LIGHT_PROP(props->lights, id, COLOR_G),
+          LIGHT_PROP(props->lights, id, COLOR_B)
+        );
+
+        float w = LIGHT_PROP(props->lights, id, INTENSITY);
+
+        c += w * directional_light(p, n, -l, lc, proxThresh, maxSteps, acc, bailout, exp);
+      }
+
+# ifdef SAVE_COOL_LIGHTS
 
       float4 l1 = normalize(make_float4(-1.0f, 0.0f, -1.0f, 0.0f));
       const float w1 = 1.0f;
@@ -406,6 +435,7 @@ namespace mandelbulb {
       float4 l5 = normalize(make_float4(0.0f, 0.0f, -1.0f, 0.0f));
       const float w5 = 1.0f;
       c += w5 * directional_light(p, n, -l5, make_float3(0.0f, 1.0f, 0.0f), proxThresh, maxSteps, acc, bailout, exp);
+# endif
 
       // Apply a simple reinhard tonemapping to handle bruned areas.
       float lum = c.x * 0.2126f + c.y * 0.7152f + c.z * 0.0722f;

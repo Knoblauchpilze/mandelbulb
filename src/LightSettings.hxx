@@ -119,7 +119,7 @@ namespace mandelbulb {
   inline
   float
   LightSettings::getDefaultLightPower() noexcept {
-    return 10.0f;
+    return 1.0f;
   }
 
   inline

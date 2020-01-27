@@ -381,7 +381,7 @@ namespace mandelbulb {
         getDefaultLightPosition(id, 'z')
       );
 
-      pos.x() = utils::convert(xStr, getDefaultLightPower(), success);
+      pos.x() = utils::convert(xStr, getDefaultLightPosition(id, 'x'), success);
       if (!success) {
         log(
           std::string("Could not convert provided x coordinate of \"") + xStr + "\" for light " +
@@ -389,7 +389,7 @@ namespace mandelbulb {
           utils::Level::Warning
         );
       }
-      pos.y() = utils::convert(yStr, getDefaultLightPower(), success);
+      pos.y() = utils::convert(yStr, getDefaultLightPosition(id, 'y'), success);
       if (!success) {
         log(
           std::string("Could not convert provided y coordinate of \"") + yStr + "\" for light " +
@@ -397,7 +397,7 @@ namespace mandelbulb {
           utils::Level::Warning
         );
       }
-      pos.z() = utils::convert(zStr, getDefaultLightPower(), success);
+      pos.z() = utils::convert(zStr, getDefaultLightPosition(id, 'z'), success);
       if (!success) {
         log(
           std::string("Could not convert provided z coordinate of \"") + zStr + "\" for light " +

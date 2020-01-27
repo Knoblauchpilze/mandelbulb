@@ -139,7 +139,41 @@ namespace mandelbulb {
     m_cudaProps.no_data_b = m_noDataColor.b();
 
     // Copy lights.
-    // TODO: Implementation.
+    for (unsigned id = 0u ; id < m_lights.size() && id < MAX_LIGHTS ; ++id) {
+      // Check consistency.
+      if (m_lights[id] == nullptr) {
+        log(
+          std::string("Could not copy invalid null light ") + std::to_string(id) + " to cuda kernel props",
+          utils::Level::Error
+        );
+
+        continue;
+      }
+
+      Light& l = *m_lights[id];
+
+      LIGHT_PROP(m_cudaProps.lights, id, gpu::ACTIVE) = 1.0f;
+
+      utils::Vector3f dir = l.getDirection();
+      LIGHT_PROP(m_cudaProps.lights, id, gpu::DIR_X) = dir.x();
+      LIGHT_PROP(m_cudaProps.lights, id, gpu::DIR_Y) = dir.y();
+      LIGHT_PROP(m_cudaProps.lights, id, gpu::DIR_Z) = dir.z();
+
+      sdl::core::engine::Color c = l.getColor();
+      LIGHT_PROP(m_cudaProps.lights, id, gpu::COLOR_R) = c.r();
+      LIGHT_PROP(m_cudaProps.lights, id, gpu::COLOR_G) = c.g();
+      LIGHT_PROP(m_cudaProps.lights, id, gpu::COLOR_B) = c.b();
+
+      LIGHT_PROP(m_cudaProps.lights, id, gpu::INTENSITY) = l.getIntensity();
+    }
+
+    // We also need to deactivate the lights that are not defined
+    // by the internal vector.
+    if (m_lights.size() < MAX_LIGHTS) {
+      for (unsigned id = m_lights.size() ; id < MAX_LIGHTS ; ++id) {
+        LIGHT_PROP(m_cudaProps.lights, id, gpu::ACTIVE) = -1.0f;
+      }
+    }
   }
 
 }

@@ -106,7 +106,7 @@ namespace mandelbulb {
   inline
   constexpr float
   RenderSettings::getDefaultHitThreshold() noexcept {
-    return 0.01f;
+    return 0.001f;
   }
 
   inline

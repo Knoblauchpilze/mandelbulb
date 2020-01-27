@@ -4,9 +4,34 @@
 # include <cstdint>
 # include <cuda_runtime.h>
 
+/**
+ * @brief - Define the number of lights available for shading.
+ */
+# define MAX_LIGHTS 3
+
 namespace mandelbulb {
 
   namespace gpu {
+
+    /**
+     * @brief - This enumeration describe the possible values for accessing
+     *          values in the lights array.
+     */
+    enum LightProp {
+      ACTIVE  = 0,
+
+      DIR_X   = 1,
+      DIR_Y   = 2,
+      DIR_Z   = 3,
+
+      COLOR_R = 4,
+      COLOR_G = 5,
+      COLOR_B = 6,
+
+      INTENSITY = 7,
+
+      COUNT = 8
+    };
 
     /**
      * @brief - Convenience define to reference all the parameters needed by
@@ -48,44 +73,8 @@ namespace mandelbulb {
       float no_data_g;
       float no_data_b;
 
-      // Light 1.
-      bool l1_active;
-
-      float l1_dx;
-      float l1_dy;
-      float l1_dz;
-
-      float l1_r;
-      float l1_g;
-      float l1_b;
-
-      float l1_i;
-
-      // Light 2.
-      bool l2_active;
-
-      float l2_dx;
-      float l2_dy;
-      float l2_dz;
-
-      float l2_r;
-      float l2_g;
-      float l2_b;
-
-      float l2_i;
-
-      // Light 3.
-      bool l3_active;
-
-      float l3_dx;
-      float l3_dy;
-      float l3_dz;
-
-      float l3_r;
-      float l3_g;
-      float l3_b;
-
-      float l3_i;
+      // Lights.
+      float lights[MAX_LIGHTS * COUNT];
     };
 
   }
@@ -114,5 +103,11 @@ namespace mandelbulb {
                             unsigned h);
 
 }
+
+/**
+ * @brief - Convenience macros to access some properties of lights within the
+ *          `KernelProps` object.
+ */
+# define LIGHT_PROP(DATA, ID, PROP) DATA[ID * gpu::COUNT + PROP]
 
 #endif    /* MANDELBULB_KERNEL_CUH */

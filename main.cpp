@@ -93,7 +93,7 @@ int main(int /*argc*/, char** /*argv*/) {
       utils::Vector2f()
     );
 
-    mandelbulb::RenderProperties props{10u, 8.0f, 0.01f, 100u, 8.0f};
+    mandelbulb::RenderProperties props{10u, 8.0f, 0.001f, 100u, 8.0f};
     mandelbulb::FractalShPtr fractal = std::make_shared<mandelbulb::Fractal>(cam, props);
 
     mandelbulb::RenderMenu* menu = new mandelbulb::RenderMenu();
