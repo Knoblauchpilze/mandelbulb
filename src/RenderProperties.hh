@@ -40,6 +40,10 @@ namespace mandelbulb {
                                           ///< of the object without any lights'
                                           ///< modification.
 
+    float blending;                       ///< The percentage of the final color
+                                          ///< of the fractal coming from light
+                                          ///< interaction.
+
     sdl::core::engine::Color noDataColor; ///< The color to use to represent the
                                           ///< regions where rays do not hit the
                                           ///< fractal (usually black).

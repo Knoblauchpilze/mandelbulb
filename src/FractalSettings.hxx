@@ -120,6 +120,30 @@ namespace mandelbulb {
 
   inline
   const char*
+  FractalSettings::getFractalColorBlendingLabelName() noexcept {
+    return "fractal_blending_label";
+  }
+
+  inline
+  const char*
+  FractalSettings::getFractalColorBlendingValueName() noexcept {
+    return "fractal_blending_value";
+  }
+
+  inline
+  float
+  FractalSettings::getDefaultFractalColorBlending() {
+    return 0.7f;
+  }
+
+  inline
+  sdl::graphic::TextBox*
+  FractalSettings::getFractalColorBlendingValue() {
+    return getChildAs<sdl::graphic::TextBox>(getFractalColorBlendingValueName());
+  }
+
+  inline
+  const char*
   FractalSettings::getNoDataColorLabelName() noexcept {
     return "no_data_color_label";
   }

@@ -42,7 +42,6 @@
 # include "RenderSettings.hh"
 # include "FractalSettings.hh"
 
-// TODO: Should add the color of the fractal ?
 // TODO: Maybe try out the option of casting primary rays first and then
 // secondary rays.
 
@@ -93,6 +92,7 @@ int main(int /*argc*/, char** /*argv*/) {
     mandelbulb::RenderProperties rProps{10u, 8.0f, 0.001f, 100u, 8.0f};
     mandelbulb::ShadingProperties sProps{
       sdl::core::engine::Color::NamedColor::Maroon,
+      0.7f,
       sdl::core::engine::Color::NamedColor::Black,
 
       1.0f,
@@ -111,14 +111,14 @@ int main(int /*argc*/, char** /*argv*/) {
     mandelbulb::MandelbulbRenderer* renderer = new mandelbulb::MandelbulbRenderer(fractal);
     app->setCentralWidget(renderer);
 
-    mandelbulb::FractalSettings* settings = new mandelbulb::FractalSettings();
-    app->addDockWidget(settings, sdl::app::DockWidgetArea::RightArea, "Fractal");
-
     mandelbulb::RenderSettings* render = new mandelbulb::RenderSettings();
     app->addDockWidget(render, sdl::app::DockWidgetArea::RightArea, "Render");
 
     mandelbulb::LightSettings* lights = new mandelbulb::LightSettings();
     app->addDockWidget(lights, sdl::app::DockWidgetArea::RightArea, "Lights");
+
+    mandelbulb::FractalSettings* settings = new mandelbulb::FractalSettings();
+    app->addDockWidget(settings, sdl::app::DockWidgetArea::RightArea, "Fractal");
 
     mandelbulb::InfoPanel* info = new mandelbulb::InfoPanel();
     app->setStatusBar(info);

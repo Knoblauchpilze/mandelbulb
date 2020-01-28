@@ -65,6 +65,22 @@ namespace mandelbulb {
       sdl::graphic::SelectorWidget*
       getFractalColorPalette();
 
+      // Fractal color blend.
+      static
+      const char*
+      getFractalColorBlendingLabelName() noexcept;
+
+      static
+      const char*
+      getFractalColorBlendingValueName() noexcept;
+
+      static
+      float
+      getDefaultFractalColorBlending();
+
+      sdl::graphic::TextBox*
+      getFractalColorBlendingValue();
+
       // No data color.
       static
       const char*

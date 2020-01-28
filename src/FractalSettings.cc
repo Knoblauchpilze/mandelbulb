@@ -34,7 +34,7 @@ namespace mandelbulb {
       "fractal_settings_layout",
       this,
       1u,
-      9u,
+      11u,
       getGlobalMargins()
     );
 
@@ -67,6 +67,40 @@ namespace mandelbulb {
       error(
         std::string("Could not create fractal settings"),
         std::string("Fractal color palette not created")
+      );
+    }
+
+    // Fractal color blending.
+    sdl::graphic::LabelWidget* blendingLabel = new sdl::graphic::LabelWidget(
+      getFractalColorBlendingLabelName(),
+      std::string("Blending:"),
+      getGeneralTextFont(),
+      getGeneralTextSize(),
+      sdl::graphic::LabelWidget::HorizontalAlignment::Left,
+      sdl::graphic::LabelWidget::VerticalAlignment::Center,
+      this,
+      getBackgroundColor()
+    );
+    if (blendingLabel == nullptr) {
+      error(
+        std::string("Could not create fractal settings"),
+        std::string("Fractal color blending label not created")
+      );
+    }
+
+    ss << std::setprecision(2) << getDefaultFractalColorBlending();
+
+    sdl::graphic::TextBox* blendingValue = new sdl::graphic::TextBox(
+      getFractalColorBlendingValueName(),
+      getGeneralTextFont(),
+      ss.str(),
+      getGeneralTextSize(),
+      this
+    );
+    if (blendingValue == nullptr) {
+      error(
+        std::string("Could not create fractal settings"),
+        std::string("Fractal color blending textbox not created")
       );
     }
 
@@ -114,6 +148,8 @@ namespace mandelbulb {
       );
     }
 
+    ss.clear();
+    ss.str("");
     ss << std::setprecision(0) << getDefaultExposureValue();
 
     sdl::graphic::TextBox* exposureValue = new sdl::graphic::TextBox(
@@ -191,6 +227,8 @@ namespace mandelbulb {
 
     fColorLabel->setMaxSize(maxSz);
     fColorValue->setMaxSize(maxSz);
+    blendingLabel->setMaxSize(maxSz);
+    blendingValue->setMaxSize(maxSz);
     ndColorLabel->setMaxSize(maxSz);
     ndColorValue->setMaxSize(maxSz);
     exposureLabel->setMaxSize(maxSz);
@@ -201,6 +239,8 @@ namespace mandelbulb {
 
     fColorLabel->allowLog(false);
     fColorValue->allowLog(false);
+    blendingLabel->allowLog(false);
+    blendingValue->allowLog(false);
     ndColorLabel->allowLog(false);
     ndColorValue->allowLog(false);
     exposureLabel->allowLog(false);
@@ -210,15 +250,17 @@ namespace mandelbulb {
     apply->allowLog(false);
 
     // Build layout for this component.
-    layout->addItem(fColorLabel,   0u, 0u, 1u, 1u);
-    layout->addItem(fColorValue,   0u, 1u, 1u, 1u);
-    layout->addItem(ndColorLabel,  0u, 2u, 1u, 1u);
-    layout->addItem(ndColorValue,  0u, 3u, 1u, 1u);
-    layout->addItem(exposureLabel, 0u, 4u, 1u, 1u);
-    layout->addItem(exposureValue, 0u, 5u, 1u, 1u);
-    layout->addItem(burnoutLabel,  0u, 6u, 1u, 1u);
-    layout->addItem(burnoutValue,  0u, 7u, 1u, 1u);
-    layout->addItem(apply,         0u, 8u, 1u, 1u);
+    layout->addItem(fColorLabel,   0u,  0u, 1u, 1u);
+    layout->addItem(fColorValue,   0u,  1u, 1u, 1u);
+    layout->addItem(blendingLabel, 0u,  2u, 1u, 1u);
+    layout->addItem(blendingValue, 0u,  3u, 1u, 1u);
+    layout->addItem(ndColorLabel,  0u,  4u, 1u, 1u);
+    layout->addItem(ndColorValue,  0u,  5u, 1u, 1u);
+    layout->addItem(exposureLabel, 0u,  6u, 1u, 1u);
+    layout->addItem(exposureValue, 0u,  7u, 1u, 1u);
+    layout->addItem(burnoutLabel,  0u,  8u, 1u, 1u);
+    layout->addItem(burnoutValue,  0u,  9u, 1u, 1u);
+    layout->addItem(apply,         0u, 10u, 1u, 1u);
 
     // Connect the button `onClick` signal to the local slot in order to
     // be able to propagate the lights' properties to external listeners.
@@ -280,6 +322,48 @@ namespace mandelbulb {
       }
       else {
         fColor = m_colors[cID];
+      }
+    }
+
+    // Fractal color blending.
+    float blending = getDefaultFractalColorBlending();
+
+    sdl::graphic::TextBox* blendTB = getFractalColorBlendingValue();
+    if (blendTB == nullptr) {
+      log(
+        std::string("Could not retrieve fractal color blending, using default value ") + std::to_string(blending),
+        utils::Level::Error
+      );
+    }
+    else {
+      std::string blendStr;
+      withSafetyNet(
+        [&blendStr, blendTB]() {
+          blendStr = blendTB->getValue();
+        },
+        std::string("shading::getBlending()")
+      );
+
+      bool success;
+      blending = utils::convert(blendStr, getDefaultFractalColorBlending(), success);
+
+      if (!success) {
+        log(
+          std::string("Could not convert fractal color blending \"") + blendStr + "\", using default value " + std::to_string(blending),
+          utils::Level::Error
+        );
+      }
+
+      // Clamp the value in the range `[0; 1]`.
+      float cBlending = std::min(1.0f, std::max(0.0f, blending));
+      if (blending < 0.0f || blending > 1.0f) {
+        log(
+          std::string("Invalid blending value provided ") + std::to_string(blending) + " using " +
+          std::to_string(cBlending) + " instead",
+          utils::Level::Warning
+        );
+
+        blending = cBlending;
       }
     }
 
@@ -369,8 +453,11 @@ namespace mandelbulb {
 
     // Build the shading properties object.
     ShadingProperties props{
-      fColor, ndColor,
-      exposure, burnout
+      fColor,
+      blending,
+      ndColor,
+      exposure,
+      burnout
     };
 
     // Notify external listeners.

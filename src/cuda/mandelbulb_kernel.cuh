@@ -79,6 +79,7 @@ namespace mandelbulb {
       float no_data_b;
 
       // Lights.
+      float blending;
       float lights[MAX_LIGHTS * COUNT];
 
       // Tonemap.

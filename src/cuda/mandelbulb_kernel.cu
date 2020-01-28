@@ -381,7 +381,8 @@ namespace mandelbulb {
       // Compute the color by lighting the object with provided information
       // from the kernel properties. We will cycle through lights and only
       // consider the active one to provide lighting.
-      float3 c = make_float3(0.0f, 0.0f, 0.0f);
+      float3 c = (1.0f - props->blending) * make_float3(props->f_r, props->f_g, props->f_b);
+      float3 cl = make_float3(0.0f, 0.0f, 0.0f);
 
       for (unsigned id = 0u ; id < MAX_LIGHTS ; ++id) {
         // Retrieve light properties and use it if it is active.
@@ -406,8 +407,10 @@ namespace mandelbulb {
 
         float w = LIGHT_PROP(props->lights, id, INTENSITY);
 
-        c += w * directional_light(p, n, -l, lc, proxThresh, maxSteps, acc, bailout, exp);
+        cl += w * directional_light(p, n, -l, lc, proxThresh, maxSteps, acc, bailout, exp);
       }
+
+      c += (props->blending * cl);
 
       // Apply a simple reinhard tonemapping to handle bruned areas.
       float lum = c.x * 0.2126f + c.y * 0.7152f + c.z * 0.0722f;

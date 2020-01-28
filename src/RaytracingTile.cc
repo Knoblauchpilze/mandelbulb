@@ -141,6 +141,8 @@ namespace mandelbulb {
     m_cudaProps.no_data_g = m_sProps.noDataColor.g();
     m_cudaProps.no_data_b = m_sProps.noDataColor.b();
 
+    m_cudaProps.blending = m_sProps.blending;
+
     // Copy lights.
     for (unsigned id = 0u ; id < m_lights.size() && id < MAX_LIGHTS ; ++id) {
       // Check consistency.
