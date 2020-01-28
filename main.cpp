@@ -42,9 +42,6 @@
 # include "RenderSettings.hh"
 # include "FractalSettings.hh"
 
-// TODO: Maybe try out the option of casting primary rays first and then
-// secondary rays.
-
 int main(int /*argc*/, char** /*argv*/) {
   // Create the logger.
   utils::StdLogger logger;

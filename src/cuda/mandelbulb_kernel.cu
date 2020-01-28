@@ -236,6 +236,14 @@ namespace mandelbulb {
       int x = blockIdx.x * blockDim.x + threadIdx.x;
       int y = blockIdx.y * blockDim.y + threadIdx.y;
 
+      // Discard invalid rays.
+      if (y >= height || x >= width) {
+        return;
+      }
+
+      // Initialize with invalid data.
+      res[4u * (y * width + x)] = -1.0f;
+
       // Retrieve global memory elements to local registries.
       uint32_t acc = props->accuracy;
       float exp = props->exponent;
@@ -289,17 +297,10 @@ namespace mandelbulb {
         escaped = (length(p) >= bailout);
       }
 
-      // Save the result to the output buffer. We need to prevent
-      // writing of elements which are out of bounds.
-      if (y < height && x < width) {
-        // Initialize with invalid data.
-        res[4u * (y * width + x)] = -1.0f;
-
-        // Update with distance to the fractal object if we reached
-        // it.
-        if (!escaped) {
-          res[4u * (y * width + x)] = tDist;
-        }
+      // Save the result to the output buffer: update with distance
+      // to the fractal object if we reached it.
+      if (!escaped) {
+        res[4u * (y * width + x)] = tDist;
       }
     }
 
@@ -339,9 +340,7 @@ namespace mandelbulb {
       float exp = props->exponent;
       float bailout = props->bailout;
       float proxThresh = props->hit_thresh;
-# ifndef NORMAL_DISPLAY
       uint32_t maxSteps = props->ray_steps;
-# endif
 
       float4 e = make_float4(props->eye_x, props->eye_y, props->eye_z, 0.0f);
 
