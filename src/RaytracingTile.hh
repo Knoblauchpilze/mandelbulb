@@ -51,12 +51,9 @@ namespace mandelbulb {
        * @param total - the total dimensions of the area this tile is part
        *                of. This helps during the determination of the rays
        *                directions.
-       * @param noDataColor - the color to associate to a pixel when it does
-       *                      not reach the fractal.
        */
       RaytracingTile(const utils::Boxi& area,
-                     const utils::Sizei& total,
-                     const sdl::core::engine::Color& noDataColor);
+                     const utils::Sizei& total);
 
       virtual ~RaytracingTile() = default;
 
@@ -96,10 +93,10 @@ namespace mandelbulb {
       setRenderingProps(const RenderProperties& props);
 
       void
-      setLights(const std::vector<LightShPtr>& lights);
+      setShadingProps(const ShadingProperties& props);
 
       void
-      setNoDataColor(const sdl::core::engine::Color& color);
+      setLights(const std::vector<LightShPtr>& lights);
 
       /**
        * @brief - Provide the size in bytes of the input parameters to provide so
@@ -260,7 +257,13 @@ namespace mandelbulb {
       /**
        * @brief - A general description of the fractal object to compute.
        */
-      RenderProperties m_props;
+      RenderProperties m_rProps;
+
+      /**
+       * @brief - A general description of the shading properties to use when
+       *          rendering the fractal object.
+       */
+      ShadingProperties m_sProps;
 
       /**
        * @brief - The vector of lights defined to illuminate the scene.
@@ -268,11 +271,6 @@ namespace mandelbulb {
        *          passed to the cuda kernels.
        */
       std::vector<LightShPtr> m_lights;
-
-      /**
-       * @brief - The color to assign to pixels that do not reach the fractal.
-       */
-      sdl::core::engine::Color m_noDataColor;
 
       /**
        * @brief - Used to determine whether the internal properties have been

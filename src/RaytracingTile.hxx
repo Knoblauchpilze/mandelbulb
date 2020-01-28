@@ -48,7 +48,14 @@ namespace mandelbulb {
   inline
   void
   RaytracingTile::setRenderingProps(const RenderProperties& props) {
-    m_props = props;
+    m_rProps = props;
+    makeDirty();
+  }
+
+  inline
+  void
+  RaytracingTile::setShadingProps(const ShadingProperties& props) {
+    m_sProps = props;
     makeDirty();
   }
 
@@ -56,13 +63,6 @@ namespace mandelbulb {
   void
   RaytracingTile::setLights(const std::vector<LightShPtr>& lights) {
     m_lights = lights;
-    makeDirty();
-  }
-
-  inline
-  void
-  RaytracingTile::setNoDataColor(const sdl::core::engine::Color& color) {
-    m_noDataColor = color;
     makeDirty();
   }
 

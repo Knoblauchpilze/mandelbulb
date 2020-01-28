@@ -4,8 +4,7 @@
 namespace mandelbulb {
 
   RaytracingTile::RaytracingTile(const utils::Boxi& area,
-                                 const utils::Sizei& total,
-                                 const sdl::core::engine::Color& noDataColor):
+                                 const utils::Sizei& total):
     utils::CudaJob(std::string("tile_") + area.toString()),
 
     m_eye(),
@@ -17,9 +16,9 @@ namespace mandelbulb {
     m_total(total),
     m_area(area),
 
-    m_props(),
+    m_rProps(),
+    m_sProps(),
     m_lights(),
-    m_noDataColor(noDataColor),
 
     m_dirty(true),
     m_cudaProps(),
@@ -94,9 +93,9 @@ namespace mandelbulb {
       m_area.w() * m_area.h(),
       pixel::Data{
         -1.0f,
-        m_noDataColor.r(),
-        m_noDataColor.g(),
-        m_noDataColor.b()
+        m_sProps.noDataColor.r(),
+        m_sProps.noDataColor.g(),
+        m_sProps.noDataColor.b()
       }
     );
 
@@ -107,11 +106,11 @@ namespace mandelbulb {
     // Package the internal properties into their cuda equivalent structure.
     // We will flatten the lights and register the missing one as inactive
     // if needed.
-    m_cudaProps.accuracy = m_props.accuracy;
-    m_cudaProps.exponent =  m_props.exponent;
-    m_cudaProps.bailout =  m_props.bailout;
-    m_cudaProps.hit_thresh =  m_props.hitThreshold;
-    m_cudaProps.ray_steps =  m_props.raySteps;
+    m_cudaProps.accuracy = m_rProps.accuracy;
+    m_cudaProps.exponent =  m_rProps.exponent;
+    m_cudaProps.bailout =  m_rProps.bailout;
+    m_cudaProps.hit_thresh =  m_rProps.hitThreshold;
+    m_cudaProps.ray_steps =  m_rProps.raySteps;
 
     m_cudaProps.eye_x = m_eye.x();
     m_cudaProps.eye_y = m_eye.y();
@@ -134,9 +133,13 @@ namespace mandelbulb {
     m_cudaProps.tot_w = m_total.w();
     m_cudaProps.tot_h = m_total.h();
 
-    m_cudaProps.no_data_b = m_noDataColor.r();
-    m_cudaProps.no_data_g = m_noDataColor.g();
-    m_cudaProps.no_data_b = m_noDataColor.b();
+    m_cudaProps.f_r = m_sProps.fColor.r();
+    m_cudaProps.f_g = m_sProps.fColor.g();
+    m_cudaProps.f_b = m_sProps.fColor.b();
+
+    m_cudaProps.no_data_r = m_sProps.noDataColor.r();
+    m_cudaProps.no_data_g = m_sProps.noDataColor.g();
+    m_cudaProps.no_data_b = m_sProps.noDataColor.b();
 
     // Copy lights.
     for (unsigned id = 0u ; id < m_lights.size() && id < MAX_LIGHTS ; ++id) {
@@ -174,6 +177,10 @@ namespace mandelbulb {
         LIGHT_PROP(m_cudaProps.lights, id, gpu::ACTIVE) = -1.0f;
       }
     }
+
+    // Tonemap properties.
+    m_cudaProps.exposure = m_sProps.exposure;
+    m_cudaProps.burnout = m_sProps.burnout;
   }
 
 }

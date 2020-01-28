@@ -22,11 +22,13 @@ namespace mandelbulb {
        *          settings. Note that no data will be generated until the `start`
        *          method is called.
        * @param cam - the viewpoint on the fractal object.
-       * @param props - the rendering properties for this fractal object.
+       * @param rProps - the rendering properties for this fractal object.
+       * @param sProps - the shading properties for this fractal object.
        * @param lights - the lights for this fractal object.
        */
       Fractal(CameraShPtr cam,
-              RenderProperties props,
+              RenderProperties rProps,
+              ShadingProperties sProps,
               const std::vector<LightShPtr>& lights);
 
       virtual ~Fractal();
@@ -135,6 +137,15 @@ namespace mandelbulb {
       void
       onRenderingPropsChanged(RenderProperties props);
 
+      /**
+       * @brief - Similar to the `onRenderingPropsChanged` but handle some shading
+       *          properties change. This will trigger a new rendering if needed as
+       *          well.
+       * @param props - the new set of shading properties to use.
+       */
+      void
+      onShadingPropsChanged(ShadingProperties props);
+
     private:
 
       /**
@@ -165,16 +176,6 @@ namespace mandelbulb {
       static
       constexpr unsigned
       getTileHeight() noexcept;
-
-      /**
-       * @brief - Used to provide a default color to use for pixels where no fractal
-       *          data is to be found. This will represent the background color used
-       *          to render the fractal.
-       * @return - a color suited to display the fractal.
-       */
-      static
-      sdl::core::engine::Color
-      getNoDataColor() noexcept;
 
       /**
        * @brief- Used  to connect the needed signals from the thread pool so
@@ -313,7 +314,15 @@ namespace mandelbulb {
        *          by this object so that the rendering phase knows the
        *          level of accuracy to apply.
        */
-      RenderProperties m_props;
+      RenderProperties m_rProps;
+
+      /**
+       * @brief - The shading properties to use when rendering the fractal. It
+       *          defines common values such as the color of the fractal with
+       *          no lights on, the no data color and some post-processing vals
+       *          which are applied to make the final image prettier.
+       */
+      ShadingProperties m_sProps;
 
       /**
        * @brief - The list of lights used to illuminate the scene. Received

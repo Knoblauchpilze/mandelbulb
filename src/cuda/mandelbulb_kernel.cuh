@@ -68,6 +68,11 @@ namespace mandelbulb {
       int tot_w;
       int tot_h;
 
+      // Fractal color.
+      float f_r;
+      float f_g;
+      float f_b;
+
       // No data color.
       float no_data_r;
       float no_data_g;
@@ -75,6 +80,10 @@ namespace mandelbulb {
 
       // Lights.
       float lights[MAX_LIGHTS * COUNT];
+
+      // Tonemap.
+      float exposure;
+      float burnout;
     };
 
   }

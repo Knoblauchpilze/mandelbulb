@@ -4,14 +4,16 @@
 namespace mandelbulb {
 
   Fractal::Fractal(CameraShPtr cam,
-                   RenderProperties props,
+                   RenderProperties rProps,
+                   ShadingProperties sProps,
                    const std::vector<LightShPtr>& lights):
     utils::CoreObject(std::string("mandelbulb")),
 
     m_propsLocker(),
 
     m_camera(cam),
-    m_props(props),
+    m_rProps(rProps),
+    m_sProps(sProps),
     m_lights(lights),
 
     m_computationState(State::Converged),
@@ -249,16 +251,16 @@ namespace mandelbulb {
         );
 
         // Create the tile and register it in the schedule.
-        RaytracingTileShPtr tile = std::make_shared<RaytracingTile>(area, m_dims, getNoDataColor());
+        RaytracingTileShPtr tile = std::make_shared<RaytracingTile>(area, m_dims);
 
         tile->setEye(m_camera->getEye());
         tile->setU(m_camera->getU());
         tile->setV(m_camera->getV());
         tile->setW(m_camera->getW());
 
-        tile->setRenderingProps(m_props);
+        tile->setRenderingProps(m_rProps);
+        tile->setShadingProps(m_sProps);
         tile->setLights(m_lights);
-        tile->setNoDataColor(getNoDataColor());
 
         // Register this tile.
         tiles.push_back(tile);

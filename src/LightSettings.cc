@@ -84,7 +84,7 @@ namespace mandelbulb {
     const unsigned lightPanelSize = 3u;
 
     sdl::graphic::GridLayoutShPtr layout = std::make_shared<sdl::graphic::GridLayout>(
-      "info_panel_layout",
+      "light_settings_layout",
       this,
       3u,
       1u + getLightsCount() * lightPanelSize,

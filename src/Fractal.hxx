@@ -110,7 +110,7 @@ namespace mandelbulb {
     // Retrieve the current eye's position and compute
     // an estimation of the distance to the fractal for
     // this position.
-    return RaytracingTile::getDistanceEstimator(m_camera->getEye(), m_props);
+    return RaytracingTile::getDistanceEstimator(m_camera->getEye(), m_rProps);
   }
 
   inline
@@ -160,7 +160,20 @@ namespace mandelbulb {
     Guard guard(m_propsLocker);
 
     // Update the internal properties.
-    m_props = props;
+    m_rProps = props;
+
+    // Schedule rendering.
+    updateAndRender();
+  }
+
+  inline
+  void
+  Fractal::onShadingPropsChanged(ShadingProperties props) {
+    // Protect from concurrent accesses.
+    Guard guard(m_propsLocker);
+
+    // Update the internal properties.
+    m_sProps = props;
 
     // Schedule rendering.
     updateAndRender();
@@ -185,19 +198,13 @@ namespace mandelbulb {
   }
 
   inline
-  sdl::core::engine::Color
-  Fractal::getNoDataColor() noexcept {
-    return sdl::core::engine::Color::NamedColor::Black;
-  }
-
-  inline
   void
   Fractal::updateAndRender() {
     // Reset existing results.
     std::fill(
       m_samples.begin(),
       m_samples.end(),
-      Sample{-1.0f, getNoDataColor()}
+      Sample{-1.0f, m_sProps.noDataColor}
     );
 
     // Set the results to be accumulating and schedule a rendering.

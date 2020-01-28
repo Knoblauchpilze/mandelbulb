@@ -412,11 +412,8 @@ namespace mandelbulb {
       // Apply a simple reinhard tonemapping to handle bruned areas.
       float lum = c.x * 0.2126f + c.y * 0.7152f + c.z * 0.0722f;
 
-      static const float exposure = 1.0f;
-      static const float burn_out = 0.1f;
-
-      float mapped = lum * exposure;
-      mapped *= (1.0f + mapped * burn_out) / (1.0f + mapped);
+      float mapped = lum * props->exposure;
+      mapped *= (1.0f + mapped * props->burnout) / (1.0f + mapped);
 
       float tone = mapped / lum;
 

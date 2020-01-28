@@ -42,10 +42,7 @@
 # include "RenderSettings.hh"
 # include "FractalSettings.hh"
 
-// TODO: Should add no data color as part of the customization process.
-// TODO: Should add the properties of tonemapping ?
 // TODO: Should add the color of the fractal ?
-// TODO: Could be in its own dedicated panel.
 // TODO: Maybe try out the option of casting primary rays first and then
 // secondary rays.
 
@@ -93,10 +90,18 @@ int main(int /*argc*/, char** /*argv*/) {
       utils::Vector2f()
     );
 
-    mandelbulb::RenderProperties props{10u, 8.0f, 0.001f, 100u, 8.0f};
+    mandelbulb::RenderProperties rProps{10u, 8.0f, 0.001f, 100u, 8.0f};
+    mandelbulb::ShadingProperties sProps{
+      sdl::core::engine::Color::NamedColor::Maroon,
+      sdl::core::engine::Color::NamedColor::Black,
+
+      1.0f,
+      0.1f
+    };
     mandelbulb::FractalShPtr fractal = std::make_shared<mandelbulb::Fractal>(
       cam,
-      props,
+      rProps,
+      sProps,
       mandelbulb::LightSettings::generateDefaultLights()
     );
 
@@ -106,14 +111,14 @@ int main(int /*argc*/, char** /*argv*/) {
     mandelbulb::MandelbulbRenderer* renderer = new mandelbulb::MandelbulbRenderer(fractal);
     app->setCentralWidget(renderer);
 
+    mandelbulb::FractalSettings* settings = new mandelbulb::FractalSettings();
+    app->addDockWidget(settings, sdl::app::DockWidgetArea::RightArea, "Fractal");
+
     mandelbulb::RenderSettings* render = new mandelbulb::RenderSettings();
     app->addDockWidget(render, sdl::app::DockWidgetArea::RightArea, "Render");
 
     mandelbulb::LightSettings* lights = new mandelbulb::LightSettings();
     app->addDockWidget(lights, sdl::app::DockWidgetArea::RightArea, "Lights");
-
-    mandelbulb::FractalSettings* settings = new mandelbulb::FractalSettings();
-    app->addDockWidget(settings, sdl::app::DockWidgetArea::RightArea, "Fractal");
 
     mandelbulb::InfoPanel* info = new mandelbulb::InfoPanel();
     app->setStatusBar(info);
@@ -143,6 +148,11 @@ int main(int /*argc*/, char** /*argv*/) {
       &mandelbulb::Fractal::onLightsChanged
     );
 
+    int slot6 = settings->onShadingPropertiesChanged.connect_member<mandelbulb::Fractal>(
+      fractal.get(),
+      &mandelbulb::Fractal::onShadingPropsChanged
+    );
+
     // Run it.
     app->run();
 
@@ -154,6 +164,8 @@ int main(int /*argc*/, char** /*argv*/) {
     render->onRenderingSettingsChanged.disconnect(slot4);
 
     lights->onLightsChanged.disconnect(slot5);
+
+    settings->onShadingPropertiesChanged.disconnect(slot6);
   }
   catch (const utils::CoreException& e) {
     utils::LoggerLocator::getLogger().logMessage(
