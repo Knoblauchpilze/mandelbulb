@@ -130,7 +130,8 @@ namespace mandelbulb {
     m_scheduler->cancelJobs();
 
     // Generate the launch schedule.
-    std::vector<RaytracingTileShPtr> tiles = generateSchedule();;
+    // TODO: Replace by `m_schedule` in here.
+    std::vector<RaytracingTileShPtr> tiles = generateSchedule();
 
     // Convert to required pointer type.
     std::vector<utils::CudaJobShPtr> tilesAsJobs(tiles.begin(), tiles.end());

@@ -207,6 +207,8 @@ namespace mandelbulb {
       Sample{-1.0f, m_sProps.noDataColor}
     );
 
+    // TODO: We should probably update the schedule at this point.
+
     // Set the results to be accumulating and schedule a rendering.
     // We want a complete recompute of the iterations so we need to
     // reset everything regarding the progression.
