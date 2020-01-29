@@ -1,4 +1,4 @@
-[Mandelbulb](data/img/brute.bmp)
+[Mandelbulb](logo.png)
 
 # mandelbulb
 
