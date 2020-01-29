@@ -27,7 +27,7 @@
  *          which proved very useful to implement the distance estimation techniques.
  *
  *          Implemented from:
- *            - 17/01/2020 - ??/??/2020
+ *            - 17/01/2020 - 29/01/2020
  */
 
 # include <core_utils/StdLogger.hh>
