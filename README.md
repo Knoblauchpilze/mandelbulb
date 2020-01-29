@@ -1,4 +1,7 @@
+[Mandelbulb](data/img/brute.bmp)
+
 # mandelbulb
+
 Yet another implementation of a raytracer to draw amazing mandelbulb. Let's see how far we can get on this road.
 
 # Installation
