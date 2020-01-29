@@ -2,7 +2,8 @@
 
 # mandelbulb
 
-Yet another implementation of a raytracer to draw amazing mandelbulb. Let's see how far we can get on this road.
+Yet another implementation of a raytracer to draw amazing mandelbulb. Allows to render a Mandelbulb like fractal with various exponent using a GPU raymarching approach. Rendering time on a `GTX 750Ti` are close to real-time which is very nice to explore some parts of the object.
+Basic shading is provided through light support and multiple parameters allow to get the most out of the GPU given the level of details needed to visualize the fractal.
 
 # Installation
 
