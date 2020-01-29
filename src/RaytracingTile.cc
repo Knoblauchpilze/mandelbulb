@@ -98,7 +98,6 @@ namespace mandelbulb {
         m_sProps.noDataColor.b()
       }
     );
-
   }
 
   void

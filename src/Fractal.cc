@@ -129,12 +129,19 @@ namespace mandelbulb {
     // Cancel existing rendering operations.
     m_scheduler->cancelJobs();
 
-    // Generate the launch schedule.
-    // TODO: Replace by `m_schedule` in here.
-    std::vector<RaytracingTileShPtr> tiles = generateSchedule();
+    // Generate the launch schedule if needed.
+    if (m_schedule.empty()) {
+      log(
+        std::string("Trying to schedule a rendering without any tiles generated"),
+        utils::Level::Error
+      );
+
+      // We need to generate the schedule.
+      generateSchedule();
+    }
 
     // Convert to required pointer type.
-    std::vector<utils::CudaJobShPtr> tilesAsJobs(tiles.begin(), tiles.end());
+    std::vector<utils::CudaJobShPtr> tilesAsJobs(m_schedule.begin(), m_schedule.end());
 
     // Return early if nothing needs to be scheduled.
     if (tilesAsJobs.empty()) {
@@ -220,17 +227,17 @@ namespace mandelbulb {
     );
   }
 
-  std::vector<RaytracingTileShPtr>
+  void
   Fractal::generateSchedule() {
     // Generate each tile given the internal camera and the number of tiles
     // to generate along each axis. We assume that the dimensions of the
     // camera are also represented by the internal `m_dims` array.
-    std::vector<RaytracingTileShPtr> tiles;
-
     unsigned w = (m_dims.w() + getTileWidth() - 1u) / getTileWidth();
     unsigned h = (m_dims.h() + getTileHeight() - 1u) / getTileHeight();
 
-    // TODO: Maybe we should persist this schedule.
+    // Clear any existing schedule.
+    m_schedule.clear();
+
     for (unsigned y = 0u ; y < h ; ++y) {
       for (unsigned x = 0u ; x < w ; ++x) {
         // The area covered by this tile can be computed from its index
@@ -264,12 +271,9 @@ namespace mandelbulb {
         tile->setLights(m_lights);
 
         // Register this tile.
-        tiles.push_back(tile);
+        m_schedule.push_back(tile);
       }
     }
-
-    // Return the generated schedule.
-    return tiles;
   }
 
   void

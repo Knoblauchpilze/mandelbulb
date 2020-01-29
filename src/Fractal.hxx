@@ -207,7 +207,24 @@ namespace mandelbulb {
       Sample{-1.0f, m_sProps.noDataColor}
     );
 
-    // TODO: We should probably update the schedule at this point.
+    // We need to update the properties for the schedule.
+    // This include generate it if needed.
+    if (m_schedule.empty()) {
+      generateSchedule();
+    }
+    else {
+      for (unsigned id = 0u ; id < m_schedule.size() ; ++id) {
+        RaytracingTile& tile = *m_schedule[id];
+
+        tile.setEye(m_camera->getEye());
+        tile.setU(m_camera->getU());
+        tile.setV(m_camera->getV());
+        tile.setW(m_camera->getW());
+        tile.setRenderingProps(m_rProps);
+        tile.setShadingProps(m_sProps);
+        tile.setLights(m_lights);
+      }
+    }
 
     // Set the results to be accumulating and schedule a rendering.
     // We want a complete recompute of the iterations so we need to

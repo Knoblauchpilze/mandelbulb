@@ -213,18 +213,18 @@ namespace mandelbulb {
       handleTilesRendered(const std::vector<utils::CudaJobShPtr>& tiles);
 
       /**
-       * @brief - Used internally when scheudling a rendering task to create all
-       *          the tiles that wil lbe scheduled for computation. The output
-       *          vector allows to covers the whoe camera plane so that a full
+       * @brief - Used internally when scheduling a rendering task to create all
+       *          the tiles that will be scheduled for computation. The output
+       *          vector allows to covers the whole camera plane so that a full
        *          update of the fractal's data is performed.
        *          The tiles are created with the current versions of the camera
-       *          and rendering props.
+       *          and rendering props. They are saved internally as the schedule
+       *          stays valid at least in terms of layout until the camera plane
+       *          chanfes its dimensions again.
        *          Note that this method assumes that the internal locker has
        *          already been acquired.
-       * @return - a vector containing the list of tiles to schedule to perform
-       *           the update of the whole camera plane.
        */
-      std::vector<RaytracingTileShPtr>
+      void
       generateSchedule();
 
       /**
