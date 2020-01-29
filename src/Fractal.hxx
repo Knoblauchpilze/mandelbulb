@@ -57,6 +57,9 @@ namespace mandelbulb {
     m_dims = iDims;
     m_samples.resize(m_dims.area());
 
+    // Clear the schedule.
+    m_schedule.clear();
+
     updateAndRender();
   }
 
