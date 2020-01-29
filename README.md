@@ -1,4 +1,4 @@
-[Mandelbulb](logo.png)
+![Mandelbulb](logo.png)
 
 # mandelbulb
 
