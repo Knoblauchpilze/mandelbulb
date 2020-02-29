@@ -47,6 +47,6 @@ The color of the light is chosen by repeatingly clicking on the colored widget n
 
 ![Color view](color_view.png)
 
-The color view allows to control additional display parameters like the base color of the fractal (without influence of lights), the no data color (i.e. the background colo) and some information about how the blending between the base color and the color provided by lights should be done.
+The color view allows to control additional display parameters like the base color of the fractal (without influence of lights), the no data color (i.e. the background color) and some information about how the blending between the base color and the color provided by lights should be done.
 A blending factor of `0` indicates that the final color is entirely composed of the color of the fractal (which produce a flat shading) while `1` indicates that the color of the fractal does not have any influence on the final color.
 A very limited tonemapping can be used to improve the overall appearance of the rendering.
