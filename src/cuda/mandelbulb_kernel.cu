@@ -139,7 +139,7 @@ namespace mandelbulb {
 
       // Return the distance estimator. Note that compared to the formular described here:
       // http://celarek.at/wp/wp-content/uploads/2014/05/realTimeFractalsReport.pdf
-      // we ivided itby `2`. Another discussion here:
+      // we divided it by `2`. Another discussion here:
       // http://www.fractalforums.com/3d-fractal-generation/true-3d-mandlebrot-type-fractal/msg8540/#msg8540
       // It seems that the distance estimator is very inaccurate anyways for small values
       // of the bailout. So we need to lower it to not pass through the fractal. This is
