@@ -74,7 +74,7 @@ int main(int /*argc*/, char** /*argv*/) {
     );
 
     // Create the layout of the window: the main tab is a scrollable widget
-    // allowing the display of the mandelbulb. The rigth dock widget allows
+    // allowing the display of the mandelbulb. The right dock widget allows
     // to control the computation parameters of this object.
     const float fov = 40.0f;
     const float distance = 6.83f;
