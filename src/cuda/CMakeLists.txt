@@ -6,7 +6,7 @@ set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set (CUDAFLAGS "${CUDAFLAGS};-arch=sm_50;-lineinfo")
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -lineinfo")
+set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -lineinfo")
 
 set (SOURCES
   CudaExecutor.cu
@@ -18,7 +18,7 @@ add_library (mandelbulb_cuda_lib SHARED
   ${SOURCES}
   )
 
-set(MANDELBULB_CUDA_LIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" PARENT_SCOPE)
+set (MANDELBULB_CUDA_LIB_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" PARENT_SCOPE)
 
 target_link_libraries(mandelbulb_cuda_lib
   core_utils
