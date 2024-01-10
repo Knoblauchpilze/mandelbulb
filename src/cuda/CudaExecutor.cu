@@ -64,11 +64,7 @@ namespace utils {
 
     // Determine whether some jobs have to be processed.
     if (!hasJobs()) {
-      log(
-        std::string("Tried to start jobs processing but none are defined"),
-        Level::Warning
-      );
-
+      warn("Tried to start jobs processing but none are defined");
       return;
     }
 
@@ -103,11 +99,7 @@ namespace utils {
     for (unsigned id = 0u ; id < jobs.size() ; ++id) {
       // Consistency check.
       if (jobs[id] == nullptr) {
-        log(
-          std::string("Discarding invalid null job ") + std::to_string(id),
-          Level::Warning
-        );
-
+        warn("Discarding invalid null job " + std::to_string(id));
         continue;
       }
 
@@ -128,10 +120,9 @@ namespace utils {
       }
 
       if (queue == nullptr) {
-        log(
-          std::string("Could not find adequate queue for job \"") + jobs[id]->getName() + "\" with priority " +
-          std::to_string(static_cast<int>(jobs[id]->getPriority())),
-          Level::Error
+        warn(
+          "Could not find adequate queue for job \"" + jobs[id]->getName() + "\" with priority " +
+          std::to_string(static_cast<int>(jobs[id]->getPriority()))
         );
 
         continue;
@@ -402,7 +393,7 @@ namespace utils {
   CudaExecutor::jobFetchingLoop(unsigned threadID,
                                 CudaSchedulingData gpuData)
   {
-    log("Creating thread " + std::to_string(threadID) + " for thread pool", Level::Verbose);
+    verbose("Creating thread " + std::to_string(threadID) + " for thread pool");
 
     // Create the locker to use to wait for job to do.
     UniqueGuard tLock(m_poolLocker);
@@ -458,10 +449,7 @@ namespace utils {
 
       // If we could fetch something process it.
       if (job.task != nullptr) {
-        log(
-          "Processing job for batch " + std::to_string(batch) + " in thread " + std::to_string(threadID) + " (remaining: " + std::to_string(remaining) + ")",
-          Level::Verbose
-        );
+        verbose("Processing job for batch " + std::to_string(batch) + " in thread " + std::to_string(threadID) + " (remaining: " + std::to_string(remaining) + ")");
 
         // Execute the job and push it to the results array if it succeeded.
         if (scheduleAndExecute(*job.task, gpuData)) {
@@ -478,7 +466,7 @@ namespace utils {
       tLock.lock();
     }
 
-    log("Terminating thread " + std::to_string(threadID) + " for scheduler pool", Level::Verbose);
+    verbose("Terminating thread " + std::to_string(threadID) + " for scheduler pool");
   }
 
   void

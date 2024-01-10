@@ -301,7 +301,7 @@ namespace mandelbulb {
       warn("Could not convert provided hit threshold of \"" + hitThreshStr + "\", using " + std::to_string(hitThresh) + " instead");
     }
     if (!sRaySt) {
-      warn("Could not convert provided max ray steps of \"") + rayStStr + "\", using " + std::to_string(raySt) + " instead");
+      warn("Could not convert provided max ray steps of \"" + rayStStr + "\", using " + std::to_string(raySt) + " instead");
     }
 
     // Protect from concurrent accesses.

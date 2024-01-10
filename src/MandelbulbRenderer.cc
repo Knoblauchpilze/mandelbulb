@@ -12,7 +12,7 @@ namespace mandelbulb {
 
     m_propsLocker(),
     m_fractal(fractal),
-    m_tilesRenderedSignalID(utils::Signal<>::NoID),
+    m_tilesRenderedSignalID(utils::Signal<>::NO_ID),
 
     m_tex(),
     m_tilesRendered(false),

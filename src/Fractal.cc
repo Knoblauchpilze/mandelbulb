@@ -26,7 +26,7 @@ namespace mandelbulb {
         RaytracingTile::getResultSize()
       )
     ),
-    m_tilesRenderedSignalID(utils::Signal<>::NoID),
+    m_tilesRenderedSignalID(utils::Signal<>::NO_ID),
     m_progress(RenderingProgress{0u, 1u}),
 
     m_dims(),
