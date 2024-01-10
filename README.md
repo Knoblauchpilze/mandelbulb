@@ -1,4 +1,4 @@
-![Mandelbulb](logo.png)
+![Mandelbulb](resources/logo.png)
 
 # mandelbulb
 
@@ -17,9 +17,20 @@ Basic shading is provided through light support and multiple parameters allow to
     * [sdl_app_core](https://github.com/Knoblauchpilze/sdl_app_core)
 - Go to the project's directory `cd ~/path/to/the/repo`.
 - Compile: `make r`.
-- Install: `make install`.
 
 Don't forget to add `/usr/local/lib` to your `LD_LIBRARY_PATH` to be able to load shared libraries at runtime.
+
+## Install cuda
+
+You can follow the instructions over on the [NVIDIA's website](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html). Instead of downloading the toolkit we can use the package manager as described [here](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#ubuntu).
+
+This looks like so:
+```bash
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
+sudo apt-get update
+sudo apt-get install cuda-toolkit
+```
 
 # Usage
 
@@ -32,20 +43,20 @@ The application allows to render a mandelbulb fractal with various exponent in n
 
 ## Render view
 
-![Render view](render_view.png)
+![Render view](resources/render_view.png)
 
 Allows to control the rendering properties to make the fractal more accurate and generally control the precision at which the object is rendered. These options have the most impact on performance and are set to suited values. One can decrease the hit threshold to get more details on the surface of the fractal. At some point it might also be necessary to increase the maximum ray steps as with more precise hit threshold the rays need to travel more steps before reaching the fractal. The iterations count does not have that much of an impact (surprisingly) but its value can be increased if needed.
 
 ## Lights view
 
-![Lights view](lights_view.png)
+![Lights view](resources/lights_view.png)
 
 Allows to control the lights used to provide some shading to the scene. A light has an intensity, a color and a direction. Any light is always oriented to the center of the scene (that is `(0, 0, 0)` in real world coordinates) and the direction is computed as the vector from the position to the origin. A light can be toggled.
 The color of the light is chosen by repeatingly clicking on the colored widget next to the intensity. The colors loop at some point.
 
 ## Color view
 
-![Color view](color_view.png)
+![Color view](resources/color_view.png)
 
 The color view allows to control additional display parameters like the base color of the fractal (without influence of lights), the no data color (i.e. the background color) and some information about how the blending between the base color and the color provided by lights should be done.
 A blending factor of `0` indicates that the final color is entirely composed of the color of the fractal (which produce a flat shading) while `1` indicates that the color of the fractal does not have any influence on the final color.
