@@ -3,17 +3,23 @@ cmake_minimum_required (VERSION 3.7)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-set (CMAKE_CXX_STANDARD 20)
+# https://gitlab.kitware.com/cmake/cmake/-/issues/23079
+set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
-add_compile_options (-Wall -Wextra -Werror -pedantic)
+set (CMAKE_VERBOSE_MAKEFILE OFF)
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMakeModules")
 
 project (mandelbulb LANGUAGES CXX CUDA)
 
 add_executable (mandelbulb)
+
+# https://forums.developer.nvidia.com/t/nvcc-fatal-error-if-compiler-warnings-are-set-on-cuda-10-2/122522
+target_compile_options (mandelbulb PRIVATE
+	-Wall -Wextra -pedantic -Werror
+	)
 
 find_package (SDL2 REQUIRED)
 find_package (SDL2_ttf REQUIRED)

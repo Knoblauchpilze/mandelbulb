@@ -3,8 +3,12 @@ add_library (mandelbulb_cuda_lib SHARED "")
 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set (CUDAFLAGS "${CUDAFLAGS};-arch=sm_50;-lineinfo")
-set (CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -lineinfo")
+# https://cmake.org/cmake/help/latest/prop_tgt/CUDA_ARCHITECTURES.html#prop_tgt:CUDA_ARCHITECTURES
+set_target_properties (mandelbulb_cuda_lib PROPERTIES CUDA_ARCHITECTURES "86")
+
+target_compile_options(mandelbulb_cuda_lib PRIVATE
+	$<$<COMPILE_LANGUAGE:CUDA>:-lineinfo>
+	)
 
 target_sources (mandelbulb_cuda_lib PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/CudaExecutor.cu

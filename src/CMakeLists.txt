@@ -3,6 +3,10 @@ add_library (mandelbulb_lib SHARED "")
 
 set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+target_compile_options (mandelbulb_lib PRIVATE
+	-Wall -Wextra -pedantic -Werror
+	)
+
 add_subdirectory(
 	${CMAKE_CURRENT_SOURCE_DIR}/cuda
 	)
