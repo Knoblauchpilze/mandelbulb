@@ -181,7 +181,7 @@ namespace mandelbulb {
     }
 
     // Assign properties for the palette.
-    palette->allowLog(false);
+    palette->setAllowLog(false);
 
     // Populate internal colors.
     for (unsigned c = 0u ; c < m_colors.size() ; ++c) {
@@ -192,15 +192,11 @@ namespace mandelbulb {
         m_colors[c]
       );
       if (w == nullptr) {
-        log(
-          std::string("Could not create palette entry ") + m_colors[c].toString() + " for palette " + std::to_string(id),
-          utils::Level::Error
-        );
-
+        warn("Could not create palette entry " + m_colors[c].toString() + " for palette " + std::to_string(id));
         continue;
       }
 
-      w->allowLog(false);
+      w->setAllowLog(false);
       palette->insertWidget(w, c);
     }
 

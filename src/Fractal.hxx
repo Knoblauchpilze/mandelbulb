@@ -9,7 +9,7 @@ namespace mandelbulb {
   Fractal::~Fractal() {
     // Stop the scheduler so that we don't continue processing
     // tiles while it's obviously not needed anymore.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     m_scheduler->onJobsCompleted.disconnect(m_tilesRenderedSignalID);
     m_scheduler.reset();
@@ -27,7 +27,7 @@ namespace mandelbulb {
     }
 
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Update the internal camera: to do so we need to convert the
     // input area into integer dimensions. In order to be sure to
@@ -67,7 +67,7 @@ namespace mandelbulb {
   void
   Fractal::onLightsChanged(const std::vector<LightShPtr>& lights) {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Update the internal lights vector.
     m_lights = lights;
@@ -80,7 +80,7 @@ namespace mandelbulb {
   void
   Fractal::rotateCamera(const utils::Vector2f& rotations) {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Update the camera.
     bool changed = m_camera->rotate(rotations);
@@ -99,7 +99,7 @@ namespace mandelbulb {
   float
   Fractal::getDistance() noexcept {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     return m_camera->getDistance();
   }
@@ -108,7 +108,7 @@ namespace mandelbulb {
   float
   Fractal::getDistanceEstimation() noexcept {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Retrieve the current eye's position and compute
     // an estimation of the distance to the fractal for
@@ -120,7 +120,7 @@ namespace mandelbulb {
   void
   Fractal::updateDistance(float dist) {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Update the camera.
     bool changed = m_camera->setDistance(dist);
@@ -139,7 +139,7 @@ namespace mandelbulb {
   utils::Sizei
   Fractal::getData(std::vector<sdl::core::engine::Color>& colors) {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Copy the internal data to the output vector after resizing it
     // if needed.
@@ -160,7 +160,7 @@ namespace mandelbulb {
   void
   Fractal::onRenderingPropsChanged(RenderProperties props) {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Update the internal properties.
     m_rProps = props;
@@ -173,7 +173,7 @@ namespace mandelbulb {
   void
   Fractal::onShadingPropsChanged(ShadingProperties props) {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Update the internal properties.
     m_sProps = props;

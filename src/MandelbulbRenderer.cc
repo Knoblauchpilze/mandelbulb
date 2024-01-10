@@ -38,7 +38,7 @@ namespace mandelbulb {
                                          const utils::Boxf& area)
   {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Re-render the fractal if needed.
     if (tilesChanged()) {
@@ -97,7 +97,7 @@ namespace mandelbulb {
 
     // Schedule a scrolling if some motion has been detected.
     if (move) {
-      Guard guard(m_propsLocker);
+      const std::lock_guard guard(m_propsLocker);
 
       m_fractal->rotateCamera(utils::Vector2f(theta, phi));
 

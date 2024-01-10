@@ -20,7 +20,7 @@ namespace utils {
     cudaError_t err = func();
 
     if (isError(err)) {
-      Guard guard(m_propsLocker);
+      const std::lock_guard guard(m_propsLocker);
       m_lastError = cudaGetErrorString(err);
 
       return false;
@@ -70,7 +70,7 @@ namespace utils {
     checkAndSaveError(err);
 
     if (!isError(err)) {
-      log("Destroyed cuda stream", utils::Level::Verbose);
+      verbose("Destroyed cuda stream");
     }
 
     return !isError(err);
@@ -125,11 +125,7 @@ namespace utils {
   CudaWrapper::free(void* buffer) {
     // In case the buffer is already `null` we don't need to do anything.
     if (buffer == nullptr) {
-      log(
-        std::string("Could not release gpu memory, buffer is already null"),
-        utils::Level::Error
-      );
-
+      warn("Could not release gpu memory, buffer is already null");
       return true;
     }
 

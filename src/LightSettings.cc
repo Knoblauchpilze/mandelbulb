@@ -91,7 +91,7 @@ namespace mandelbulb {
       getGlobalMargins()
     );
 
-    layout->allowLog(false);
+    layout->setAllowLog(false);
 
     setLayout(layout);
 
@@ -260,15 +260,15 @@ namespace mandelbulb {
       yLabel->setMaxSize(maxSz);
       zLabel->setMaxSize(maxSz);
 
-      toggle->allowLog(false);
-      xLabel->allowLog(false);
-      xValue->allowLog(false);
-      yLabel->allowLog(false);
-      yValue->allowLog(false);
-      zLabel->allowLog(false);
-      zValue->allowLog(false);
-      powerValue->allowLog(false);
-      colorValue->allowLog(false);
+      toggle->setAllowLog(false);
+      xLabel->setAllowLog(false);
+      xValue->setAllowLog(false);
+      yLabel->setAllowLog(false);
+      yValue->setAllowLog(false);
+      zLabel->setAllowLog(false);
+      zValue->setAllowLog(false);
+      powerValue->setAllowLog(false);
+      colorValue->setAllowLog(false);
 
       // Append each item to the layout.
       layout->addItem(toggle,     0u, id * lightPanelSize + 0u, 1u, 1u);
@@ -352,7 +352,7 @@ namespace mandelbulb {
       // Retrieve the properties for the current light if any.
       sdl::graphic::Button* toggle = getButtonForLight(id);
       if (toggle == nullptr) {
-        log("Could not retrieve palette for light " + std::to_string(id), utils::Level::Error);
+        warn("Could not retrieve palette for light " + std::to_string(id));
         continue;
       }
 
@@ -367,15 +367,15 @@ namespace mandelbulb {
       sdl::graphic::TextBox* zTB = getTextBoxForLightPosition(id, 'z');
 
       if (xTB == nullptr) {
-        log("Could not retrieve x coordinate for light " + std::to_string(id), utils::Level::Error);
+        warn("Could not retrieve x coordinate for light " + std::to_string(id));
         continue;
       }
       if (yTB == nullptr) {
-        log("Could not retrieve y coordinate for light " + std::to_string(id), utils::Level::Error);
+        warn("Could not retrieve y coordinate for light " + std::to_string(id));
         continue;
       }
       if (zTB == nullptr) {
-        log("Could not retrieve z coordinate for light " + std::to_string(id), utils::Level::Error);
+        warn("Could not retrieve z coordinate for light " + std::to_string(id));
         continue;
       }
 
@@ -397,33 +397,30 @@ namespace mandelbulb {
 
       pos.x() = utils::convert(xStr, getDefaultLightPosition(id, 'x'), success);
       if (!success) {
-        log(
+        warn(
           std::string("Could not convert provided x coordinate of \"") + xStr + "\" for light " +
-          std::to_string(id) + " using " + std::to_string(getDefaultLightPosition(id, 'x')) + " instead",
-          utils::Level::Warning
+          std::to_string(id) + " using " + std::to_string(getDefaultLightPosition(id, 'x')) + " instead"
         );
       }
       pos.y() = utils::convert(yStr, getDefaultLightPosition(id, 'y'), success);
       if (!success) {
-        log(
+        warn(
           std::string("Could not convert provided y coordinate of \"") + yStr + "\" for light " +
-          std::to_string(id) + " using " + std::to_string(getDefaultLightPosition(id, 'y')) + " instead",
-          utils::Level::Warning
+          std::to_string(id) + " using " + std::to_string(getDefaultLightPosition(id, 'y')) + " instead"
         );
       }
       pos.z() = utils::convert(zStr, getDefaultLightPosition(id, 'z'), success);
       if (!success) {
-        log(
+        warn(
           std::string("Could not convert provided z coordinate of \"") + zStr + "\" for light " +
-          std::to_string(id) + " using " + std::to_string(getDefaultLightPosition(id, 'z')) + " instead",
-          utils::Level::Warning
+          std::to_string(id) + " using " + std::to_string(getDefaultLightPosition(id, 'z')) + " instead"
         );
       }
 
       // Retrieve the color.
       sdl::graphic::SelectorWidget* palette = getPaletteForLightColor(id);
       if (palette == nullptr) {
-        log("Could not retrieve palette for light " + std::to_string(id), utils::Level::Error);
+        warn("Could not retrieve palette for light " + std::to_string(id));
         continue;
       }
 
@@ -431,10 +428,9 @@ namespace mandelbulb {
       // and by checking the assocation in the internal colors table.
       unsigned cID = static_cast<unsigned>(palette->getActiveItem());
       if (cID >= m_colors.size()) {
-        log(
+        warn(
           std::string("Cannot associate color ") + std::to_string(cID) + " for light " +
-          std::to_string(id) + ", palette only defines " + std::to_string(m_colors.size()),
-          utils::Level::Error
+          std::to_string(id) + ", palette only defines " + std::to_string(m_colors.size())
         );
 
         continue;
@@ -445,7 +441,7 @@ namespace mandelbulb {
       // Retrieve the intensity.
       sdl::graphic::TextBox* powerTB = getTextBoxForLightPower(id);
       if (powerTB == nullptr) {
-        log("Could not retrieve intensity for light " + std::to_string(id), utils::Level::Error);
+        warn("Could not retrieve intensity for light " + std::to_string(id));
         continue;
       }
 
@@ -459,10 +455,9 @@ namespace mandelbulb {
 
       float intensity = utils::convert(powerStr, getDefaultLightPower(), success);
       if (!success) {
-        log(
+        warn(
           std::string("Could not convert provided intensity of \"") + powerStr + "\" for light " +
-          std::to_string(id) + " using " + std::to_string(intensity) + " instead",
-          utils::Level::Warning
+          std::to_string(id) + " using " + std::to_string(intensity) + " instead"
         );
       }
 

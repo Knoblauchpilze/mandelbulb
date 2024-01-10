@@ -22,11 +22,7 @@ namespace mandelbulb {
     sdl::graphic::LabelWidget* label = getCoordLabel();
 
     if (label == nullptr) {
-      log(
-        std::string("Could not update coordinates to ") + coords.toString() + ", unable to fetch display label",
-        utils::Level::Error
-      );
-
+      warn("Could not update coordinates to " + coords.toString() + ", unable to fetch display label");
       return;
     }
 
@@ -64,11 +60,7 @@ namespace mandelbulb {
     sdl::graphic::LabelWidget* label = getDepthLabel();
 
     if (label == nullptr) {
-      log(
-        std::string("Could not update depth to ") + std::to_string(depth) + ", unable to fetch display label",
-        utils::Level::Error
-      );
-
+      warn("Could not update depth to " + std::to_string(depth) + ", unable to fetch display label");
       return;
     }
 

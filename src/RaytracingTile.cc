@@ -146,11 +146,7 @@ namespace mandelbulb {
     for (unsigned id = 0u ; id < m_lights.size() && id < MAX_LIGHTS ; ++id) {
       // Check consistency.
       if (m_lights[id] == nullptr) {
-        log(
-          std::string("Could not copy invalid null light ") + std::to_string(id) + " to cuda kernel props",
-          utils::Level::Error
-        );
-
+        warn("Could not copy invalid null light " + std::to_string(id) + " to cuda kernel props");
         continue;
       }
 

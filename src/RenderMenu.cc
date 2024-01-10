@@ -25,10 +25,7 @@ namespace mandelbulb {
       bar->setCompletion(perc);
     }
     else {
-      log(
-        std::string("Could not update completion to ") + std::to_string(perc) + ", unable to fetch progress bar",
-        utils::Level::Error
-      );
+      warn("Could not update completion to " + std::to_string(perc) + ", unable to fetch progress bar");
     }
 
     sdl::graphic::LabelWidget* label = getPercentageLabel();
@@ -39,16 +36,13 @@ namespace mandelbulb {
       label->setText(ss.str() + "%");
     }
     else {
-      log(
-        std::string("Could not update completion to ") + std::to_string(perc) + ", unable to fetch display label",
-        utils::Level::Error
-      );
+      warn("Could not update completion to " + std::to_string(perc) + ", unable to fetch display label");
     }
   }
 
   void
   RenderMenu::build() {
-    // This component uses a horizotnal linear layout to position the
+    // This component uses a horizontal linear layout to position the
     // internal components.
     sdl::graphic::LinearLayoutShPtr layout = std::make_shared<sdl::graphic::LinearLayout>(
       "render_menu_layout",
@@ -96,7 +90,7 @@ namespace mandelbulb {
         std::numeric_limits<float>::max()
       )
     );
-    bar->allowLog(false);
+    bar->setAllowLog(false);
 
     // Build layout.
     layout->addItem(bar);

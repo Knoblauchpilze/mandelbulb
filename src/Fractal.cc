@@ -54,7 +54,7 @@ namespace mandelbulb {
                     bool& hit)
   {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Assume no hit.
     hit = false;
@@ -75,10 +75,9 @@ namespace mandelbulb {
     if (lScreen.x() < 0 || lScreen.x() >= m_dims.w() ||
         lScreen.y() < 0 || lScreen.y() >= m_dims.h())
     {
-      log(
-        std::string("Trying to get point at coord ") + lScreen.toString() +
-        " not compatible with internal camera plane size " + m_dims.toString(),
-        utils::Level::Error
+      warn(
+        "Trying to get point at coord " + lScreen.toString() +
+        " not compatible with internal camera plane size " + m_dims.toString()
       );
 
       return -1.0f;
@@ -107,9 +106,8 @@ namespace mandelbulb {
     utils::Vector3f dir = m_camera->getDirection(perc);
     worldCoord = m_camera->getEye() + depth * dir;
 
-    log(
-      "Screen: " + screenCoord.toString() + " dir: " + dir.toString() + ", depth: " + std::to_string(depth),
-      utils::Level::Verbose
+    verbose(
+      "Screen: " + screenCoord.toString() + " dir: " + dir.toString() + ", depth: " + std::to_string(depth)
     );
 
     return depth;
@@ -131,10 +129,7 @@ namespace mandelbulb {
 
     // Generate the launch schedule if needed.
     if (m_schedule.empty()) {
-      log(
-        std::string("Trying to schedule a rendering without any tiles generated"),
-        utils::Level::Error
-      );
+      warn("Trying to schedule a rendering without any tiles generated");
 
       // We need to generate the schedule.
       generateSchedule();
@@ -148,11 +143,7 @@ namespace mandelbulb {
       // Reset the internal computation state.
       m_computationState = State::Converged;
 
-      log(
-        std::string("Scheduled a rendering but no jobs where created, discarding request"),
-        utils::Level::Error
-      );
-
+      warn("Scheduled a rendering but no jobs where created, discarding request");
       return;
     }
 
@@ -172,7 +163,7 @@ namespace mandelbulb {
 
     {
       // Protect from concurrent accesses.
-      Guard guard(m_propsLocker);
+      const std::lock_guard guard(m_propsLocker);
 
       // We need to copy the tiles data to the internal array. This will
       // allow to keep track of the content computed for the fractal and
@@ -181,11 +172,7 @@ namespace mandelbulb {
         // Convert to usable data.
         RaytracingTileShPtr tile = std::dynamic_pointer_cast<RaytracingTile>(tiles[id]);
         if (tile == nullptr) {
-          log(
-            std::string("Could not convert task to raytracing tile, skipping it"),
-            utils::Level::Error
-          );
-
+          warn("Could not convert task to raytracing tile, skipping it");
           continue;
         }
 
@@ -195,10 +182,9 @@ namespace mandelbulb {
       // Add the rendered tiles to the internal progress.
       m_progress.taskProgress += tiles.size();
 
-      log(
+      verbose(
         "Handled " + std::to_string(tiles.size()) + " tile(s), task: " +
-        std::to_string(m_progress.taskProgress) + "/" + std::to_string(m_progress.taskTotal),
-        utils::Level::Verbose
+        std::to_string(m_progress.taskProgress) + "/" + std::to_string(m_progress.taskTotal)
       );
 
       // In case an iteration has been finished, schedule the next one (or stop
@@ -253,10 +239,7 @@ namespace mandelbulb {
         // perfect multiple of the tiles' dimensions.
         evenize(area);
 
-        log(
-          std::string("Generating tile ") + std::to_string(x) + "x" + std::to_string(y) + " with area " + area.toString(),
-          utils::Level::Verbose
-        );
+        verbose("Generating tile " + std::to_string(x) + "x" + std::to_string(y) + " with area " + area.toString());
 
         // Create the tile and register it in the schedule.
         RaytracingTileShPtr tile = std::make_shared<RaytracingTile>(area, m_dims);
@@ -285,10 +268,7 @@ namespace mandelbulb {
 
     if (excessW > 0) {
       if (excessW % 2 != 0) {
-        log(
-          std::string("Area ") + area.toString() + " will not correctly be cropped to match " + m_dims.toString(),
-          utils::Level::Error
-        );
+        warn("Area " + area.toString() + " will not correctly be cropped to match " + m_dims.toString());
       }
 
       area.x() -= excessW / 2;
@@ -296,10 +276,7 @@ namespace mandelbulb {
     }
     if (excessH > 0) {
       if (excessH % 2 != 0) {
-        log(
-          std::string("Area ") + area.toString() + " will not correctly be cropped to match " + m_dims.toString(),
-          utils::Level::Error
-        );
+        warn("Area " + area.toString() + " will not correctly be cropped to match " + m_dims.toString());
       }
 
       area.y() -= excessH / 2;
@@ -316,11 +293,7 @@ namespace mandelbulb {
     const std::vector<pixel::Data>& map = tile.getPixelsMap();
 
     if (map.empty()) {
-      log(
-        std::string("Cannot interpret tile ") + area.toString() + " with no depth map",
-        utils::Level::Error
-      );
-
+      warn("Cannot interpret tile " + area.toString() + " with no depth map");
       return;
     }
 
@@ -340,10 +313,9 @@ namespace mandelbulb {
         if (dX < 0 || dX >= m_dims.w() ||
             lY < 0 || lY >= m_dims.h())
         {
-          log(
-            std::string("Could not copy data at ") + std::to_string(x) + "x" + std::to_string(y) + " from " +
-            area.toString() + ", local is " + std::to_string(dX) + "x" + std::to_string(lY),
-            utils::Level::Error
+          warn(
+            "Could not copy data at " + std::to_string(x) + "x" + std::to_string(y) + " from " +
+            area.toString() + ", local is " + std::to_string(dX) + "x" + std::to_string(lY)
           );
 
           continue;

@@ -8,7 +8,7 @@ namespace mandelbulb {
   inline
   MandelbulbRenderer::~MandelbulbRenderer() {
     // Protect from concurrent accesses
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Destroy the internal fractal.
     m_fractal->onTilesRendered.disconnect(m_tilesRenderedSignalID);
@@ -22,7 +22,7 @@ namespace mandelbulb {
   void
   MandelbulbRenderer::updatePrivate(const utils::Boxf& window) {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Use the base handler.
     sdl::core::SdlWidget::updatePrivate(window);
@@ -39,7 +39,7 @@ namespace mandelbulb {
                                              bool /*notify*/)
   {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Rotate about the `z` axis of an angle corresponding to the conversion
     // between the input motion and real world radians.
@@ -58,7 +58,7 @@ namespace mandelbulb {
   bool
   MandelbulbRenderer::mouseMoveEvent(const sdl::core::engine::MouseEvent& e) {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     notifyCoordinatesChanged(e.getMousePosition());
 
@@ -78,7 +78,7 @@ namespace mandelbulb {
       bool zoomIn = motion.y() > 0;
 
       // Protect from concurrent accesses.
-      Guard guard(m_propsLocker);
+      const std::lock_guard guard(m_propsLocker);
 
       // Retrieve an estimation of the distance of the camera to the fractal.
       float z = m_fractal->getDistance();
@@ -150,7 +150,7 @@ namespace mandelbulb {
   void
   MandelbulbRenderer::onTilesRendered() {
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Create and post a repaint event.
     postEvent(

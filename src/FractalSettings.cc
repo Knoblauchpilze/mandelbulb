@@ -38,7 +38,7 @@ namespace mandelbulb {
       getGlobalMargins()
     );
 
-    layout->allowLog(false);
+    layout->setAllowLog(false);
 
     setLayout(layout);
 
@@ -237,17 +237,17 @@ namespace mandelbulb {
     burnoutValue->setMaxSize(maxSz);
     apply->setMaxSize(maxSz);
 
-    fColorLabel->allowLog(false);
-    fColorValue->allowLog(false);
-    blendingLabel->allowLog(false);
-    blendingValue->allowLog(false);
-    ndColorLabel->allowLog(false);
-    ndColorValue->allowLog(false);
-    exposureLabel->allowLog(false);
-    exposureValue->allowLog(false);
-    burnoutLabel->allowLog(false);
-    burnoutValue->allowLog(false);
-    apply->allowLog(false);
+    fColorLabel->setAllowLog(false);
+    fColorValue->setAllowLog(false);
+    blendingLabel->setAllowLog(false);
+    blendingValue->setAllowLog(false);
+    ndColorLabel->setAllowLog(false);
+    ndColorValue->setAllowLog(false);
+    exposureLabel->setAllowLog(false);
+    exposureValue->setAllowLog(false);
+    burnoutLabel->setAllowLog(false);
+    burnoutValue->setAllowLog(false);
+    apply->setAllowLog(false);
 
     // Build layout for this component.
     layout->addItem(fColorLabel,   0u,  0u, 1u, 1u);
@@ -306,18 +306,14 @@ namespace mandelbulb {
 
     sdl::graphic::SelectorWidget* fPalette = getFractalColorPalette();
     if (fPalette == nullptr) {
-      log(
-        std::string("Could not retrieve fractal color palette, using default color ") + fColor.toString(),
-        utils::Level::Error
-      );
+      warn("Could not retrieve fractal color palette, using default color " + fColor.toString());
     }
     else {
       unsigned cID = static_cast<unsigned>(fPalette->getActiveItem());
       if (cID >= m_colors.size()) {
-        log(
+        warn(
           std::string("Cannot associate fractal color ") + std::to_string(cID) +
-          ", palette only defines " + std::to_string(m_colors.size()) + ", using " + fColor.toString(),
-          utils::Level::Error
+          ", palette only defines " + std::to_string(m_colors.size()) + ", using " + fColor.toString()
         );
       }
       else {
@@ -330,10 +326,7 @@ namespace mandelbulb {
 
     sdl::graphic::TextBox* blendTB = getFractalColorBlendingValue();
     if (blendTB == nullptr) {
-      log(
-        std::string("Could not retrieve fractal color blending, using default value ") + std::to_string(blending),
-        utils::Level::Error
-      );
+      warn("Could not retrieve fractal color blending, using default value " + std::to_string(blending));
     }
     else {
       std::string blendStr;
@@ -348,19 +341,15 @@ namespace mandelbulb {
       blending = utils::convert(blendStr, getDefaultFractalColorBlending(), success);
 
       if (!success) {
-        log(
-          std::string("Could not convert fractal color blending \"") + blendStr + "\", using default value " + std::to_string(blending),
-          utils::Level::Error
-        );
+        warn("Could not convert fractal color blending \"" + blendStr + "\", using default value " + std::to_string(blending));
       }
 
       // Clamp the value in the range `[0; 1]`.
       float cBlending = std::min(1.0f, std::max(0.0f, blending));
       if (blending < 0.0f || blending > 1.0f) {
-        log(
+        warn(
           std::string("Invalid blending value provided ") + std::to_string(blending) + " using " +
-          std::to_string(cBlending) + " instead",
-          utils::Level::Warning
+          std::to_string(cBlending) + " instead"
         );
 
         blending = cBlending;
@@ -372,18 +361,14 @@ namespace mandelbulb {
 
     sdl::graphic::SelectorWidget* ndPalette = getNoDataColorPalette();
     if (ndPalette == nullptr) {
-      log(
-        std::string("Could not retrieve no data color palette, using default color ") + ndColor.toString(),
-        utils::Level::Error
-      );
+      warn("Could not retrieve no data color palette, using default color " + ndColor.toString());
     }
     else {
       unsigned cID = static_cast<unsigned>(ndPalette->getActiveItem());
       if (cID >= m_colors.size()) {
-        log(
+        warn(
           std::string("Cannot associate no data color ") + std::to_string(cID) +
-          ", palette only defines " + std::to_string(m_colors.size()) + ", using " + ndColor.toString(),
-          utils::Level::Error
+          ", palette only defines " + std::to_string(m_colors.size()) + ", using " + ndColor.toString()
         );
       }
       else {
@@ -396,10 +381,7 @@ namespace mandelbulb {
 
     sdl::graphic::TextBox* expTB = getExposureValue();
     if (expTB == nullptr) {
-      log(
-        std::string("Could not retrieve exposure textbox, using default value ") + std::to_string(exposure),
-        utils::Level::Error
-      );
+      warn("Could not retrieve exposure textbox, using default value " + std::to_string(exposure));
     }
     else {
       std::string expStr;
@@ -414,10 +396,7 @@ namespace mandelbulb {
       exposure = utils::convert(expStr, getDefaultExposureValue(), success);
 
       if (!success) {
-        log(
-          std::string("Could not convert exposure value \"") + expStr + "\", using default value " + std::to_string(exposure),
-          utils::Level::Error
-        );
+        warn("Could not convert exposure value \"" + expStr + "\", using default value " + std::to_string(exposure));
       }
     }
 
@@ -426,10 +405,7 @@ namespace mandelbulb {
 
     sdl::graphic::TextBox* burnTB = getBurnoutValue();
     if (burnTB == nullptr) {
-      log(
-        std::string("Could not retrieve burnout textbox, using default value ") + std::to_string(burnout),
-        utils::Level::Error
-      );
+      warn("Could not retrieve burnout textbox, using default value " + std::to_string(burnout));
     }
     else {
       std::string burnStr;
@@ -444,10 +420,7 @@ namespace mandelbulb {
       burnout = utils::convert(burnStr, getDefaultBurnoutValue(), success);
 
       if (!success) {
-        log(
-          std::string("Could not convert burnout value \"") + burnStr + "\", using default value " + std::to_string(burnout),
-          utils::Level::Error
-        );
+        warn("Could not convert burnout value \"" + burnStr + "\", using default value " + std::to_string(burnout));
       }
     }
 
@@ -461,7 +434,7 @@ namespace mandelbulb {
     };
 
     // Notify external listeners.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     onShadingPropertiesChanged.safeEmit(
       std::string("onShadingPropertiesChanged()"),

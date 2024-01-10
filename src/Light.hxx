@@ -44,10 +44,9 @@ namespace mandelbulb {
   void
   Light::setIntensity(float intensity) {
     if (intensity < 0.0f) {
-      log(
-        std::string("Cannot set intensity for light to ") + std::to_string(intensity) +
-        " keeping current value of " + std::to_string(getIntensity()),
-        utils::Level::Warning
+      warn(
+        "Cannot set intensity for light to " + std::to_string(intensity) +
+        " keeping current value of " + std::to_string(getIntensity())
       );
 
       return;

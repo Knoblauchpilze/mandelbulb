@@ -19,7 +19,7 @@ namespace utils {
   inline
   std::string
   CudaWrapper::getLastError() {
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     std::string err;
     err.swap(m_lastError);
@@ -38,7 +38,7 @@ namespace utils {
   CudaWrapper::checkAndSaveError(const cudaError_t& error) {
     // If the input `error` is a problem, report it.
     if (isError(error)) {
-      Guard guard(m_propsLocker);
+      const std::lock_guard guard(m_propsLocker);
       m_lastError = cudaGetErrorString(error);
     }
   }

@@ -60,7 +60,7 @@ namespace utils {
   CudaExecutor::notifyJobs() {
     // Protect from concurrent accesses.
     UniqueGuard guard(m_poolLocker);
-    Guard guard2(m_jobsLocker);
+    const std::lock_guard guard2(m_jobsLocker);
 
     // Determine whether some jobs have to be processed.
     if (!hasJobs()) {
@@ -84,7 +84,7 @@ namespace utils {
                             bool invalidate)
   {
     // Protect from concurrent accesses.
-    Guard guard(m_jobsLocker);
+    const std::lock_guard guard(m_jobsLocker);
 
     // Invalidate jobs if needed: this include all the remaining jobs to process
     // but also notification about the ones currently being processed.
@@ -95,7 +95,7 @@ namespace utils {
     }
 
     {
-      Guard guard(m_resultsLocker);
+      const std::lock_guard guard(m_resultsLocker);
       m_invalidateOld = invalidate;
     }
 
@@ -141,21 +141,19 @@ namespace utils {
       // parameter and output result. If this is not the case we
       // won't be able to schedule it correctly.
       if (jobs[id]->getInputDataSize() != m_paramSize) {
-        log(
+        warn(
           std::string("Trying to submit job \"") + jobs[id]->getName() + "\" with a parameter size of " +
           std::to_string(jobs[id]->getInputDataSize()) + " while expected value is " + std::to_string(m_paramSize) +
-          ", discarding it",
-          utils::Level::Error
+          ", discarding it"
         );
 
         continue;
       }
       if (jobs[id]->getOutputDataSize() != m_outElemSize) {
-        log(
+        warn(
           std::string("Trying to submit job \"") + jobs[id]->getName() + "\" with a result size of " +
           std::to_string(jobs[id]->getOutputDataSize()) + " while expected value is " + std::to_string(m_outElemSize) +
-          ", discarding it",
-          utils::Level::Error
+          ", discarding it"
         );
 
         continue;
@@ -174,16 +172,15 @@ namespace utils {
   CudaExecutor::cancelJobs() {
     // Protect from concurrent accesses.
     UniqueGuard guard(m_poolLocker);
-    Guard guard2(m_jobsLocker);
+    const std::lock_guard guard2(m_jobsLocker);
 
     // Clear the internal queue so that no more jobs can be fetched.
     m_jobsAvailable = false;
 
     std::size_t count = m_hPrioJobs.size() + m_nPrioJobs.size() + m_lPrioJobs.size();
-    log(
+    verbose(
       "Clearing " + std::to_string(count) + " remaining job(s), next batch will be " +
-      std::to_string(m_batchIndex),
-      Level::Verbose
+      std::to_string(m_batchIndex)
     );
 
     m_hPrioJobs.clear();
@@ -199,11 +196,11 @@ namespace utils {
   CudaExecutor::createThreadPool(unsigned size) {
     // Create the results handling thread.
     {
-      Guard guard(m_resultsLocker);
+      const std::lock_guard guard(m_resultsLocker);
       m_resultsHandling = true;
     }
     {
-      Guard guard(m_resultsThreadLocker);
+      const std::lock_guard guard(m_resultsThreadLocker);
       m_resultsHandlingThread = std::thread(
         &CudaExecutor::resultsHandlingLoop,
         this
@@ -217,7 +214,7 @@ namespace utils {
     }
 
     // Protect from concurrent creation of the pool.
-    Guard guard(m_threadsLocker);
+    const std::lock_guard guard(m_threadsLocker);
 
     // Consistency check: verify that we can provide the
     // scheduling data to each thread.
@@ -256,7 +253,7 @@ namespace utils {
     m_waiter.notify_all();
 
     // Wait for all threads to finish.
-    Guard guard(m_threadsLocker);
+    const std::lock_guard guard(m_threadsLocker);
     for (unsigned id = 0u ; id < m_threads.size() ; ++id) {
       m_threads[id].join();
     }
@@ -279,7 +276,7 @@ namespace utils {
       m_resWaiter.notify_all();
       m_resultsLocker.unlock();
 
-      Guard guard3(m_resultsThreadLocker);
+      const std::lock_guard guard3(m_resultsThreadLocker);
       m_resultsHandlingThread.join();
     }
   }
@@ -291,7 +288,7 @@ namespace utils {
                                          unsigned elementSize)
   {
     // Protect from concurrent accesses to the threads' data.
-    Guard guard(m_threadsLocker);
+    const std::lock_guard guard(m_threadsLocker);
 
     // Create resources for each needed thread.
     bool success = false;
@@ -366,7 +363,7 @@ namespace utils {
   void
   CudaExecutor::destroyCudaSchedulingData() {
     // Protect from concurrent accesses to the threads' data.
-    Guard guard(m_threadsLocker);
+    const std::lock_guard guard(m_threadsLocker);
 
     // Release memory for each created stream.
     for (unsigned id = 0u ; id < m_schedulingData.size() ; ++id) {
@@ -375,30 +372,27 @@ namespace utils {
       // Destroy the stream.
       bool success = m_cudaAPI.destroy(d.stream);
       if (!success) {
-        log(
+        warn(
           std::string("Could not correctly destroy stream associated to thread ") + std::to_string(id) +
-          " (error: \"" + m_cudaAPI.getLastError() + "\")",
-          utils::Level::Error
+          " (error: \"" + m_cudaAPI.getLastError() + "\")"
         );
       }
 
       // Free the output buffer memory.
       success = m_cudaAPI.free(d.resBuffer);
       if (!success) {
-        log(
+        warn(
           std::string("Could not correctly destroy result buffer associated to thread ") + std::to_string(id) +
-          " (error: \"" + m_cudaAPI.getLastError() + "\")",
-          utils::Level::Error
+          " (error: \"" + m_cudaAPI.getLastError() + "\")"
         );
       }
 
       // Free the input parameters memory.
       success = m_cudaAPI.free(d.params);
       if (!success) {
-        log(
+        warn(
           std::string("Could not correctly destroy parameters buffer associated to thread ") + std::to_string(id) +
-          " (error: \"" + m_cudaAPI.getLastError() + "\")",
-          utils::Level::Error
+          " (error: \"" + m_cudaAPI.getLastError() + "\")"
         );
       }
     }
@@ -435,7 +429,7 @@ namespace utils {
       std::size_t remaining = 0u;
 
       {
-        Guard guard(m_jobsLocker);
+        const std::lock_guard guard(m_jobsLocker);
 
         // Fetch the highest priority job available.
         if (!m_hPrioJobs.empty()) {
@@ -521,10 +515,9 @@ namespace utils {
       std::vector<CudaJobShPtr> res;
       for (unsigned id = 0u ; id < local.size() ; ++id) {
         if (local[id].batch != m_batchIndex && m_invalidateOld) {
-          log(
+          verbose(
             std::string("Discarding job for old batch ") + std::to_string(local[id].batch) +
-            " (current is " + std::to_string(m_batchIndex) + ")",
-            utils::Level::Verbose
+            " (current is " + std::to_string(m_batchIndex) + ")"
           );
           continue;
         }
@@ -549,10 +542,9 @@ namespace utils {
     // We need to first copy the input parameters of the job to device memory.
     bool success = m_cudaAPI.copyToDevice(data.stream, job.getInputData(), data.paramSize, data.params);
     if (!success) {
-      log(
+      warn(
         std::string("Could not copy parameter for job ") + job.getName() +
-        "err: \"" + m_cudaAPI.getLastError() + "\")",
-        utils::Level::Error
+        "err: \"" + m_cudaAPI.getLastError() + "\")"
       );
 
       return false;
@@ -577,10 +569,9 @@ namespace utils {
       }
     );
     if (!success) {
-      log(
+      warn(
         std::string("Could not launch job ") + job.getName() + ("err: \"") +
-        m_cudaAPI.getLastError() + "\")",
-        utils::Level::Error
+        m_cudaAPI.getLastError() + "\")"
       );
 
       return false;
@@ -589,10 +580,9 @@ namespace utils {
     // Wait for the job to complete.
     success = m_cudaAPI.wait(data.stream);
     if (!success) {
-      log(
+      warn(
         std::string("Job \"") + job.getName() + "\" failed (err: \"" +
-        m_cudaAPI.getLastError() + "\")",
-        utils::Level::Error
+        m_cudaAPI.getLastError() + "\")"
       );
 
       return false;
@@ -607,10 +597,9 @@ namespace utils {
       job.getOutputData()
     );
     if (!success) {
-      log(
+      warn(
         std::string("Could not copy back result for job \"") + job.getName() +
-        "\" (err: \"" + m_cudaAPI.getLastError() + "\")",
-        utils::Level::Error
+        "\" (err: \"" + m_cudaAPI.getLastError() + "\")"
       );
 
       return false;

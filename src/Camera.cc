@@ -121,10 +121,9 @@ namespace mandelbulb {
     m_v = std::tan(m_fov / 2.0f) * up;
     m_w = forward;
 
-    log(
+    verbose(
       std::string("Created camera with eye: ") + m_eye.toString() + ", u: " + m_u.toString() +
-      ", v: " + m_v.toString() + ", w: " + m_w.toString() + " (aspect: " + std::to_string(aspect) + ")",
-      utils::Level::Verbose
+      ", v: " + m_v.toString() + ", w: " + m_w.toString() + " (aspect: " + std::to_string(aspect) + ")"
     );
   }
 

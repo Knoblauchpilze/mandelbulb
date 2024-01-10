@@ -71,11 +71,7 @@ namespace mandelbulb {
   Camera::setDistance(float distance) {
     // Consistency check.
     if (distance < 0.0f) {
-      log(
-        std::string("Could not set distance to ") + std::to_string(distance) + " for camera, keeping " + std::to_string(m_distance),
-        utils::Level::Error
-      );
-
+      warn("Could not set distance to " + std::to_string(distance) + " for camera, keeping " + std::to_string(m_distance));
       return false;
     }
 

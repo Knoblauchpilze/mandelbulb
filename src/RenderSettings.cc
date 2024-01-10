@@ -34,7 +34,7 @@ namespace mandelbulb {
       getComponentMargins()
     );
 
-    layout->allowLog(false);
+    layout->setAllowLog(false);
 
     setLayout(layout);
 
@@ -210,15 +210,15 @@ namespace mandelbulb {
       );
     }
 
-    powerLabel->allowLog(false);
-    powerValue->allowLog(false);
-    accuracyLabel->allowLog(false);
-    accuracyValue->allowLog(false);
-    hitThreshLabel->allowLog(false);
-    hitThreshValue->allowLog(false);
-    maxRayLabel->allowLog(false);
-    maxRayValue->allowLog(false);
-    apply->allowLog(false);
+    powerLabel->setAllowLog(false);
+    powerValue->setAllowLog(false);
+    accuracyLabel->setAllowLog(false);
+    accuracyValue->setAllowLog(false);
+    hitThreshLabel->setAllowLog(false);
+    hitThreshValue->setAllowLog(false);
+    maxRayLabel->setAllowLog(false);
+    maxRayValue->setAllowLog(false);
+    apply->setAllowLog(false);
 
     // Build layout.
     layout->addItem(powerLabel);
@@ -251,35 +251,19 @@ namespace mandelbulb {
     sdl::graphic::TextBox* rayStTB = getRayStepsTextBox();
 
     if (powerTB == nullptr) {
-      log(
-        std::string("Could not gather rendering properties (invalid power label)"),
-        utils::Level::Error
-      );
-
+      warn("Could not gather rendering properties (invalid power label)");
       return;
     }
     if (accTB == nullptr) {
-      log(
-        std::string("Could not gather rendering properties (invalid accuracy label)"),
-        utils::Level::Error
-      );
-
+      warn("Could not gather rendering properties (invalid accuracy label)");
       return;
     }
     if (hitTB == nullptr) {
-      log(
-        std::string("Could not gather rendering properties (invalid hit threshold label)"),
-        utils::Level::Error
-      );
-
+      warn("Could not gather rendering properties (invalid hit threshold label)");
       return;
     }
     if (rayStTB == nullptr) {
-      log(
-        std::string("Could not gather rendering properties (invalid ray steps label)"),
-        utils::Level::Error
-      );
-
+      warn("Could not gather rendering properties (invalid ray steps label)");
       return;
     }
 
@@ -308,32 +292,20 @@ namespace mandelbulb {
     unsigned raySt = utils::convert(rayStStr, getDefaultRaySteps(), sRaySt);
 
     if (!sPower) {
-      log(
-        std::string("Could not convert provided power of \"") + powerStr + "\", using " + std::to_string(power) + " instead",
-        utils::Level::Warning
-      );
+      warn("Could not convert provided power of \"" + powerStr + "\", using " + std::to_string(power) + " instead");
     }
     if (!sAcc) {
-      log(
-        std::string("Could not convert provided accuracy of \"") + accStr + "\", using " + std::to_string(acc) + " instead",
-        utils::Level::Warning
-      );
+      warn("Could not convert provided accuracy of \"" + accStr + "\", using " + std::to_string(acc) + " instead");
     }
     if (!sHitThr) {
-      log(
-        std::string("Could not convert provided hit threshold of \"") + hitThreshStr + "\", using " + std::to_string(hitThresh) + " instead",
-        utils::Level::Warning
-      );
+      warn("Could not convert provided hit threshold of \"" + hitThreshStr + "\", using " + std::to_string(hitThresh) + " instead");
     }
     if (!sRaySt) {
-      log(
-        std::string("Could not convert provided max ray steps of \"") + rayStStr + "\", using " + std::to_string(raySt) + " instead",
-        utils::Level::Warning
-      );
+      warn("Could not convert provided max ray steps of \"") + rayStStr + "\", using " + std::to_string(raySt) + " instead");
     }
 
     // Protect from concurrent accesses.
-    Guard guard(m_propsLocker);
+    const std::lock_guard guard(m_propsLocker);
 
     // Create the rendering properties object.
     RenderProperties props = RenderProperties{
